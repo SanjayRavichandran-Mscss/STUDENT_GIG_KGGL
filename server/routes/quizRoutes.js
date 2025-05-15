@@ -38,6 +38,6 @@ quizRouter.post("/assign-test", quizController.assignTest);
 quizRouter.get("/assigned-students/:test_id", quizController.getAssignedStudents);
 quizRouter.get("/assigned-tests/:student_id", quizController.getAssignedTestsWithQuestions);
 quizRouter.post("/submit-test", quizController.submitTest);
+quizRouter.get("/questions/:skill_id/:level_id", quizController.getQuestionsBySkillAndLevel);
 
 export default quizRouter;
-

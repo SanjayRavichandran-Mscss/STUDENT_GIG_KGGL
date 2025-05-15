@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import AttendQuiz from "./AttendQuiz";
 
 export default function AssignedTest() {
   const { id } = useParams(); // Get base64-encoded student_id from URL
   const studentId = atob(id); // Decode base64 to get student_id
   const [tests, setTests] = useState([]);
-  const [selectedTest, setSelectedTest] = useState(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -18,10 +17,7 @@ export default function AssignedTest() {
           { withCredentials: true }
         );
         setTests(response.data);
-        // Select the first test by default (or implement test selection UI)
-        if (response.data.length > 0) {
-          setSelectedTest(response.data[0]);
-        } else {
+        if (response.data.length === 0) {
           setError("No assigned tests found.");
         }
       } catch (err) {
@@ -32,20 +28,34 @@ export default function AssignedTest() {
     fetchTests();
   }, [studentId]);
 
+  const handleAttendTest = (testId) => {
+    navigate(`/quiz/${id}/${testId}`);
+  };
+
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Assigned Tests</h1>
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
       {tests.length === 0 && !error ? (
         <p className="text-gray-600">Loading tests...</p>
       ) : (
-        <>
-          {/* Optional: Add UI to select a test if multiple are assigned */}
-          {selectedTest ? (
-            <AttendQuiz test={selectedTest} />
-          ) : (
-            <p className="text-gray-600">No test selected.</p>
-          )}
-        </>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tests.map((test) => (
+            <div key={test.test_id} className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">{test.test_name}</h2>
+              <p className="text-gray-600 mb-2"><strong>Description:</strong> {test.test_description}</p>
+              <p className="text-gray-600 mb-2"><strong>Skill:</strong> {test.skill_name}</p>
+              <p className="text-gray-600 mb-2"><strong>Level:</strong> {test.level_name}</p>
+              <p className="text-gray-600 mb-4"><strong>Total Questions:</strong> {test.total_no_of_questions}</p>
+              <button
+                onClick={() => handleAttendTest(test.test_id)}
+                className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+              >
+                Attend Test
+              </button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

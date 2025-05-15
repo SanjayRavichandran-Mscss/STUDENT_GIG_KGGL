@@ -222,7 +222,6 @@ const getEntryTestQuestionsByStudentSkills = async (student_id) => {
       JOIN student_skills ss ON q.skill_id = ss.skill_id
       WHERE ss.student_id = ?
       ORDER BY RAND()
-      LIMIT 10
     `;
     db.query(sql, [student_id], (err, rows) => {
       if (err) reject(err);
@@ -286,7 +285,6 @@ const createTest = async (testData) => {
       medium_pass_mark,
       hard_pass_mark,
     } = testData;
-
     const sql = `
       INSERT INTO testcreation (
         test_name, test_description, skill_id, difficulty_level_id,
@@ -433,93 +431,83 @@ const getAssignedTestsWithQuestions = async (studentId) => {
         reject(err);
         return;
       }
-
       const testsWithQuestions = [];
       for (const test of tests) {
-        const { skill_id, easy_level_question, medium_level_question, hard_level_question, total_no_of_questions, difficulty_level_id } = test;
-        const questions = [];
-
+        const {
+          skill_id,
+          easy_level_question,
+          medium_level_question,
+          hard_level_question,
+          total_no_of_questions,
+          difficulty_level_id,
+        } = test;
         // Helper function to fetch questions for a specific difficulty
-        const fetchQuestions = async (difficultyId, count) => {
-          const sql = `
+        const fetchQuestionsForLevel = async (difficultyId, count, excludeIds = []) => {
+          let sql = `
             SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
             FROM questions_mcq
             WHERE skill_id = ? AND difficulty_level_id = ?
-            ORDER BY RAND()
-            LIMIT ?
           `;
+          const params = [skill_id, difficultyId];
+          if (excludeIds.length > 0) {
+            sql += ` AND id NOT IN (${excludeIds.map(() => "?").join(",")})`;
+            params.push(...excludeIds);
+          }
+          sql += ` ORDER BY RAND() LIMIT ?`;
+          params.push(count);
           return new Promise((res, rej) => {
-            db.query(sql, [skill_id, difficultyId, count], (err, rows) => {
+            db.query(sql, params, (err, rows) => {
               if (err) rej(err);
               else res(rows);
             });
           });
         };
-
         try {
-          // Fetch questions based on difficulty_level_id
-          if (difficulty_level_id === 1) {
-            // Easy only: 10 easy
-            const easyQuestions = await fetchQuestions(1, total_no_of_questions);
-            if (easyQuestions.length < total_no_of_questions) {
-              console.error(`Insufficient easy questions for test ${test.test_id}: need ${total_no_of_questions}, found ${easyQuestions.length}`);
-              throw new Error(`Insufficient easy questions: need ${total_no_of_questions}, found ${easyQuestions.length}`);
-            }
-            questions.push(...easyQuestions);
-          } else if (difficulty_level_id === 2) {
-            // Easy (60%) and Medium (40%): 6 easy, 4 medium
-            const easyQuestions = await fetchQuestions(1, easy_level_question);
+          const primaryQuestions = { easy: [], medium: [], hard: [] };
+          let usedQuestionIds = [];
+          // Fetch primary questions
+          if (difficulty_level_id >= 1 && easy_level_question > 0) {
+            const easyQuestions = await fetchQuestionsForLevel(1, easy_level_question);
             if (easyQuestions.length < easy_level_question) {
-              console.error(`Insufficient easy questions for test ${test.test_id}: need ${easy_level_question}, found ${easyQuestions.length}`);
-              throw new Error(`Insufficient easy questions: need ${easy_level_question}, found ${easyQuestions.length}`);
+              throw new Error(`Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test.test_name}. Only ${easyQuestions.length} available.`);
             }
-            questions.push(...easyQuestions);
-
-            const mediumQuestions = await fetchQuestions(2, medium_level_question);
+            primaryQuestions.easy = easyQuestions;
+            usedQuestionIds.push(...easyQuestions.map((q) => q.id));
+          }
+          if (difficulty_level_id >= 2 && medium_level_question > 0) {
+            const mediumQuestions = await fetchQuestionsForLevel(2, medium_level_question, usedQuestionIds);
             if (mediumQuestions.length < medium_level_question) {
-              console.error(`Insufficient medium questions for test ${test.test_id}: need ${medium_level_question}, found ${mediumQuestions.length}`);
-              throw new Error(`Insufficient medium questions: need ${medium_level_question}, found ${mediumQuestions.length}`);
+              throw new Error(`Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test.test_name}. Only ${mediumQuestions.length} available.`);
             }
-            questions.push(...mediumQuestions);
-          } else if (difficulty_level_id === 3) {
-            // Easy (40%), Medium (30%), Hard (30%): 4 easy, 3 medium, 3 hard
-            const easyQuestions = await fetchQuestions(1, easy_level_question);
-            if (easyQuestions.length < easy_level_question) {
-              console.error(`Insufficient easy questions for test ${test.test_id}: need ${easy_level_question}, found ${easyQuestions.length}`);
-              throw new Error(`Insufficient easy questions: need ${easy_level_question}, found ${easyQuestions.length}`);
-            }
-            questions.push(...easyQuestions);
-
-            const mediumQuestions = await fetchQuestions(2, medium_level_question);
-            if (mediumQuestions.length < medium_level_question) {
-              console.error(`Insufficient medium questions for test ${test.test_id}: need ${medium_level_question}, found ${mediumQuestions.length}`);
-              throw new Error(`Insufficient medium questions: need ${medium_level_question}, found ${mediumQuestions.length}`);
-            }
-            questions.push(...mediumQuestions);
-
-            const hardQuestions = await fetchQuestions(3, hard_level_question);
+            primaryQuestions.medium = mediumQuestions;
+            usedQuestionIds.push(...mediumQuestions.map((q) => q.id));
+          }
+          if (difficulty_level_id === 3 && hard_level_question > 0) {
+            const hardQuestions = await fetchQuestionsForLevel(3, hard_level_question, usedQuestionIds);
             if (hardQuestions.length < hard_level_question) {
-              console.error(`Insufficient hard questions for test ${test.test_id}: need ${hard_level_question}, found ${hardQuestions.length}`);
-              throw new Error(`Insufficient hard questions: need ${hard_level_question}, found ${hardQuestions.length}`);
+              throw new Error(`Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test.test_name}. Only ${hardQuestions.length} available.`);
             }
-            questions.push(...hardQuestions);
+            primaryQuestions.hard = hardQuestions;
+            usedQuestionIds.push(...hardQuestions.map((q) => q.id));
           }
-
-          // Verify total questions
-          if (questions.length !== total_no_of_questions) {
-            console.error(`Total questions mismatch for test ${test.test_id}: expected ${total_no_of_questions}, got ${questions.length}`);
-            throw new Error(`Total questions mismatch: expected ${total_no_of_questions}, got ${questions.length}`);
-          }
-
           // Parse options
-          const parsedQuestions = questions.map((q) => ({
-            ...q,
-            option: JSON.parse(q.option),
-          }));
-
+          const parseQuestions = (questions) =>
+            questions.map((q) => ({
+              ...q,
+              option: JSON.parse(q.option),
+            }));
           testsWithQuestions.push({
             ...test,
-            questions: parsedQuestions,
+            primary_questions: {
+              easy: parseQuestions(primaryQuestions.easy),
+              medium: parseQuestions(primaryQuestions.medium),
+              hard: parseQuestions(primaryQuestions.hard),
+            },
+            additional_questions: {
+              easy: [],
+              medium: [],
+              hard: [],
+            },
           });
         } catch (error) {
           console.error(`Error processing questions for test ${test.test_id}:`, error.message);
@@ -527,7 +515,6 @@ const getAssignedTestsWithQuestions = async (studentId) => {
           return;
         }
       }
-
       resolve(testsWithQuestions);
     });
   });
@@ -544,13 +531,14 @@ const saveTestResult = async (resultData) => {
       hard_score,
       total_score,
       incorrect_answer_count,
+      student_level,
+      percentage,
     } = resultData;
-
     const sql = `
       INSERT INTO testresults (
         test_id, student_id, easy_score, medium_score, hard_score,
-        total_score, incorrect_answer_count, attend_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        total_score, incorrect_answer_count, student_level, percentage, attend_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `;
     db.query(
       sql,
@@ -562,12 +550,43 @@ const saveTestResult = async (resultData) => {
         hard_score,
         total_score,
         incorrect_answer_count,
+        student_level,
+        percentage,
       ],
       (err, result) => {
         if (err) reject(err);
         else resolve(result);
       }
     );
+  });
+};
+
+// Get questions by skill and difficulty level, excluding specified IDs
+const getQuestionsBySkillAndLevel = async (skill_id, level_id, excludeIds, count) => {
+  return new Promise((resolve, reject) => {
+    let sql = `
+      SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
+      FROM questions_mcq
+      WHERE skill_id = ? AND difficulty_level_id = ?
+    `;
+    const params = [skill_id, level_id];
+    if (excludeIds.length > 0) {
+      sql += ` AND id NOT IN (${excludeIds.map(() => "?").join(",")})`;
+      params.push(...excludeIds);
+    }
+    sql += ` ORDER BY RAND() LIMIT ?`;
+    params.push(count);
+    db.query(sql, params, (err, rows) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      const parsedRows = rows.map((row) => ({
+        ...row,
+        option: JSON.parse(row.option),
+      }));
+      resolve(parsedRows);
+    });
   });
 };
 
@@ -602,4 +621,5 @@ export default {
   getAssignedStudents,
   getAssignedTestsWithQuestions,
   saveTestResult,
+  getQuestionsBySkillAndLevel,
 };

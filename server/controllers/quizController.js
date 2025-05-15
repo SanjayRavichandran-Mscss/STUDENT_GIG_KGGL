@@ -199,7 +199,13 @@ const createMCQ = async (req, res) => {
         insertResults.push(result);
       }
 
-      return res.status(201).json({ msg: "MCQs created successfully", createdMCQs: insertResults });
+      return res.status(201).json({ namespace: {
+  "prefix": "xs",
+  "uri": "http://www.w3.org/2001/XMLSchema"
+},
+  "msg": "MCQs created successfully",
+  "createdMCQs": insertResults
+});
     } else if (typeof mcqs === "object") {
       const { skill_id, difficulty_level_id, questions, option, correct_answer } = mcqs;
 
@@ -391,6 +397,9 @@ const createTest = async (req, res) => {
       test_description,
       skill_id,
       difficulty_level_id,
+      easy_level_question,
+      medium_level_question,
+      hard_level_question,
       total_no_of_questions,
       easy_pass_mark,
       medium_pass_mark,
@@ -401,23 +410,8 @@ const createTest = async (req, res) => {
       return res.status(400).json({ msg: "All required fields must be provided" });
     }
 
-    if (total_no_of_questions !== 10) {
-      return res.status(400).json({ msg: "Total number of questions must be 10" });
-    }
-
-    let easy_level_question = 0;
-    let medium_level_question = 0;
-    let hard_level_question = 0;
-
-    if (difficulty_level_id === 1) {
-      easy_level_question = 10;
-    } else if (difficulty_level_id === 2) {
-      easy_level_question = 6;
-      medium_level_question = 4;
-    } else if (difficulty_level_id === 3) {
-      easy_level_question = 4;
-      medium_level_question = 3;
-      hard_level_question = 3;
+    if (total_no_of_questions !== easy_level_question + medium_level_question + hard_level_question) {
+      return res.status(400).json({ msg: "Total questions must equal sum of level questions" });
     }
 
     if (
@@ -433,13 +427,25 @@ const createTest = async (req, res) => {
     if (!skillQuestions) {
       return res.status(400).json({ msg: "No questions available for the selected skill" });
     }
-    if (
-      easy_level_question > skillQuestions.easy_count ||
-      medium_level_question > skillQuestions.medium_count ||
-      hard_level_question > skillQuestions.hard_count
-    ) {
+
+    const easyShortage = easy_level_question - skillQuestions.easy_count;
+    const mediumShortage = medium_level_question - skillQuestions.medium_count;
+    const hardShortage = hard_level_question - skillQuestions.hard_count;
+
+    if (easyShortage > 0 || mediumShortage > 0 || hardShortage > 0) {
+      const errors = [];
+      if (easyShortage > 0) {
+        errors.push(`Please add ${easyShortage} more Easy questions. Only ${skillQuestions.easy_count} available.`);
+      }
+      if (mediumShortage > 0) {
+        errors.push(`Please add ${mediumShortage} more Medium questions. Only ${skillQuestions.medium_count} available.`);
+      }
+      if (hardShortage > 0) {
+        errors.push(`Please add ${hardShortage} more Hard questions. Only ${skillQuestions.hard_count} available.`);
+      }
       return res.status(400).json({
         msg: "Requested question counts exceed available questions",
+        errors,
         available: {
           easy: skillQuestions.easy_count,
           medium: skillQuestions.medium_count,
@@ -548,10 +554,28 @@ const getAssignedTestsWithQuestions = async (req, res) => {
 // Submit test and save results
 const submitTest = async (req, res) => {
   try {
-    const { test_id, student_id, answers, easy_score, medium_score, hard_score, total_score, incorrect_answer_count } = req.body;
+    const {
+      test_id,
+      student_id,
+      answers,
+      easy_score,
+      medium_score,
+      hard_score,
+      total_score,
+      incorrect_answer_count,
+      student_level,
+      percentage,
+    } = req.body;
 
-    if (!test_id || !student_id || !answers || typeof answers !== "object") {
-      return res.status(400).json({ msg: "Test ID, student ID, and answers are required" });
+    if (
+      !test_id ||
+      !student_id ||
+      !answers ||
+      typeof answers !== "object" ||
+      !student_level ||
+      percentage === undefined
+    ) {
+      return res.status(400).json({ msg: "Test ID, student ID, answers, student level, and percentage are required" });
     }
 
     const tests = await QuizModel.getAssignedTestsWithQuestions(student_id);
@@ -563,19 +587,40 @@ const submitTest = async (req, res) => {
     const maxEasyScore = test.easy_level_question;
     const maxMediumScore = test.medium_level_question * 2;
     const maxHardScore = test.hard_level_question * 3;
+    const maxTotalScore = maxEasyScore + maxMediumScore + maxHardScore;
+
     if (
       easy_score > maxEasyScore ||
       medium_score > maxMediumScore ||
       hard_score > maxHardScore ||
-      total_score > (maxEasyScore + maxMediumScore + maxHardScore)
+      total_score > maxTotalScore
     ) {
       return res.status(400).json({ msg: "Submitted scores exceed maximum possible values" });
     }
 
-    const totalQuestions = test.easy_level_question + test.medium_level_question + test.hard_level_question;
-    const correctCount = easy_score + Math.floor(medium_score / 2) + Math.floor(hard_score / 3);
-    if (incorrect_answer_count > totalQuestions - correctCount) {
+    const totalQuestions = test.total_no_of_questions;
+    const correctEasy = easy_score; // 1 point per correct easy question
+    const correctMedium = medium_score / 2; // 2 points per correct medium question
+    const correctHard = hard_score / 3; // 3 points per correct hard question
+    const correctCount = correctEasy + correctMedium + correctHard;
+
+    if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
       return res.status(400).json({ msg: "Incorrect answer count is invalid" });
+    }
+
+    // Validate student_level
+    let expectedLevel = "Failed";
+    if (easy_score >= test.easy_pass_mark) {
+      expectedLevel = "Easy";
+      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark * 2) {
+        expectedLevel = "Medium";
+        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark * 3) {
+          expectedLevel = "Hard";
+        }
+      }
+    }
+    if (student_level !== expectedLevel) {
+      return res.status(400).json({ msg: "Invalid student level based on scores" });
     }
 
     const resultData = {
@@ -586,12 +631,34 @@ const submitTest = async (req, res) => {
       hard_score,
       total_score,
       incorrect_answer_count,
+      student_level,
+      percentage,
     };
 
     const result = await QuizModel.saveTestResult(resultData);
     return res.status(201).json({ msg: "Test results saved successfully", result_id: result.insertId });
   } catch (error) {
     console.error("Error in submitTest:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Get questions for a specific skill and difficulty level, excluding asked questions
+const getQuestionsBySkillAndLevel = async (req, res) => {
+  try {
+    const { skill_id, level_id } = req.params;
+    const { count, exclude } = req.query;
+    const excludeIds = exclude ? exclude.split(",").map(Number) : [];
+    const questionCount = parseInt(count) || 1;
+    const questions = await QuizModel.getQuestionsBySkillAndLevel(skill_id, level_id, excludeIds, questionCount);
+    if (questions.length < questionCount) {
+      return res.status(400).json({
+        msg: `Please add ${questionCount - questions.length} more questions for skill ${skill_id} and level ${level_id}. Only ${questions.length} available.`,
+      });
+    }
+    return res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error in getQuestionsBySkillAndLevel:", error);
     return res.status(500).json({ msg: "Server error" });
   }
 };
@@ -625,4 +692,5 @@ export default {
   getAssignedStudents,
   getAssignedTestsWithQuestions,
   submitTest,
+  getQuestionsBySkillAndLevel,
 };

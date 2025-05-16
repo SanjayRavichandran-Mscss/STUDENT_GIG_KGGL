@@ -248,7 +248,7 @@ const GeminiQuizGenerator = () => {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
           <div className="bg-blue-600 p-4 text-white">
-            <h1 className="text-xl font-bold text-center">Ask AI to Generate Quizzes</h1>
+            <h1 className="text-xl font-bold text-center">Ask AI to Generate Questions</h1>
           </div>
           
           <div className="p-4">
@@ -338,7 +338,7 @@ const GeminiQuizGenerator = () => {
                   </svg>
                   Generating...
                 </>
-              ) : 'Generate Quizzes'}
+              ) : 'Generate Questions'}
             </button>
           </div>
         </div>

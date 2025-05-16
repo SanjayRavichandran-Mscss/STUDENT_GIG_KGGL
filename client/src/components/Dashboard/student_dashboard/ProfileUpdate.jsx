@@ -17,7 +17,7 @@ function ProfileUpdate() {
     password: "",
     degree: "",
     year: "",
-    specialization: "",
+    // specialization: "",
     college_id: ""
   });
   const [file, setFile] = useState(null);
@@ -42,7 +42,7 @@ function ProfileUpdate() {
           password: profile.password,
           degree: profile.degree,
           year: profile.year,
-          specialization: profile.specialization,
+          // specialization: profile.specialization,
           college_id: profile.college_id
         });
 
@@ -79,7 +79,7 @@ function ProfileUpdate() {
       formDataToSend.append("Password", formData.password);
       formDataToSend.append("Degree", formData.degree);
       formDataToSend.append("Year", formData.year);
-      formDataToSend.append("Spl", formData.specialization);
+      // formDataToSend.append("Spl", formData.specialization);
       formDataToSend.append("coll", formData.college_id);
       formDataToSend.append("id", decoded);
       if (file) formDataToSend.append("file", file);
@@ -223,7 +223,7 @@ function ProfileUpdate() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-1">
                   Specialization
                 </label>
@@ -235,7 +235,7 @@ function ProfileUpdate() {
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200"
                 />
-              </div>
+              </div> */}
 
               <div className="md:col-span-2">
                 <label htmlFor="college_id" className="block text-sm font-medium text-gray-700 mb-1">

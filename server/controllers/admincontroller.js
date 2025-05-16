@@ -540,6 +540,7 @@ const studentsData = async (req, res) => {
   }
 };
 
+
 const studentDetails = async (req, res) => {
   try {
     const sql = `
@@ -553,6 +554,7 @@ const studentDetails = async (req, res) => {
         s.resume_file,
         s.github_link,
         c.college_name,
+        co.course_name AS department,
         GROUP_CONCAT(
           JSON_OBJECT(
             'skill_id', ss.skill_id,
@@ -563,6 +565,7 @@ const studentDetails = async (req, res) => {
         ) AS skills
       FROM students s
       LEFT JOIN colleges c ON s.college_id = c.college_id
+      LEFT JOIN course co ON s.degree = co.course_id
       LEFT JOIN student_skills ss ON s.student_id = ss.student_id
       LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
       WHERE s.role_id = 1
@@ -578,9 +581,7 @@ const studentDetails = async (req, res) => {
       // Parse skills JSON strings into arrays
       const parsedResult = result.map((row) => ({
         ...row,
-        skills: row.skills
-          ? JSON.parse(`[${row.skills}]`)
-          : [],
+        skills: row.skills ? JSON.parse(`[${row.skills}]`) : [],
       }));
 
       res.json({ status: true, result: parsedResult });
@@ -590,6 +591,10 @@ const studentDetails = async (req, res) => {
     res.status(500).json({ status: false, msg: "admin_error" });
   }
 };
+
+
+
+
 
 const studentsCount = async (req, res) => {
   try {
@@ -735,18 +740,23 @@ GROUP BY
 
 const getBitInfo = async (req, res) => {
   try {
-    const sql = `SELECT project_id, COUNT(*) AS count
-  FROM bit
-  GROUP BY project_id;`;
+    const sql = `
+      SELECT project_id, COUNT(*) AS count
+      FROM bit
+      WHERE bit_status_id IS NULL
+      GROUP BY project_id
+    `;
 
     db.query(sql, (err, result) => {
       if (err) {
+        console.error("Database error:", err);
         res.send("db_error");
       } else {
         res.send(result);
       }
     });
   } catch (e) {
+    console.error("Server error:", e);
     res.send("admin_error");
   }
 };
@@ -754,21 +764,38 @@ const getBitInfo = async (req, res) => {
 const bittedInfo = async (req, res) => {
   const { id } = req.params;
   try {
-    const sql = `SELECT p.project_id,p.project_name,b.bit_id, b.student_id,s.roll_no,s.name AS student_name,s.email,s.college_id, c.college_name, b.datetime, b.bit_status_id
-  FROM projects p
-  JOIN bit b ON p.project_id = b.project_id
-  JOIN students s ON b.student_id = s.student_id
-  JOIN colleges c ON s.college_id = c.college_id
-  WHERE p.project_id = ?`;
+    const sql = `
+      SELECT 
+        p.project_id,
+        p.project_name,
+        b.bit_id,
+        b.student_id,
+        s.roll_no,
+        s.name AS student_name,
+        s.email,
+        s.college_id,
+        c.college_name,
+        b.datetime,
+        b.bit_status_id,
+        COALESCE(bs.bit_status_name, 'pending') AS bit_status_name
+      FROM projects p
+      JOIN bit b ON p.project_id = b.project_id
+      JOIN students s ON b.student_id = s.student_id
+      JOIN colleges c ON s.college_id = c.college_id
+      LEFT JOIN bitstatuses bs ON b.bit_status_id = bs.bit_status_id
+      WHERE p.project_id = ?
+    `;
 
     db.query(sql, [id], (err, result) => {
       if (err) {
+        console.error("Database error:", err);
         res.send("db_error");
       } else {
         res.send(result);
       }
     });
   } catch (e) {
+    console.error("Server error:", e);
     res.send("admin_error");
   }
 };
@@ -778,62 +805,40 @@ const acceptBitting = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const sql = `UPDATE bit
-  SET bit_status_id = CASE
-      WHEN student_id = ? THEN 1 
-      ELSE 2 
-  END
-  WHERE project_id = ?`;
+    const sql = `
+      UPDATE bit
+      SET bit_status_id = ?
+      WHERE project_id = ? AND student_id = ?
+    `;
 
-    db.query(sql, [stuid, proid], (err, result) => {
+    db.query(sql, [1, proid, stuid], (err, result) => {
       if (err) {
-        res.send("dB_error", err);
-      } else {
-        var transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: "sivaranji5670@gmail.com",
-            pass: "zicd vrfo zxbs jsfb ",
-          },
-        });
+        console.error("Database error:", err);
+        return res.send("db_error");
+      }
 
-        var mailOptions = {
-          from: "sivaranji5670@gmail.com",
-          to: email,
-          subject: "Confirmation msg",
-          html: `<!DOCTYPE html>
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "sivaranji5670@gmail.com",
+          pass: "zicd vrfo zxbs jsfb",
+        },
+      });
+
+      const mailOptions = {
+        from: "sivaranji5670@gmail.com",
+        to: email,
+        subject: "Confirmation msg",
+        html: `
+          <!DOCTYPE html>
           <html>
           <head>
               <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      margin: 0;
-                      padding: 0;
-                      background-color: #f4f4f4;
-                  }
-                  .container {
-                      max-width: 600px;
-                      margin: 0 auto;
-                      padding: 20px;
-                      background-color: #ffffff;
-                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                  }
-                  .header {
-                      text-align: center;
-                      padding: 10px 0;
-                      background-color: #007bff;
-                      color: #ffffff;
-                  }
-                  .content {
-                      padding: 20px;
-                  }
-                  .footer {
-                      text-align: center;
-                      padding: 10px 0;
-                      background-color: #f4f4f4;
-                      color: #333333;
-                      font-size: 12px;
-                  }
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                  .header { text-align: center; padding: 10px 0; background-color: #007bff; color: #ffffff; }
+                  .content { padding: 20px; }
+                  .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
               </style>
           </head>
           <body>
@@ -855,46 +860,119 @@ const acceptBitting = async (req, res) => {
                   </div>
               </div>
           </body>
-          </html>`,
-        };
+          </html>
+        `,
+      };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Email sent: " + info.response);
-          }
-        });
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email error:", error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
 
-        const sql = `DELETE FROM bit
-      WHERE bit_status_id = 2
-        AND project_id = ?`;
-
-        db.query(sql, [proid], (err, result) => {
-          if (err) {
-            res.send("sub_query_error");
-          } else {
-            const sql = `UPDATE projects
-          SET status_id = (SELECT status_id FROM status WHERE status = 'assigned')
+      const updateProjectSql = `
+        UPDATE projects
+        SET status_id = 2
+        WHERE project_id = ?
+        AND EXISTS (
+          SELECT 1
+          FROM bit
           WHERE project_id = ?
-          AND EXISTS (
-              SELECT 1
-              FROM bit
-              WHERE project_id = ?
-              AND bit_status_id = 1
-          );`;
-            db.query(sql, [proid, proid], (err, result) => {
-              if (err) {
-                res.send("this_is_inner_most_query_error");
-              } else {
-                res.send("updated");
-              }
-            });
-          }
-        });
-      }
+          AND bit_status_id = 1
+        )
+      `;
+
+      db.query(updateProjectSql, [proid, proid], (err, result) => {
+        if (err) {
+          console.error("Project update error:", err);
+          return res.send("project_update_error");
+        }
+        res.send("updated");
+      });
     });
   } catch (e) {
+    console.error("Server error:", e);
+    res.send("admin_error");
+  }
+};
+
+const declineBitting = async (req, res) => {
+  const { stuid, proid } = req.params;
+  const { email } = req.body;
+
+  try {
+    const sql = `
+      UPDATE bit
+      SET bit_status_id = ?
+      WHERE project_id = ? AND student_id = ?
+    `;
+
+    db.query(sql, [2, proid, stuid], (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.send("db_error");
+      }
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "sivaranji5670@gmail.com",
+          pass: "zicd vrfo zxbs jsfb",
+        },
+      });
+
+      const mailOptions = {
+        from: "sivaranji5670@gmail.com",
+        to: email,
+        subject: "Request Declined",
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                  .header { text-align: center; padding: 10px 0; background-color: #dc3545; color: #ffffff; }
+                  .content { padding: 20px; }
+                  .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>Request Declined</h1>
+                  </div>
+                  <div class="content">
+                      <p>Dear User,</p>
+                      <p>We regret to inform you that your request has been declined by the admin.</p>
+                      <p>Please contact us if you have any questions or need further assistance.</p>
+                      <p>Best regards,</p>
+                      <p><strong>Your Company Name</strong></p>
+                  </div>
+                  <div class="footer">
+                      <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
+                      <p>1234 Street Name, City, State, 12345</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+        `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email error:", error);
+        } else {
+          console.log("Decline email sent: " + info.response);
+        }
+      });
+
+      res.send("declined");
+    });
+  } catch (e) {
+    console.error("Server error:", e);
     res.send("admin_error");
   }
 };
@@ -1039,6 +1117,38 @@ const testAssign = async (req, res) => {
   );
 };
 
+
+const checkBidStatus = async (req, res) => {
+  const { stuid, proid } = req.params;
+
+  try {
+    const sql = `
+      SELECT 
+        b.bit_status_id,
+        COALESCE(bs.bit_status_name, 'pending') AS bit_status_name
+      FROM bit b
+      LEFT JOIN bitstatuses bs ON b.bit_status_id = bs.bit_status_id
+      WHERE b.student_id = ? AND b.project_id = ?
+      LIMIT 1
+    `;
+
+    db.query(sql, [stuid, proid], (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      const hasBidded = result.length > 0;
+      const bitStatus = hasBidded ? result[0].bit_status_name : null;
+      res.json({ hasBidded, bitStatus });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "admin_error" });
+  }
+};
+
+
+
 export {
   studentsData,
   studentDetails,
@@ -1056,5 +1166,7 @@ export {
   categoriesAndSub,
   categories,
   questionCounting,
-  testAssign
+  testAssign,
+  declineBitting, // Add to exports
+  checkBidStatus, // Add to exports
 };

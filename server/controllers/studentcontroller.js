@@ -658,7 +658,7 @@ const profileUpdation = async (req, res) => {
 
 // Update User Data
 const updateUserData = async (req, res) => {
-  const { Name, Email, Password, Degree, Year, Spl, coll, id } = req.body;
+  const { Name, Email, Password, Degree, Year,  coll, id } = req.body;
   let Filename = null;
 
   try {
@@ -667,8 +667,8 @@ const updateUserData = async (req, res) => {
     }
 
     let sql =
-      "UPDATE students SET name = ?, email = ?, password = ?, degree = ?, year = ?, specialization = ?, college_id = ?";
-    let values = [Name, Email, Password, Degree, Year, Spl, coll];
+      "UPDATE students SET name = ?, email = ?, password = ?, degree = ?, year = ?,college_id = ?";
+    let values = [Name, Email, Password, Degree, Year, coll];
 
     if (Filename) {
       sql += ", profile_photo = ?";

@@ -600,8 +600,8 @@ const submitTest = async (req, res) => {
 
     const totalQuestions = test.total_no_of_questions;
     const correctEasy = easy_score; // 1 point per correct easy question
-    const correctMedium = medium_score / 2; // 2 points per correct medium question
-    const correctHard = hard_score / 3; // 3 points per correct hard question
+    const correctMedium = medium_score; // 1 points per correct medium question
+    const correctHard = hard_score; // 1 points per correct hard question
     const correctCount = correctEasy + correctMedium + correctHard;
 
     if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
@@ -612,9 +612,9 @@ const submitTest = async (req, res) => {
     let expectedLevel = "Failed";
     if (easy_score >= test.easy_pass_mark) {
       expectedLevel = "Easy";
-      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark * 2) {
+      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark * 1) {
         expectedLevel = "Medium";
-        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark * 3) {
+        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark * 1) {
           expectedLevel = "Hard";
         }
       }

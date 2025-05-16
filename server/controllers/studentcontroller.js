@@ -477,13 +477,13 @@ const dbQuery = promisify(db.query).bind(db);
 // Student Registration
 const StudentRegistration = async (req, res) => {
   let {
+    roll_no, // New roll_no field
     name,
     email,
     password,
     selectedCategory,
     selectedCollege,
     year,
-    skill,
     role_id,
   } = req.body;
 
@@ -506,14 +506,14 @@ const StudentRegistration = async (req, res) => {
 
     // Insert student into students table
     const registrationSql =
-      "INSERT INTO students(name, email, password, degree, year, specialization, college_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO students(roll_no, name, email, password, degree, year, college_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     await dbQuery(registrationSql, [
+      roll_no, // New roll_no
       name,
       email,
-      password, // Store password as plain text
+      password,
       selectedCollege, // degree (course_id)
       year,
-      skill,
       selectedCategory, // college_id
       role_id,
     ]);
@@ -524,6 +524,7 @@ const StudentRegistration = async (req, res) => {
     res.status(500).json({ status: "error", message: "student_catch_error" });
   }
 };
+
 
 // Student Login
 const StudentLogin = async (req, res) => {

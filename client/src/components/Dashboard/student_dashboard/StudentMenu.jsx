@@ -136,7 +136,7 @@ export default function StudentMenu() {
                 View Assigned Test
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to={`/entry-test/${id}`}
                 className="flex items-center p-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -157,7 +157,7 @@ export default function StudentMenu() {
                 </svg>
                 Attend Entry Test
               </Link>
-            </li>
+            </li> */}
           </ul>
 
           <div className="border-t border-gray-200 my-4"></div>

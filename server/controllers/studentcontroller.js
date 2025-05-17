@@ -475,47 +475,130 @@ import { promisify } from "util";
 const dbQuery = promisify(db.query).bind(db);
 
 // Student Registration
+// const StudentRegistration = async (req, res) => {
+//   let {
+//     roll_no, // New roll_no field
+//     name,
+//     email,
+//     password,
+//     selectedCategory,
+//     selectedCollege,
+//     year,
+//     role_id,
+//   } = req.body;
+
+//   try {
+//     // Check if email already exists
+//     const checkEmailQuery = "SELECT COUNT(*) AS count FROM students WHERE email = ?";
+//     const emailResult = await dbQuery(checkEmailQuery, [email]);
+
+//     if (emailResult[0].count > 0) {
+//       return res.status(200).send("Email already exists");
+//     }
+
+//     // Validate role_id exists in role table
+//     const checkRoleQuery = "SELECT role_id FROM role WHERE role_id = ?";
+//     const roleResult = await dbQuery(checkRoleQuery, [role_id]);
+
+//     if (roleResult.length === 0) {
+//       return res.status(400).json({ status: "error", message: "Invalid role selected" });
+//     }
+
+//     // Insert student into students table
+//     const registrationSql =
+//       "INSERT INTO students(roll_no, name, email, password, degree, year, college_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+//     await dbQuery(registrationSql, [
+//       roll_no, // New roll_no
+//       name,
+//       email,
+//       password,
+//       selectedCollege, // degree (course_id)
+//       year,
+//       selectedCategory, // college_id
+//       role_id,
+//     ]);
+
+//     res.json({ status: "inserted" });
+//   } catch (error) {
+//     console.error("Error in StudentRegistration:", error);
+//     res.status(500).json({ status: "error", message: "student_catch_error" });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const StudentRegistration = async (req, res) => {
   let {
-    roll_no, // New roll_no field
+    roll_no,
     name,
     email,
     password,
+    mobile_number,
     selectedCategory,
     selectedCollege,
     year,
-    role_id,
+    semester,
   } = req.body;
 
   try {
+    // Validate password length (only require 8 characters)
+    if (password.length < 8) {
+      return res.status(400).json({
+        status: "error",
+        message: "Password must be at least 8 characters long.",
+      });
+    }
+
     // Check if email already exists
     const checkEmailQuery = "SELECT COUNT(*) AS count FROM students WHERE email = ?";
     const emailResult = await dbQuery(checkEmailQuery, [email]);
-
     if (emailResult[0].count > 0) {
       return res.status(200).send("Email already exists");
     }
 
-    // Validate role_id exists in role table
-    const checkRoleQuery = "SELECT role_id FROM role WHERE role_id = ?";
-    const roleResult = await dbQuery(checkRoleQuery, [role_id]);
-
-    if (roleResult.length === 0) {
-      return res.status(400).json({ status: "error", message: "Invalid role selected" });
+    // Check if roll_no already exists
+    const checkRollNoQuery = "SELECT COUNT(*) AS count FROM students WHERE roll_no = ?";
+    const rollNoResult = await dbQuery(checkRollNoQuery, [roll_no]);
+    if (rollNoResult[0].count > 0) {
+      return res.status(200).send("Roll number already exists");
     }
+
+    // Check if mobile_number already exists
+    const checkMobileQuery = "SELECT COUNT(*) AS count FROM students WHERE mobile_number = ?";
+    const mobileResult = await dbQuery(checkMobileQuery, [mobile_number]);
+    if (mobileResult[0].count > 0) {
+      return res.status(200).send("Mobile number already exists");
+    }
+
+    // Convert semester to integer (e.g., "1st Semester" -> 1)
+    const semesterInt = parseInt(semester.match(/\d+/)[0]);
 
     // Insert student into students table
     const registrationSql =
-      "INSERT INTO students(roll_no, name, email, password, degree, year, college_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO students(roll_no, name, email, password, mobile_number, degree, year, semester, college_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     await dbQuery(registrationSql, [
-      roll_no, // New roll_no
+      roll_no,
       name,
       email,
       password,
+      mobile_number,
       selectedCollege, // degree (course_id)
       year,
+      semesterInt,
       selectedCategory, // college_id
-      role_id,
     ]);
 
     res.json({ status: "inserted" });
@@ -524,6 +607,11 @@ const StudentRegistration = async (req, res) => {
     res.status(500).json({ status: "error", message: "student_catch_error" });
   }
 };
+
+
+
+
+
 
 
 // Student Login

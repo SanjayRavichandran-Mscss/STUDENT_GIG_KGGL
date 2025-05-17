@@ -570,7 +570,7 @@ const getQuestionsBySkillAndLevel = async (skill_id, level_id, excludeIds, count
       WHERE skill_id = ? AND difficulty_level_id = ?
     `;
     const params = [skill_id, level_id];
-    if (excludeIds.length > 0) {
+    if (excludeIds && excludeIds.length > 0) {
       sql += ` AND id NOT IN (${excludeIds.map(() => "?").join(",")})`;
       params.push(...excludeIds);
     }
@@ -623,3 +623,40 @@ export default {
   saveTestResult,
   getQuestionsBySkillAndLevel,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

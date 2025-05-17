@@ -568,7 +568,7 @@ const studentDetails = async (req, res) => {
       LEFT JOIN course co ON s.degree = co.course_id
       LEFT JOIN student_skills ss ON s.student_id = ss.student_id
       LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
-      WHERE s.role_id = 1
+      WHERE s.role_id = 2
       GROUP BY s.student_id
     `;
 

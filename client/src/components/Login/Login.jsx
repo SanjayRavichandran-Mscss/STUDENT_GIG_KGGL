@@ -25,9 +25,9 @@ export function Login() {
       
 
       if (status === "user") {
-        if (role === 1) {
+        if (role === 2) {
           navigate(`/profile/${btoa(id)}`); // Redirect to profile for students
-        } else if (role === 2) {
+        } else if (role === 1) {
           navigate(`/manager/${btoa(id)}`);
         } else {
           alert("Unsupported role. Please contact admin.");

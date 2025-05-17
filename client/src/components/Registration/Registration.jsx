@@ -366,25 +366,11 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import img from "../Assets/Group 289210.png";
 
 export function Registration() {
@@ -392,19 +378,22 @@ export function Registration() {
 
   // State management
   const [college, setCollege] = useState([]);
-  const [rollNo, setRollNo] = useState(""); // New Roll No state
+  const [rollNo, setRollNo] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [colleges, setColleges] = useState([]);
   const [selectedCollege, setSelectedCollege] = useState("");
-  const [courses, setCourses] = useState([]);
   const [year, setYear] = useState("");
-  const [role_id, setRoleId] = useState("");
+  const [semester, setSemester] = useState("");
+  const [courses, setCourses] = useState([]);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ level: "", color: "", width: "" });
 
   // Fetch colleges
   useEffect(() => {
@@ -456,30 +445,63 @@ export function Registration() {
     }
   }, [selectedCollege]);
 
+  // Password strength checker
+  useEffect(() => {
+    if (password) {
+      const hasUpper = /[A-Z]/.test(password);
+      const hasLower = /[a-z]/.test(password);
+      const hasNumber = /\d/.test(password);
+      const hasSpecial = /[@$!%*?&]/.test(password);
+      const length = password.length;
+
+      // Count character types present
+      const charTypes = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+
+      if (length < 8) {
+        setPasswordStrength({ level: "Weak", color: "bg-red-500", width: "w-1/3" });
+      } else if (length >= 8 && charTypes >= 3) {
+        setPasswordStrength({ level: "Strong", color: "bg-green-500", width: "w-full" });
+      } else {
+        setPasswordStrength({ level: "Normal", color: "bg-yellow-500", width: "w-2/3" });
+      }
+    } else {
+      setPasswordStrength({ level: "", color: "", width: "" });
+    }
+  }, [password]);
+
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
     setSelectedCollege("");
     setCourses([]);
     setYear("");
+    setSemester("");
   };
 
   const handleCollegeChange = (e) => {
     setSelectedCollege(e.target.value);
     setYear("");
+    setSemester("");
+  };
+
+  const handleYearChange = (e) => {
+    setYear(e.target.value);
+    setSemester("");
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!rollNo.trim()) newErrors.rollNo = "Roll No is required."; // Validate Roll No
+    if (!rollNo.trim()) newErrors.rollNo = "Roll No is required.";
     if (!name.trim()) newErrors.name = "Name is required.";
     if (!email.trim()) newErrors.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Invalid email format.";
     if (!password) newErrors.password = "Password is required.";
-    else if (password.length < 6) newErrors.password = "Password must be at least 6 characters.";
-    if (!role_id) newErrors.role_id = "Role is required.";
+    else if (password.length < 8) newErrors.password = "Password must be at least 8 characters long.";
+    if (!mobileNumber.trim()) newErrors.mobileNumber = "Mobile number is required.";
+    else if (!/^\d{10}$/.test(mobileNumber)) newErrors.mobileNumber = "Mobile number must be 10 digits.";
     if (!selectedCategory) newErrors.selectedCategory = "College is required.";
     if (!selectedCollege) newErrors.selectedCollege = "Course is required.";
     if (!year) newErrors.year = "Year is required.";
+    if (!semester) newErrors.semester = "Semester is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -491,14 +513,16 @@ export function Registration() {
 
     setIsLoading(true);
     const payload = {
-      roll_no: rollNo, // New roll_no field
+      roll_no: rollNo,
       name,
       email,
       password,
+      mobile_number: mobileNumber,
       selectedCategory,
       selectedCollege,
       year,
-      role_id,
+      semester,
+      role_id: "2",
     };
 
     try {
@@ -508,6 +532,10 @@ export function Registration() {
         navigate("/");
       } else if (res.data === "Email already exists") {
         setApiError("Email ID is already registered.");
+      } else if (res.data === "Roll number already exists") {
+        setApiError("Roll number is already registered.");
+      } else if (res.data === "Mobile number already exists") {
+        setApiError("Mobile number is already registered.");
       } else if (res.data.status === "error") {
         setApiError(res.data.message || "Registration failed.");
       } else {
@@ -521,7 +549,19 @@ export function Registration() {
     }
   };
 
+  // Generate semester options based on year
+  const getSemesterOptions = () => {
+    if (!year) return [];
+    const yearNumber = parseInt(year.split(" ")[0]);
+    const semesters = [];
+    const startSemester = (yearNumber - 1) * 2 + 1;
+    semesters.push(`${startSemester}${startSemester === 1 ? "st" : "th"} Semester`);
+    semesters.push(`${startSemester + 1}${startSemester + 1 === 2 ? "nd" : "th"} Semester`);
+    return semesters;
+  };
+
   const options = [...Array(courses).keys()].map((i) => i + 1);
+  const semesterOptions = getSemesterOptions();
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8 px-4">
@@ -592,36 +632,57 @@ export function Registration() {
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
+            {/* Mobile Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <input
+                type="text"
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.mobileNumber ? "border-red-500" : "border-gray-300"
+                }`}
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="Enter your mobile number"
+              />
+              {errors.mobileNumber && (
+                <p className="mt-1 text-sm text-red-600">{errors.mobileNumber}</p>
+              )}
+            </div>
+
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                </button>
+              </div>
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.role_id ? "border-red-500" : "border-gray-300"
-                }`}
-                value={role_id}
-                onChange={(e) => setRoleId(e.target.value)}
-              >
-                <option value="">Select Role</option>
-                <option value="2">Admin</option>
-                <option value="1">Student</option>
-              </select>
-              {errors.role_id && <p className="mt-1 text-sm text-red-600">{errors.role_id}</p>}
+              {passwordStrength.level && (
+                <div className="mt-2">
+                  <div className="h-2 bg-gray-200 rounded-full">
+                    <div
+                      className={`h-2 rounded-full ${passwordStrength.color} ${passwordStrength.width} transition-all duration-300`}
+                    ></div>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-700">
+                    Password Strength: <span className="font-medium">{passwordStrength.level}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* College */}
@@ -677,7 +738,7 @@ export function Registration() {
                   errors.year ? "border-red-500" : "border-gray-300"
                 }`}
                 value={year}
-                onChange={(e) => setYear(e.target.value)}
+                onChange={handleYearChange}
                 disabled={!selectedCollege}
               >
                 <option value="">Select Year</option>
@@ -688,6 +749,27 @@ export function Registration() {
                 ))}
               </select>
               {errors.year && <p className="mt-1 text-sm text-red-600">{errors.year}</p>}
+            </div>
+
+            {/* Semester */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+              <select
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.semester ? "border-red-500" : "border-gray-300"
+                }`}
+                value={semester}
+                onChange={(e) => setSemester(e.target.value)}
+                disabled={!year}
+              >
+                <option value="">Select Semester</option>
+                {semesterOptions.map((sem) => (
+                  <option key={sem} value={sem}>
+                    {sem}
+                  </option>
+                ))}
+              </select>
+              {errors.semester && <p className="mt-1 text-sm text-red-600">{errors.semester}</p>}
             </div>
 
             {/* Submit Button */}

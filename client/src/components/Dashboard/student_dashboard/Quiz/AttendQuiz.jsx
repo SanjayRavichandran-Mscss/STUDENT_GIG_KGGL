@@ -52,8 +52,9 @@ export default function AttendQuiz() {
 
         // Set first question
         if (newQuestionQueue.easy.length > 0) {
-          setCurrentQuestion(newQuestionQueue.easy[0]);
-          setAskedQuestionIds([newQuestionQueue.easy[0].id]);
+          const firstQuestion = newQuestionQueue.easy[0];
+          setCurrentQuestion(firstQuestion);
+          setAskedQuestionIds([firstQuestion.id]);
           setQuestionQueue((prev) => ({
             ...prev,
             easy: prev.easy.slice(1),
@@ -94,7 +95,7 @@ export default function AttendQuiz() {
   // Calculate score for the current question
   const calculateScore = (question, selectedAnswer) => {
     const isCorrect = selectedAnswer === question.correct_answer;
-    return isCorrect ? 1 : 0; // 1 point for any correct answer (easy, medium, hard)
+    return isCorrect ? 1 : 0; // 1 point for any correct answer
   };
 
   // Determine student level and percentage
@@ -104,7 +105,6 @@ export default function AttendQuiz() {
     const maxHardScore = test.hard_level_question * 1;
     const totalMaxScore = maxEasyScore + maxMediumScore + maxHardScore;
 
-    // Cap scores to maximum allowed
     const cappedScores = {
       easy: Math.min(scores.easy, maxEasyScore),
       medium: Math.min(scores.medium, maxMediumScore),
@@ -188,20 +188,16 @@ export default function AttendQuiz() {
       return newCounts;
     });
 
-    // Increment totalAsked and check if test should end
     const newTotalAsked = totalAsked + 1;
     setTotalAsked(newTotalAsked);
 
-    // Clear selected option
     setSelectedOption("");
 
-    // Submit test if total questions reached
     if (newTotalAsked >= test.total_no_of_questions) {
       await submitTest();
       return;
     }
 
-    // Determine next level based on pass status
     let nextLevel = currentLevel;
     let questionsAskedAtLevel = {
       easy: correctCounts.easy + (currentLevel === 1 && isCorrect ? 1 : 0),
@@ -209,7 +205,7 @@ export default function AttendQuiz() {
       hard: correctCounts.hard + (currentLevel === 3 && isCorrect ? 1 : 0),
     };
 
-    // Check pass status for easy level
+    // Check pass status
     if (currentLevel === 1 && questionsAskedAtLevel.easy >= test.easy_level_question) {
       if (scores.easy >= test.easy_pass_mark && test.difficulty_level_id >= 2) {
         setPassStatus((prev) => ({ ...prev, easy: true }));
@@ -217,20 +213,18 @@ export default function AttendQuiz() {
       }
     }
 
-    // Check pass status for medium level
     if (currentLevel === 2 && questionsAskedAtLevel.medium >= test.medium_level_question) {
       if (scores.medium >= test.medium_pass_mark && test.difficulty_level_id === 3) {
         setPassStatus((prev) => ({ ...prev, medium: true }));
         nextLevel = 3;
       } else {
-        nextLevel = 1; // Fall back to easy if medium not passed
+        nextLevel = 1;
       }
     }
 
-    // Get next question
     let nextQuestion = getNextQuestion(nextLevel);
 
-    // If no questions are available, fetch additional questions
+    // Fetch additional questions if needed
     if (!nextQuestion) {
       const questions = await fetchAdditionalQuestions(nextLevel, 1);
       if (questions.length > 0) {
@@ -245,7 +239,7 @@ export default function AttendQuiz() {
       }
     }
 
-    // Fallback logic if no questions are available
+    // Fallback logic
     if (!nextQuestion) {
       if (nextLevel === 1) {
         setError("No more easy questions available.");
@@ -306,13 +300,27 @@ export default function AttendQuiz() {
       }));
     }
 
+    // Prevent duplicate questions
+    if (askedQuestionIds.includes(nextQuestion.id)) {
+      console.warn(`Duplicate question ID ${nextQuestion.id} detected. Fetching new question.`);
+      const newQuestions = await fetchAdditionalQuestions(nextLevel, 1);
+      if (newQuestions.length > 0) {
+        nextQuestion = newQuestions[0];
+        setAdditionalQueue((prev) => ({
+          ...prev,
+          [levelKey]: [...prev[levelKey], ...newQuestions],
+        }));
+      } else {
+        setError("No unique questions available.");
+        await submitTest();
+        return;
+      }
+    }
+
     // Update state for next question
     setCurrentLevel(nextLevel);
     setCurrentQuestion(nextQuestion);
-    setAskedQuestionIds((prev) => {
-      const newIds = [...prev, nextQuestion.id];
-      return newIds;
-    });
+    setAskedQuestionIds((prev) => [...prev, nextQuestion.id]);
   };
 
   // Submit test

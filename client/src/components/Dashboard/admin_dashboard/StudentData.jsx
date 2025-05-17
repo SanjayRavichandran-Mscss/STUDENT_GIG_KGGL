@@ -1,382 +1,6 @@
-// import axios from "axios";
-// import React, { useEffect, useState } from "react";
-// import defaultProfile from "../../Assets/default_profile.jpg"; // Adjust path as needed
-// import { X } from "lucide-react";
-// import { Viewer, Worker } from "@react-pdf-viewer/core";
-// import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
-// import PerfectScrollbar from "react-perfect-scrollbar";
-// import "@react-pdf-viewer/core/lib/styles/index.css";
-// import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-// import "react-perfect-scrollbar/dist/css/styles.css";
-
-// function StudentsData() {
-//   const [studentData, setStudentData] = useState([]);
-//   const [error, setError] = useState("");
-//   const [selectedPhoto, setSelectedPhoto] = useState(null);
-//   const [selectedPdf, setSelectedPdf] = useState(null);
-//   const [pdfError, setPdfError] = useState("");
-
-//   const defaultLayoutPluginInstance = defaultLayoutPlugin();
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const res = await axios.get("http://localhost:5000/admin/student-details");
-//         if (res.data.status && Array.isArray(res.data.result)) {
-//           setStudentData(res.data.result);
-//         } else {
-//           setError(res.data.msg || "Failed to fetch student data");
-//         }
-//       } catch (err) {
-//         setError("Error fetching student data. Please try again later.");
-//         console.error("Fetch error:", err);
-//       }
-//     };
-//     fetchData();
-//   }, []);
-
-//   const handlePhotoClick = (photoUrl) => {
-//     setSelectedPhoto(photoUrl || defaultProfile);
-//   };
-
-//   const handleClosePhotoModal = () => {
-//     setSelectedPhoto(null);
-//   };
-
-//   const handleViewResume = (resumeFile) => {
-//     console.log("resume_file:", resumeFile);
-//     const pdfUrl = `http://localhost:5000/images/${resumeFile}`;
-//     console.log("PDF URL:", pdfUrl);
-//     setSelectedPdf(pdfUrl);
-//     setPdfError("");
-//   };
-
-//   const handleClosePdfModal = () => {
-//     setSelectedPdf(null);
-//     setPdfError("");
-//   };
-
-//   const handlePdfError = (error) => {
-//     setPdfError("Failed to load PDF. The file may be missing or inaccessible.");
-//     console.error("PDF load error:", error);
-//   };
-
-//   return (
-//     <div className="bg-gray-50">
-//       {/* Main Content */}
-//       <div className="max-w-6xl mx-auto p-4">
-//         {error && (
-//           <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
-//             {error}
-//           </div>
-//         )}
-//         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-//           <PerfectScrollbar>
-//             <div className="max-h-[calc(100vh-65px)] overflow-y-auto">
-//               <table className="w-full table-auto border-collapse">
-//                 <thead className="bg-gray-100 sticky top-0 z-10">
-//                   <tr>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Photo
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       roll number
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Name
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Email
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       College
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Year
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Resume
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Skills
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       GitHub
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Projects
-//                     </th>
-//                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                       Skill Desc
-//                     </th>
-//                   </tr>
-//                 </thead>
-//                 <tbody className="divide-y divide-gray-200">
-//                   {studentData.length > 0 ? (
-//                     studentData.map((student) => (
-//                       <tr
-//                         key={student.student_id || Math.random()}
-//                         className="hover:bg-gray-50 transition-colors"
-//                       >
-//                         <td className="px-3 py-2 whitespace-nowrap">
-//                           <img
-//                             src={
-//                               student.profile_photo
-//                                 ? `http://localhost:5000/images/${student.profile_photo}`
-//                                 : defaultProfile
-//                             }
-//                             alt="Profile"
-//                             className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 cursor-pointer"
-//                             onError={(e) => {
-//                               e.target.src = defaultProfile;
-//                             }}
-//                             onClick={() =>
-//                               handlePhotoClick(
-//                                 student.profile_photo
-//                                   ? `http://localhost:5000/images/${student.profile_photo}`
-//                                   : defaultProfile
-//                               )
-//                             }
-//                           />
-//                         </td>
-//                          <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-//                           {student.roll_no || "N/A"}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-//                           {student.name || "N/A"}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[150px]">
-//                           {student.email || "N/A"}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-//                           {student.college_name || "N/A"}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600">
-//                           {student.year || "N/A"}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm">
-//                           {student.resume_file ? (
-//                             <button
-//                               onClick={() => handleViewResume(student.resume_file)}
-//                               className="text-blue-600 hover:underline focus:outline-none"
-//                             >
-//                               View
-//                             </button>
-//                           ) : (
-//                             "N/A"
-//                           )}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600 max-w-[120px]">
-//                           {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-//                             <div className="flex flex-wrap gap-1">
-//                               {student.skills.map((skill, index) => (
-//                                 <span
-//                                   key={index}
-//                                   className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs"
-//                                 >
-//                                   {skill.skill_name || "N/A"}
-//                                 </span>
-//                               ))}
-//                             </div>
-//                           ) : (
-//                             "No skills"
-//                           )}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm">
-//                           {student.github_link ? (
-//                             <a
-//                               href={student.github_link}
-//                               target="_blank"
-//                               rel="noopener noreferrer"
-//                               className="text-blue-600 hover:underline"
-//                             >
-//                               GitHub
-//                             </a>
-//                           ) : (
-//                             "N/A"
-//                           )}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm max-w-[120px]">
-//                           {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-//                             <div className="space-y-1">
-//                               {student.skills
-//                                 .filter((skill) => skill.skill_url)
-//                                 .map((skill, index) => (
-//                                   <a
-//                                     key={index}
-//                                     href={skill.skill_url}
-//                                     target="_blank"
-//                                     rel="noopener noreferrer"
-//                                     className="text-blue-600 hover:underline block truncate"
-//                                   >
-//                                     P{index + 1}
-//                                   </a>
-//                                 ))}
-//                             </div>
-//                           ) : (
-//                             "No projects"
-//                           )}
-//                         </td>
-//                         <td className="px-3 py-2 text-sm text-gray-600 max-w-[150px]">
-//                           {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-//                             <div className="space-y-1">
-//                               {student.skills
-//                                 .filter((skill) => skill.skill_description)
-//                                 .map((skill, index) => (
-//                                   <p
-//                                     key={index}
-//                                     className="text-xs truncate"
-//                                     title={skill.skill_description}
-//                                   >
-//                                     {skill.skill_description}
-//                                   </p>
-//                                 ))}
-//                             </div>
-//                           ) : (
-//                             "No descriptions"
-//                           )}
-//                         </td>
-//                       </tr>
-//                     ))
-//                   ) : (
-//                     <tr>
-//                       <td colSpan="10" className="px-3 py-2 text-center text-gray-500">
-//                         No student data available
-//                       </td>
-//                     </tr>
-//                   )}
-//                 </tbody>
-//               </table>
-//             </div>
-//           </PerfectScrollbar>
-//         </div>
-//       </div>
-
-//       {/* Modal for Enlarged Profile Photo */}
-//       {selectedPhoto && (
-//         <div
-//           className="fixed inset-0 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50"
-//           onClick={handleClosePhotoModal}
-//         >
-//           <div
-//             className="relative bg-white rounded-lg shadow-lg p-8 max-w-md w-full"
-//             onClick={(e) => e.stopPropagation()}
-//           >
-//             <button
-//               onClick={handleClosePhotoModal}
-//               className="absolute top-3 right-3 p-1 text-gray-700 hover:text-gray-900"
-//             >
-//               <X size={28} />
-//             </button>
-//             <img
-//               src={selectedPhoto}
-//               alt="Enlarged Profile"
-//               className="w-80 h-80 rounded-full object-cover mx-auto"
-//               onError={(e) => {
-//                 e.target.src = defaultProfile;
-//               }}
-//             />
-//           </div>
-//         </div>
-//       )}
-
-//       {/* Modal for PDF Viewer */}
-//       {selectedPdf && (
-//         <div
-//           className="fixed inset-0 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50"
-//           onClick={handleClosePdfModal}
-//         >
-//           <div
-//             className="relative bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full"
-//             onClick={(e) => e.stopPropagation()}
-//           >
-//             <button
-//               onClick={handleClosePdfModal}
-//               className="absolute top-3 right-3 p-1 text-gray-700 hover:text-gray-900"
-//             >
-//               <X size={28} />
-//             </button>
-//             <h2 className="text-xl font-semibold text-gray-800 mb-4">Resume Viewer</h2>
-//             {pdfError ? (
-//               <div className="bg-red-100 text-red-700 p-4 rounded-lg text-center">
-//                 {pdfError}
-//                 <div className="mt-2">
-//                   <a
-//                     href={selectedPdf}
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     className="text-blue-600 hover:underline"
-//                   >
-//                     Try opening in a new tab
-//                   </a>
-//                 </div>
-//               </div>
-//             ) : (
-//               <div className="h-[70vh] border border-gray-200 rounded-lg overflow-auto">
-//                 <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-//                   <Viewer
-//                     fileUrl={selectedPdf}
-//                     plugins={[defaultLayoutPluginInstance]}
-//                     onDocumentLoadFail={handlePdfError}
-//                     onDocumentLoadError={handlePdfError}
-//                   />
-//                 </Worker>
-//               </div>
-//             )}
-//             <div className="mt-6 flex justify-center gap-4">
-//               <a
-//                 href={selectedPdf}
-//                 download
-//                 className="inline-flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-//               >
-//                 <svg
-//                   className="w-5 h-5 mr-2"
-//                   fill="none"
-//                   stroke="currentColor"
-//                   viewBox="0 0 24 24"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                 >
-//                   <path
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                     strokeWidth="2"
-//                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-//                   ></path>
-//                 </svg>
-//                 Download PDF
-//               </a>
-//               <button
-//                 onClick={handleClosePdfModal}
-//                 className="inline-flex items-center bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-//               >
-//                 Close
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-// export default StudentsData;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import defaultProfile from "../../Assets/default_profile.jpg"; // Adjust path as needed
+import defaultProfile from "../../Assets/default_profile.jpg";
 import { X } from "lucide-react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
@@ -385,14 +9,29 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "react-perfect-scrollbar/dist/css/styles.css";
 
+
 function StudentsData() {
   const [studentData, setStudentData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [selectedPdf, setSelectedPdf] = useState(null);
-  const [pdfError, setPdfError] = useState("");
 
+
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
+
+
+  const [colleges, setColleges] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [skills, setSkills] = useState([]);
+
+
+  const [selectedCollege, setSelectedCollege] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
+
+
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -400,6 +39,24 @@ function StudentsData() {
         const res = await axios.get("http://localhost:5000/admin/student-details");
         if (res.data.status && Array.isArray(res.data.result)) {
           setStudentData(res.data.result);
+          setFilteredData(res.data.result);
+
+
+          const uniqueColleges = [...new Set(res.data.result.map((s) => s.college_name).filter(Boolean))];
+          const uniqueDepartments = [...new Set(res.data.result.map((s) => s.department).filter(Boolean))];
+
+
+          const skillSet = new Set();
+          res.data.result.forEach((student) => {
+            student.skills?.forEach((skill) => {
+              if (skill.skill_name) skillSet.add(skill.skill_name);
+            });
+          });
+
+
+          setColleges(uniqueColleges);
+          setDepartments(uniqueDepartments);
+          setSkills(Array.from(skillSet));
         } else {
           setError(res.data.msg || "Failed to fetch student data");
         }
@@ -411,328 +68,226 @@ function StudentsData() {
     fetchData();
   }, []);
 
-  const handlePhotoClick = (photoUrl) => {
-    setSelectedPhoto(photoUrl || defaultProfile);
+
+  useEffect(() => {
+    let filtered = studentData;
+
+
+    if (selectedCollege) {
+      filtered = filtered.filter((s) => s.college_name === selectedCollege);
+    }
+
+
+    if (selectedDepartment) {
+      filtered = filtered.filter((s) => s.department === selectedDepartment);
+    }
+
+
+    if (selectedSkill) {
+      filtered = filtered.filter((s) =>
+        s.skills?.some((skill) => skill.skill_name === selectedSkill)
+      );
+    }
+
+
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (s) =>
+          s.name?.toLowerCase().includes(query) ||
+          s.roll_no?.toLowerCase().includes(query)
+      );
+    }
+
+
+    setFilteredData(filtered);
+  }, [selectedCollege, selectedDepartment, selectedSkill, searchQuery, studentData]);
+
+
+  const openModal = (student) => {
+    setSelectedStudent(student);
   };
 
-  const handleClosePhotoModal = () => {
-    setSelectedPhoto(null);
+
+  const closeModal = () => {
+    setSelectedStudent(null);
   };
 
-  const handleViewResume = (resumeFile) => {
-    console.log("resume_file:", resumeFile);
-    const pdfUrl = `http://localhost:5000/images/${resumeFile}`;
-    console.log("PDF URL:", pdfUrl);
-    setSelectedPdf(pdfUrl);
-    setPdfError("");
-  };
-
-  const handleClosePdfModal = () => {
-    setSelectedPdf(null);
-    setPdfError("");
-  };
-
-  const handlePdfError = (error) => {
-    setPdfError("Failed to load PDF. The file may be missing or inaccessible.");
-    console.error("PDF load error:", error);
-  };
 
   return (
     <div className="bg-gray-50">
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto p-4">
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+      <div className="max-w-7xl mx-auto p-4">
+        {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-6">{error}</div>}
+
+
+        {/* Search and Filters */}
+        <div className="flex flex-wrap gap-4 mb-4 items-center">
+          <input
+            type="text"
+            placeholder="Search by Name or Roll Number"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="p-2 border rounded w-full md:w-1/3 w-25"
+          />
+          <select
+            className="p-2 border rounded w-25"
+            value={selectedCollege}
+            onChange={(e) => {
+              setSelectedCollege(e.target.value);
+              setSelectedDepartment("");
+            }}>
+            <option value="">Filter by College</option>
+            {colleges.map((college, index) => (
+              <option key={index} value={college}>
+                {college}
+              </option>
+            ))}
+          </select>
+          <select
+            className="p-2 border rounded"
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}>
+            <option value="">Filter by Department</option>
+            {[...new Set(studentData
+              .filter((s) => (selectedCollege ? s.college_name === selectedCollege : true))
+              .map((s) => s.department)
+            )].map((dept, index) => (
+              <option key={index} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+          <select
+            className="p-2 border rounded"
+            value={selectedSkill}
+            onChange={(e) => setSelectedSkill(e.target.value)}
+          >
+            <option value="">Filter by Skill</option>
+            {skills.map((skill, index) => (
+              <option key={index} value={skill}>
+                {skill}
+              </option>
+            ))}
+          </select>
+        </div>
+
+
+        {/* Table */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
           <PerfectScrollbar>
-            <div className="max-h-[calc(100vh-65px)] overflow-y-auto">
-              <table className="w-full table-auto border-collapse">
-                <thead className="bg-gray-100 sticky top-0 z-10">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Photo
+            <table className="w-full table-auto border-collapse">
+              <thead className="bg-gray-100 sticky top-0 z-10">
+                <tr>
+                  {["Photo", "Roll Number", "Name", "Department", "College", "Skills"].map((header) => (
+                    <th
+                      key={header}
+                      className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+                    >
+                      {header}
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Roll Number
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      College
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Year
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Resume
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Skills
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      GitHub
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Projects
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Skill Desc
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {studentData.length > 0 ? (
-                    studentData.map((student) => (
-                      <tr
-                        key={student.student_id || Math.random()}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <img
-                            src={
-                              student.profile_photo
-                                ? `http://localhost:5000/images/${student.profile_photo}`
-                                : defaultProfile
-                            }
-                            alt="Profile"
-                            className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 cursor-pointer"
-                            onError={(e) => {
-                              e.target.src = defaultProfile;
-                            }}
-                            onClick={() =>
-                              handlePhotoClick(
-                                student.profile_photo
-                                  ? `http://localhost:5000/images/${student.profile_photo}`
-                                  : defaultProfile
-                              )
-                            }
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-                          {student.roll_no || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-                          {student.name || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[150px]">
-                          {student.email || "N/A"}
-                        </td>
-                        <td className="px-2 py-2 text-sm text-gray-600 truncate max-w-[150px]">
-                          {student.department || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-[120px]">
-                          {student.college_name || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600">
-                          {student.year || "N/A"}
-                        </td>
-                        <td className="px-3 py-2 text-sm">
-                          {student.resume_file ? (
-                            <button
-                              onClick={() => handleViewResume(student.resume_file)}
-                              className="text-blue-600 hover:underline focus:outline-none"
-                            >
-                              View
-                            </button>
-                          ) : (
-                            "N/A"
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 max-w-[120px]">
-                          {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {student.skills.map((skill, index) => (
-                                <span
-                                  key={index}
-                                  className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs"
-                                >
-                                  {skill.skill_name || "N/A"}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            "No skills"
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm">
-                          {student.github_link ? (
-                            <a
-                              href={student.github_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              GitHub
-                            </a>
-                          ) : (
-                            "N/A"
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm max-w-[120px]">
-                          {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-                            <div className="space-y-1">
-                              {student.skills
-                                .filter((skill) => skill.skill_url)
-                                .map((skill, index) => (
-                                  <a
-                                    key={index}
-                                    href={skill.skill_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline block truncate"
-                                  >
-                                    P{index + 1}
-                                  </a>
-                                ))}
-                            </div>
-                          ) : (
-                            "No projects"
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600 max-w-[150px]">
-                          {student.skills && Array.isArray(student.skills) && student.skills.length > 0 ? (
-                            <div className="space-y-1">
-                              {student.skills
-                                .filter((skill) => skill.skill_description)
-                                .map((skill, index) => (
-                                  <p
-                                    key={index}
-                                    className="text-xs truncate"
-                                    title={skill.skill_description}
-                                  >
-                                    {skill.skill_description}
-                                  </p>
-                                ))}
-                            </div>
-                          ) : (
-                            "No descriptions"
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="11" className="px-3 py-2 text-center text-gray-500">
-                        No student data available
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredData.length > 0 ? (
+                  filteredData.map((student) => (
+                    <tr key={student.student_id} className="hover:bg-gray-100 cursor-pointer" onClick={() => openModal(student)}>
+                      <td className="px-3 py-2">
+                        <img
+                          src={
+                            student.profile_photo
+                              ? `http://localhost:5000/images/${student.profile_photo}`
+                              : defaultProfile
+                          }
+                          alt="Profile"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
                       </td>
+                      <td className="px-3 py-2 text-sm">{student.roll_no || "N/A"}</td>
+                      <td className="px-3 py-2 text-sm">{student.name || "N/A"}</td>
+                      <td className="px-3 py-2 text-sm">{student.department || "N/A"}</td>
+                      <td className="px-3 py-2 text-sm">{student.college_name || "N/A"}</td>
+                      <td className="px-3 py-2 text-sm">
+                        {student.skills?.map((s, i) => (
+                          <span key={i} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs mr-1">
+                            {s.skill_name}
+                          </span>
+                        )) || "No skills"}
+                      </td>
+                     
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4 text-gray-500">
+                      No student data available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </PerfectScrollbar>
         </div>
       </div>
 
-      {/* Modal for Enlarged Profile Photo */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={handleClosePhotoModal}
-        >
-          <div
-            className="relative bg-white rounded-lg shadow-lg p-8 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={handleClosePhotoModal}
-              className="absolute top-3 right-3 p-1 text-gray-700 hover:text-gray-900"
-            >
-              <X size={28} />
-            </button>
-            <img
-              src={selectedPhoto}
-              alt="Enlarged Profile"
-              className="w-80 h-80 rounded-full object-cover mx-auto"
-              onError={(e) => {
-                e.target.src = defaultProfile;
-              }}
-            />
-          </div>
-        </div>
-      )}
 
-      {/* Modal for PDF Viewer */}
-      {selectedPdf && (
-        <div
-          className="fixed inset-0 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={handleClosePdfModal}
-        >
-          <div
-            className="relative bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={handleClosePdfModal}
-              className="absolute top-3 right-3 p-1 text-gray-700 hover:text-gray-900"
-            >
-              <X size={28} />
+      {/* Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-y-auto max-h-[90vh] relative">
+            <button onClick={closeModal} className="absolute top-2 right-2 text-gray-600 hover:text-black">
+              <X />
             </button>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Resume Viewer</h2>
-            {pdfError ? (
-              <div className="bg-red-100 text-red-700 p-4 rounded-lg text-center">
-                {pdfError}
-                <div className="mt-2">
-                  <a
-                    href={selectedPdf}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    Try opening in a new tab
-                  </a>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src={
+                    selectedStudent.profile_photo
+                      ? `http://localhost:5000/images/${selectedStudent.profile_photo}`
+                      : defaultProfile
+                  }
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover border"
+                />
+                <div>
+                  <h2 className="text-lg font-semibold">{selectedStudent.name}</h2>
+                  <p className="text-sm text-gray-600">{selectedStudent.email}</p>
                 </div>
               </div>
-            ) : (
-              <div className="h-[70vh] border border-gray-200 rounded-lg overflow-auto">
-                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                  <Viewer
-                    fileUrl={selectedPdf}
-                    plugins={[defaultLayoutPluginInstance]}
-                    onDocumentLoadFail={handlePdfError}
-                    onDocumentLoadError={handlePdfError}
-                  />
-                </Worker>
+
+
+              <p><strong>Roll No:</strong> {selectedStudent.roll_no}</p>
+              <p><strong>College:</strong> {selectedStudent.college_name}</p>
+              <p><strong>Department:</strong> {selectedStudent.department}</p>
+              <p><strong>Year:</strong> {selectedStudent.year}</p>
+<p><strong>GithubLink:</strong> {selectedStudent.year}</p>
+              <div className="mt-2">
+                <strong>Skills:</strong>
+                <div className="flex flex-wrap mt-1 gap-1">
+                  {selectedStudent.skills?.map((s, i) => (
+                    <span key={i} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                      {s.skill_name}
+                    </span>
+                  ))}
+                </div>
               </div>
-            )}
-            <div className="mt-6 flex justify-center gap-4">
-              <a
-                href={selectedPdf}
-                download
-                className="inline-flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  ></path>
-                </svg>
-                Download PDF
-              </a>
-              <button
-                onClick={handleClosePdfModal}
-                className="inline-flex items-center bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Close
-              </button>
+
+
+              <div className="mt-4">
+  <strong>Resume:</strong>
+  {selectedStudent.resume_file ? (
+    <div className="h-96 border mt-2">
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+        <Viewer
+          fileUrl={`http://localhost:5000/images/${selectedStudent.resume_file}`}
+          plugins={[defaultLayoutPluginInstance]}
+        />
+      </Worker>
+    </div>
+  ) : (
+    <div className="mt-2 text-gray-500">Not uploaded</div>
+  )}
+</div>
             </div>
           </div>
         </div>
@@ -741,4 +296,7 @@ function StudentsData() {
   );
 }
 
+
 export default StudentsData;
+
+

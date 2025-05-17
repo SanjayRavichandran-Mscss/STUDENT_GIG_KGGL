@@ -474,72 +474,6 @@ import { promisify } from "util";
 // Promisify db.query for async/await
 const dbQuery = promisify(db.query).bind(db);
 
-// Student Registration
-// const StudentRegistration = async (req, res) => {
-//   let {
-//     roll_no, // New roll_no field
-//     name,
-//     email,
-//     password,
-//     selectedCategory,
-//     selectedCollege,
-//     year,
-//     role_id,
-//   } = req.body;
-
-//   try {
-//     // Check if email already exists
-//     const checkEmailQuery = "SELECT COUNT(*) AS count FROM students WHERE email = ?";
-//     const emailResult = await dbQuery(checkEmailQuery, [email]);
-
-//     if (emailResult[0].count > 0) {
-//       return res.status(200).send("Email already exists");
-//     }
-
-//     // Validate role_id exists in role table
-//     const checkRoleQuery = "SELECT role_id FROM role WHERE role_id = ?";
-//     const roleResult = await dbQuery(checkRoleQuery, [role_id]);
-
-//     if (roleResult.length === 0) {
-//       return res.status(400).json({ status: "error", message: "Invalid role selected" });
-//     }
-
-//     // Insert student into students table
-//     const registrationSql =
-//       "INSERT INTO students(roll_no, name, email, password, degree, year, college_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-//     await dbQuery(registrationSql, [
-//       roll_no, // New roll_no
-//       name,
-//       email,
-//       password,
-//       selectedCollege, // degree (course_id)
-//       year,
-//       selectedCategory, // college_id
-//       role_id,
-//     ]);
-
-//     res.json({ status: "inserted" });
-//   } catch (error) {
-//     console.error("Error in StudentRegistration:", error);
-//     res.status(500).json({ status: "error", message: "student_catch_error" });
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const StudentRegistration = async (req, res) => {
   let {
     roll_no,
@@ -718,31 +652,175 @@ const GetSingleStudentData = async (req, res) => {
 };
 
 // Profile Updation
+// const profileUpdation = async (req, res) => {
+//   const { id, git, des, url, skill } = req.body;
+//   const file = req.file;
+
+//   try {
+//     const sqlUpdateStudent = "UPDATE students SET github_link = ? WHERE student_id = ?";
+//     await dbQuery(sqlUpdateStudent, [git, id]);
+
+//     const sqlCheckSkill = "SELECT * FROM student_skills WHERE student_id = ? AND skill_id = ?";
+//     const skillResult = await dbQuery(sqlCheckSkill, [id, skill]);
+
+//     if (skillResult.length > 0) {
+//       return res.status(400).send("Skill_already_exists_for_this_student");
+//     }
+
+//     const sqlInsertSkill =
+//       "INSERT INTO student_skills(student_id, skill_id, skill_url, skill_description) VALUES (?, ?, ?, ?)";
+//     await dbQuery(sqlInsertSkill, [id, skill, url, des]);
+
+//     res.status(200).send("Profile updated successfully");
+//   } catch (error) {
+//     console.error("Error in profileUpdation:", error);
+//     res.status(500).json({ status: "error", message: "student_catch_error" });
+//   }
+// };
+
+
+// Profile Updation - Updated to handle multiple skills
+
+
+
+
 const profileUpdation = async (req, res) => {
-  const { id, git, des, url, skill } = req.body;
+  const { id, git, linkedin, skills } = req.body;
   const file = req.file;
 
   try {
-    const sqlUpdateStudent = "UPDATE students SET github_link = ? WHERE student_id = ?";
-    await dbQuery(sqlUpdateStudent, [git, id]);
-
-    const sqlCheckSkill = "SELECT * FROM student_skills WHERE student_id = ? AND skill_id = ?";
-    const skillResult = await dbQuery(sqlCheckSkill, [id, skill]);
-
-    if (skillResult.length > 0) {
-      return res.status(400).send("Skill_already_exists_for_this_student");
+    // Validate file size if present (5MB max)
+    if (file && file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({
+        status: "error",
+        message: "File size exceeds 5MB limit",
+      });
     }
 
-    const sqlInsertSkill =
-      "INSERT INTO student_skills(student_id, skill_id, skill_url, skill_description) VALUES (?, ?, ?, ?)";
-    await dbQuery(sqlInsertSkill, [id, skill, url, des]);
+    // Update student's GitHub and LinkedIn links
+    const sqlUpdateStudent = `
+      UPDATE students 
+      SET github_link = ?, linkedin_link = ? 
+      WHERE student_id = ?`;
+    await dbQuery(sqlUpdateStudent, [git || null, linkedin || null, id]);
+
+    // Process skills if provided
+    if (skills) {
+      const parsedSkills = JSON.parse(skills);
+
+      // Check for duplicate skills before insertion
+      const existingSkills = await dbQuery(
+        "SELECT skill_id FROM student_skills WHERE student_id = ?",
+        [id]
+      );
+      const existingSkillIds = existingSkills.map((s) => s.skill_id);
+      const duplicateSkills = [];
+      const newSkills = [];
+
+      parsedSkills.forEach((skill, index) => {
+        if (existingSkillIds.includes(skill.skillId)) {
+          duplicateSkills.push({
+            skillId: skill.skillId,
+            skillName: skill.skillName,
+            originalIndex: index,
+          });
+        } else {
+          newSkills.push(skill);
+        }
+      });
+
+      // If there are duplicates, return them with partial success if some skills were added
+      if (duplicateSkills.length > 0 && newSkills.length === 0) {
+        return res.status(400).json({
+          status: "error",
+          message: "Skill_already_exists",
+          duplicateSkills,
+          partialSuccess: false,
+        });
+      }
+
+      // Process non-duplicate skills
+      for (const skill of newSkills) {
+        let skillId = skill.skillId; // Use skillId from frontend
+        const isCustom = skillId === null; // Custom skill if skillId is null
+
+        if (isCustom) {
+          // Check if custom skill already exists
+          const [existingCustomSkill] = await dbQuery(
+            "SELECT skill_id FROM skills WHERE skill_name = ?",
+            [skill.skillName]
+          );
+
+          if (existingCustomSkill) {
+            skillId = existingCustomSkill.skill_id;
+          } else {
+            // Insert new custom skill with skill_status = 1
+            const insertSkillResult = await dbQuery(
+              "INSERT INTO skills (skill_name, skill_status) VALUES (?, ?)",
+              [skill.skillName, 1] // Set skill_status to 1 for custom skills
+            );
+            skillId = insertSkillResult.insertId;
+          }
+        } else {
+          // For non-custom skills, rely on default skill_status (0)
+          // Optionally, verify the skill exists
+          const [existingSkill] = await dbQuery(
+            "SELECT skill_id FROM skills WHERE skill_id = ?",
+            [skillId]
+          );
+          if (!existingSkill) {
+            return res.status(400).json({
+              status: "error",
+              message: `Skill with ID ${skillId} does not exist`,
+            });
+          }
+        }
+
+        // Add to student_skills
+        await dbQuery(
+          "INSERT INTO student_skills (student_id, skill_id, skill_url, skill_description) VALUES (?, ?, ?, ?)",
+          [id, skillId, skill.projectUrl, skill.description]
+        );
+      }
+
+      if (duplicateSkills.length > 0) {
+        return res.json({
+          status: "partial_success",
+          message: "Some skills already exist",
+          duplicateSkills,
+          partialSuccess: true,
+        });
+      }
+    }
+
+    // Handle file upload if present
+    if (file) {
+      const filename = file.filename;
+      await dbQuery(
+        "UPDATE students SET resume_file = ? WHERE student_id = ?",
+        [filename, id]
+      );
+    }
 
     res.status(200).send("Profile updated successfully");
   } catch (error) {
     console.error("Error in profileUpdation:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
+    res.status(500).json({
+      status: "error",
+      message: "student_catch_error",
+      error: error.message,
+    });
   }
 };
+
+
+
+
+
+
+
+
+
 
 // Update User Data
 const updateUserData = async (req, res) => {
@@ -1003,6 +1081,88 @@ const Logout = async (req, res) => {
   }
 };
 
+
+const  getStudentDataAndTest = async(req,res) => {
+    const { id } = req.params;
+
+    try{
+      const query = "SELECT * FROM testresults WHERE student_id = ?"
+      const query1= "SELECT * FROM students WHERE student_id = ?"
+      const query2 = "SELECT COUNT(skill_id) AS skillCount FROM student_skills WHERE student_id = ?";
+
+      const[testResults,studentData,skillCountResult] = await Promise.all([
+        dbQuery(query,[id]),
+        dbQuery(query1,[id]),
+        dbQuery(query2,[id])
+      ])
+
+       if (studentData.length === 0) {
+          return res.status(404).json({
+            status: "error",
+            message: "Student not found",
+          });
+      }
+
+      const response = {
+      status: "success",
+      student: studentData[0], 
+      testResults: testResults, 
+      skillCount: skillCountResult[0].skillCount
+    };
+
+    return res.status(200).json(response);
+
+    }catch(error){
+      return res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve data",
+    });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+const getBidCredits = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const sql = "SELECT name, credits FROM students WHERE student_id = ?";
+    const result = await dbQuery(sql, [id]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    res.json({ name:result[0].name, bid_credits: result[0].credits });
+  } catch (error) {
+    console.error("Error in getBidCredits:", error);
+    res.status(500).json({ status: "error", message: "student_catch_error" });
+  }
+}
+
+const updateBidCredits = async (req, res) => {
+  const { id } = req.params;
+  const { bid_credits } = req.body;
+  try {
+    const sql = "UPDATE students SET credits = ? WHERE student_id = ?";
+    await dbQuery(sql, [bid_credits, id]);
+    res.json({ status: true, msg: "Credits updated successfully" });
+  } catch (error) {
+    console.error("Error in updateBidCredits:", error);
+    res.status(500).json({ status: "error", message: "student_catch_error" });
+  }
+}
+
+
+
+
 export {
   Logout,
   Verify,
@@ -1021,4 +1181,7 @@ export {
   studentOptionClick,
   restrictTo,
   adminDashboard,
+  getStudentDataAndTest,
+  getBidCredits,
+ updateBidCredits
 };

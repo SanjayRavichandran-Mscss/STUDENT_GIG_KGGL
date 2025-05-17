@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Switch from "react-switch";
 
 export default function AssignTest() {
   const [tests, setTests] = useState([]);
@@ -117,25 +118,47 @@ export default function AssignTest() {
     }
 
     try {
-      for (const studentId of studentsToAssign) {
-        await axios.post(
-          "http://localhost:5000/api/quiz/assign-test",
-          { test_id: testId, student_id: studentId },
-          { withCredentials: true }
-        );
-      }
+      await axios.post(
+        "http://localhost:5000/api/quiz/assign-test",
+        { test_id: testId, student_ids: studentsToAssign, active_status: 0 },
+        { withCredentials: true }
+      );
       setSuccess("Test assigned successfully!");
       setAssignedStudents((prev) => ({
         ...prev,
         [testId]: [
           ...(prev[testId] || []),
-          ...students.filter((s) => studentsToAssign.includes(s.student_id)),
+          ...students
+            .filter((s) => studentsToAssign.includes(s.student_id))
+            .map((s) => ({ ...s, active_status: 0 })),
         ],
       }));
       setSelectedStudents((prev) => ({ ...prev, [testId]: [] }));
     } catch (err) {
       setError(err.response?.data?.msg || "Failed to assign test.");
       console.error("Assign error:", err);
+    }
+  };
+
+  // Toggle test status for all students
+  const handleToggleStatus = async (testId, currentStatus) => {
+    try {
+      const newStatus = currentStatus ? 0 : 1;
+      await axios.post(
+        "http://localhost:5000/api/quiz/toggle-test-status",
+        { test_id: testId, active_status: newStatus },
+        { withCredentials: true }
+      );
+      setAssignedStudents((prev) => ({
+        ...prev,
+        [testId]: prev[testId]?.map((student) => ({
+          ...student,
+          active_status: newStatus,
+        })),
+      }));
+    } catch (err) {
+      setError(err.response?.data?.msg || "Failed to update test status.");
+      console.error("Toggle error:", err);
     }
   };
 
@@ -168,7 +191,7 @@ export default function AssignTest() {
   };
 
   return (
-    <div className="bg-gray-100 p-6">
+    <div className="max-w-7xl mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Assign Tests</h2>
 
       {isLoading && (
@@ -181,60 +204,141 @@ export default function AssignTest() {
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{success}</div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {tests.map((test) => {
           const skillQuestions = availableQuestions.find((q) => q.skill_id === test.skill_id);
           const totalAvailable = skillQuestions
             ? skillQuestions.easy_count + skillQuestions.medium_count + skillQuestions.hard_count
             : 0;
           const availabilityMessage = getAvailabilityMessage(test);
+          const isActive = assignedStudents[test.test_id]?.length > 0 && assignedStudents[test.test_id][0]?.active_status === 1;
 
           return (
-            <div key={test.test_id} className="bg-white rounded-lg shadow-lg p-6">
+            <div key={test.test_id} className="bg-white rounded-lg shadow-lg p-6 relative">
+              {/* Toggle Button */}
+              <div className="absolute top-4 right-4">
+                <Switch
+                  onChange={() => handleToggleStatus(test.test_id, isActive)}
+                  checked={isActive}
+                  onColor="#2563eb" // Tailwind blue-600
+                  offColor="#e5e7eb" // Tailwind gray-200
+                  handleDiameter={20}
+                  uncheckedIcon={false}
+                  checkedIcon={false}
+                  boxShadow="0px 1px 5px rgba(0, 0, 0, 0.2)"
+                  activeBoxShadow="0px 1px 5px rgba(0, 0, 0, 0.4)"
+                  height={24}
+                  width={44}
+                />
+              </div>
+
               <h3 className="text-xl font-semibold text-gray-800 mb-2">{test.test_name}</h3>
               <p className="text-gray-600 mb-4">{test.test_description}</p>
-              <div className="space-y-2 text-sm text-gray-700">
-                <p><strong>Skill:</strong> {test.skill_name}</p>
-                <p><strong>Difficulty:</strong> {test.level_name}</p>
-                <p><strong>Total Questions:</strong> {test.total_no_of_questions}</p>
-                <p><strong>Easy Questions:</strong> {test.easy_level_question}</p>
-                {availabilityMessage.includes("easy") && (
-                  <p className="text-red-600 text-xs">
-                    {availabilityMessage
-                      .split(", ")
-                      .find((msg) => msg.includes("easy"))}
-                  </p>
-                )}
-                <p><strong>Medium Questions:</strong> {test.medium_level_question}</p>
-                {availabilityMessage.includes("medium") && (
-                  <p className="text-red-600 text-xs">
-                    {availabilityMessage
-                      .split(", ")
-                      .find((msg) => msg.includes("medium"))}
-                  </p>
-                )}
-                <p><strong>Hard Questions:</strong> {test.hard_level_question}</p>
-                {availabilityMessage.includes("hard") && (
-                  <p className="text-red-600 text-xs">
-                    {availabilityMessage
-                      .split(", ")
-                      .find((msg) => msg.includes("hard"))}
-                  </p>
-                )}
-                <p><strong>Easy Pass Mark:</strong> {test.easy_pass_mark}</p>
-                <p><strong>Medium Pass Mark:</strong> {test.medium_pass_mark}</p>
-                <p><strong>Hard Pass Mark:</strong> {test.hard_pass_mark}</p>
-                <p><strong>Available Questions:</strong></p>
-                <p className="pl-4">
-                  Easy: {skillQuestions?.easy_count || 0}, Medium: {skillQuestions?.medium_count || 0}, Hard: {skillQuestions?.hard_count || 0}, Total: {totalAvailable}
-                </p>
-                <p><strong>Created At:</strong> {formatDate(test.created_at)}</p>
-              </div>
+              <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse rounded-lg overflow-hidden shadow-sm mb-4">
+                <tbody className="divide-y divide-gray-200">
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Skill:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.skill_name}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Difficulty:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.level_name}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Total Questions:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.total_no_of_questions}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Easy Questions:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.easy_level_question}
+                      {availabilityMessage.includes("easy") && (
+                        <span className="block text-red-600 text-xs mt-1">
+                          {availabilityMessage.split(", ").find(msg => msg.includes("easy"))}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Medium Questions:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.medium_level_question}
+                      {availabilityMessage.includes("medium") && (
+                        <span className="block text-red-600 text-xs mt-1">
+                          {availabilityMessage.split(", ").find(msg => msg.includes("medium"))}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Hard Questions:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {test.hard_level_question}
+                      {availabilityMessage.includes("hard") && (
+                        <span className="block text-red-600 text-xs mt-1">
+                          {availabilityMessage.split(", ").find(msg => msg.includes("hard"))}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Pass Marks:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      Easy: {test.easy_pass_mark}, Medium: {test.medium_pass_mark}, Hard: {test.hard_pass_mark}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Available Questions:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {skillQuestions ? (
+                        <>
+                          Easy: {skillQuestions.easy_count}, Medium: {skillQuestions.medium_count}, Hard: {skillQuestions.hard_count}
+                          <br />
+                          Total: {skillQuestions.easy_count + skillQuestions.medium_count + skillQuestions.hard_count}
+                        </>
+                      ) : "N/A"}
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
+                      <strong>Created At:</strong>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
+                      {formatDate(test.created_at)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+</div>
+
 
               <div className="mt-4">
                 <label className="block text-gray-700 font-medium mb-1">Select Students</label>
                 <div className="flex items-center gap-2">
-                  <select
+                  {/* <select
                     value={currentStudent[test.test_id] || ""}
                     onChange={(e) => handleStudentChange(test.test_id, e.target.value)}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -255,8 +359,8 @@ export default function AssignTest() {
                           {student.name}
                         </option>
                       ))}
-                  </select>
-                  <button
+                  </select> */}
+                  {/* <button
                     onClick={() => handleAddStudent(test.test_id)}
                     className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
                     disabled={!currentStudent[test.test_id]}
@@ -264,11 +368,11 @@ export default function AssignTest() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
-              {(selectedStudents[test.test_id]?.length > 0 || assignedStudents[test.test_id]?.length > 0) && (
+              {/* {(selectedStudents[test.test_id]?.length > 0 || assignedStudents[test.test_id]?.length > 0) && (
                 <div className="mt-4">
                   <p className="text-gray-700 font-medium">Selected/Assigned Students:</p>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -294,16 +398,16 @@ export default function AssignTest() {
                     {assignedStudents[test.test_id]?.map((student) => (
                       <div
                         key={student.student_id}
-                        className="bg-green-100 text-green-700 px-3 py-1 rounded-full"
+                        className="bg-green-100 text-green-700 px-3 py-1 rounded-full flex items-center"
                       >
                         {student.name} (Assigned)
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
 
-              <button
+              {/* <button
                 onClick={() => handleAssignTest(test.test_id)}
                 disabled={!(selectedStudents[test.test_id]?.length > 0) || availabilityMessage.length > 0}
                 className={`w-full mt-4 py-3 px-4 rounded-lg text-white font-medium transition duration-200 ${
@@ -313,7 +417,7 @@ export default function AssignTest() {
                 }`}
               >
                 {assignedStudents[test.test_id]?.length > 0 ? "Assign More" : "Assign Test"}
-              </button>
+              </button> */}
             </div>
           );
         })}

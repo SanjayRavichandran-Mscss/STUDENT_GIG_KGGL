@@ -529,7 +529,7 @@ export function Registration() {
       const res = await axios.post("http://localhost:5000/stu/registration", payload);
       if (res.data.status === "inserted") {
         alert("Data registered successfully!");
-        navigate("/");
+        navigate("/login");
       } else if (res.data === "Email already exists") {
         setApiError("Email ID is already registered.");
       } else if (res.data === "Roll number already exists") {

@@ -17,9 +17,9 @@ function HomePage() {
       
       {/* Main Content Sections */}
       <main className="space-y-20 md:space-y-32">
-        <Procedure />
+        {/* <Procedure />
         <Ourstory />
-        <Concept />
+        <Concept /> */}
       </main>
       
       {/* Footer */}

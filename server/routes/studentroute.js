@@ -21,7 +21,9 @@ import {
   getStudentDataAndTest,
   getBidCredits,
   updateBidCredits,
-  checkDuplicateLinks, // Import new controller
+  checkDuplicateLinks,
+  VerifyPasskey,
+  CheckEmailExists,
 } from "../controllers/studentcontroller.js";
 import upload from "../middleware/multer.js";
 
@@ -54,7 +56,7 @@ studentRouter.route("/getdata/:student_id").get(GetSingleStudentData);
 // File upload route for profile updation
 studentRouter.route("/upload").post(
   (req, res, next) => {
-    req.multerFieldName = "file"; // Expect field name "file"
+    req.multerFieldName = "file";
     handleMulterErrors(req, res, next);
   },
   profileUpdation
@@ -63,7 +65,7 @@ studentRouter.route("/upload").post(
 // File upload route for user data update
 studentRouter.route("/update").put(
   (req, res, next) => {
-    req.multerFieldName = "file"; // Expect field name "file"
+    req.multerFieldName = "file";
     handleMulterErrors(req, res, next);
   },
   updateUserData
@@ -75,9 +77,11 @@ studentRouter.route("/check-links").post(checkDuplicateLinks);
 // Project Details
 studentRouter.route("/prodeatil/:id").get(StudentProjectDetails);
 
-// Forgot Password
+// Forgot Password and Reset
+studentRouter.route("/check-email").post(CheckEmailExists);
 studentRouter.route("/forgot").post(ForgotPassword);
-studentRouter.route("/reset/:token").post(ResetPassword);
+studentRouter.route("/verify-passkey").post(VerifyPasskey);
+studentRouter.route("/reset").post(ResetPassword);
 
 // Get Student Skill
 studentRouter.route("/getSkill/:id").get(getStudentSkills);

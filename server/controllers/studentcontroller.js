@@ -7,6 +7,11 @@ import { promisify } from "util";
 // Promisify db.query for async/await
 const dbQuery = promisify(db.query).bind(db);
 
+// Generate 8-digit passkey
+const generatePasskey = () => {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+};
+
 const StudentRegistration = async (req, res) => {
   let {
     roll_no,
@@ -62,10 +67,10 @@ const StudentRegistration = async (req, res) => {
       email,
       password,
       mobile_number,
-      selectedCollege, // degree (course_id)
+      selectedCollege,
       year,
       semesterInt,
-      selectedCategory, // college_id
+      selectedCategory,
     ]);
 
     res.json({ status: "inserted" });
@@ -75,7 +80,6 @@ const StudentRegistration = async (req, res) => {
   }
 };
 
-// Student Login
 const StudentLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -84,7 +88,6 @@ const StudentLogin = async (req, res) => {
   }
 
   try {
-    // Check if JWT_SECRET is defined
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not defined in environment variables");
     }
@@ -97,7 +100,7 @@ const StudentLogin = async (req, res) => {
     }
 
     const user = result[0];
-    const isMatch = password === user.password; // Compare plain text passwords
+    const isMatch = password === user.password;
 
     if (!isMatch) {
       return res.json({ status: "invalid_user", msg: "Please check your password" });
@@ -107,11 +110,11 @@ const StudentLogin = async (req, res) => {
       expiresIn: "1d",
     });
 
-    res.cookie("accessToken", token, { 
-      httpOnly: true, 
+    res.cookie("accessToken", token, {
+      httpOnly: true,
       sameSite: "strict",
-      secure: process.env.NODE_ENV === "production", // Secure in production
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.json({
       status: "user",
@@ -125,7 +128,6 @@ const StudentLogin = async (req, res) => {
   }
 };
 
-// Role-Based Authentication Middleware
 const restrictTo = (roles) => {
   return async (req, res, next) => {
     try {
@@ -159,12 +161,10 @@ const restrictTo = (roles) => {
   };
 };
 
-// Admin Dashboard (Example Protected Route)
 const adminDashboard = async (req, res) => {
   res.json({ message: "Welcome to Admin Dashboard", user: req.user });
 };
 
-// Get Single Student Data
 const GetSingleStudentData = async (req, res) => {
   const { student_id } = req.params;
 
@@ -178,12 +178,10 @@ const GetSingleStudentData = async (req, res) => {
   }
 };
 
-// Check for duplicate GitHub or LinkedIn links
 const checkDuplicateLinks = async (req, res) => {
   const { github_link, linkedin_link, student_id } = req.body;
 
   try {
-    // Query to check for existing github_link or linkedin_link, excluding the current student
     const query = `
       SELECT github_link, linkedin_link
       FROM students
@@ -196,7 +194,6 @@ const checkDuplicateLinks = async (req, res) => {
       linkedin: false,
     };
 
-    // Check if any records match
     result.forEach((row) => {
       if (row.github_link === github_link && github_link) {
         duplicates.github = true;
@@ -216,13 +213,11 @@ const checkDuplicateLinks = async (req, res) => {
   }
 };
 
-// Profile Updation
 const profileUpdation = async (req, res) => {
-  const { id, git, linkedin, skills, name } = req.body; // Added name
+  const { id, git, linkedin, skills, name } = req.body;
   const file = req.file;
 
   try {
-    // Validate file size if present (5MB max)
     if (file && file.size > 5 * 1024 * 1024) {
       return res.status(400).json({
         status: "error",
@@ -230,7 +225,6 @@ const profileUpdation = async (req, res) => {
       });
     }
 
-    // Check for duplicate github_link or linkedin_link
     if (git || linkedin) {
       const query = `
         SELECT github_link, linkedin_link
@@ -262,18 +256,15 @@ const profileUpdation = async (req, res) => {
       }
     }
 
-    // Update student's GitHub, LinkedIn links, and name
     const sqlUpdateStudent = `
       UPDATE students 
       SET github_link = ?, linkedin_link = ?, name = ?
       WHERE student_id = ?`;
     await dbQuery(sqlUpdateStudent, [git || null, linkedin || null, name || null, id]);
 
-    // Process skills if provided
     if (skills) {
       const parsedSkills = JSON.parse(skills);
 
-      // Check for duplicate skills before insertion
       const existingSkills = await dbQuery(
         "SELECT skill_id FROM student_skills WHERE student_id = ?",
         [id]
@@ -294,7 +285,6 @@ const profileUpdation = async (req, res) => {
         }
       });
 
-      // If there are duplicates and no new skills, return error
       if (duplicateSkills.length > 0 && newSkills.length === 0) {
         return res.status(400).json({
           status: "error",
@@ -304,13 +294,11 @@ const profileUpdation = async (req, res) => {
         });
       }
 
-      // Process non-duplicate skills
       for (const skill of newSkills) {
-        let skillId = skill.skillId; // Use skillId from frontend
-        const isCustom = skillId === null; // Custom skill if skillId is null
+        let skillId = skill.skillId;
+        const isCustom = skillId === null;
 
         if (isCustom) {
-          // Check if custom skill already exists
           const [existingCustomSkill] = await dbQuery(
             "SELECT skill_id FROM skills WHERE skill_name = ?",
             [skill.skillName]
@@ -319,15 +307,13 @@ const profileUpdation = async (req, res) => {
           if (existingCustomSkill) {
             skillId = existingCustomSkill.skill_id;
           } else {
-            // Insert new custom skill with skill_status = 1
             const insertSkillResult = await dbQuery(
               "INSERT INTO skills (skill_name, skill_status) VALUES (?, ?)",
-              [skill.skillName, 1] // Set skill_status to 1 for custom skills
+              [skill.skillName, 1]
             );
             skillId = insertSkillResult.insertId;
           }
         } else {
-          // Verify the skill exists
           const [existingSkill] = await dbQuery(
             "SELECT skill_id FROM skills WHERE skill_id = ?",
             [skillId]
@@ -340,7 +326,6 @@ const profileUpdation = async (req, res) => {
           }
         }
 
-        // Add to student_skills
         await dbQuery(
           "INSERT INTO student_skills (student_id, skill_id, skill_url, skill_description) VALUES (?, ?, ?, ?)",
           [id, skillId, skill.projectUrl, skill.description]
@@ -357,7 +342,6 @@ const profileUpdation = async (req, res) => {
       }
     }
 
-    // Handle file upload if present
     if (file) {
       const filename = file.filename;
       await dbQuery(
@@ -377,7 +361,6 @@ const profileUpdation = async (req, res) => {
   }
 };
 
-// Update User Data
 const updateUserData = async (req, res) => {
   const { Name, Email, Password, Degree, Year, coll, id } = req.body;
   let Filename = null;
@@ -407,7 +390,6 @@ const updateUserData = async (req, res) => {
   }
 };
 
-// Get Single Profile
 const getSingleProfile = async (req, res) => {
   const { id } = req.params;
 
@@ -421,7 +403,6 @@ const getSingleProfile = async (req, res) => {
   }
 };
 
-// Get Student Skills
 const getStudentSkills = async (req, res) => {
   const { id } = req.params;
 
@@ -439,7 +420,28 @@ const getStudentSkills = async (req, res) => {
   }
 };
 
-// Forgot Password
+const CheckEmailExists = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ status: "error", message: "Email is required" });
+    }
+
+    const sql = `SELECT COUNT(*) AS count FROM students WHERE email = ?`;
+    const result = await dbQuery(sql, [email]);
+
+    if (result[0].count > 0) {
+      return res.json({ status: "success", exists: true });
+    } else {
+      return res.json({ status: "success", exists: false });
+    }
+  } catch (error) {
+    console.error("Error in CheckEmailExists:", error);
+    res.status(500).json({ status: "error", message: "server_error" });
+  }
+};
+
 const ForgotPassword = async (req, res) => {
   const { Email } = req.body;
 
@@ -451,25 +453,64 @@ const ForgotPassword = async (req, res) => {
       return res.status(404).json({ status: "error", message: "User not found" });
     }
 
-    const id = result[0].student_id;
-    const token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "5m" });
+    const passkey = generatePasskey();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    // Store passkey in password_reset_codes table
+    await dbQuery(
+      `INSERT INTO password_reset_codes (email, passkey, expires_at) 
+       VALUES (?, ?, ?) 
+       ON DUPLICATE KEY UPDATE passkey = ?, expires_at = ?, used = FALSE`,
+      [Email, passkey, expiresAt, passkey, expiresAt]
+    );
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "sivaranji5670@gmail.com",
-        pass: "zicd vrfo zxbs jsfb",
+        user: "sanjayravichandran006@gmail.com",
+        pass: "lpzn amam wlgw kwdl",
       },
     });
 
-    const text = `http://localhost:3000/reset/${token}`;
     const mailOptions = {
-      from: "sivaranji5670@gmail.com",
+      from: '"KGGL Gig" <sanjayravichandran006@gmail.com>',
       to: Email,
-      subject: "Regarding Reset Password",
-      html: `<h1>Reset Password Link</h1>
-             <p>Password reset refers to the process of changing or recovering a forgotten password for a user account in an organization's system</p>
-             <h2>${text}</h2>`,
+      subject: "Your Password Reset Code",
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Reset Code</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+          <table role="presentation" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <tr>
+              <td style="padding: 40px; text-align: center;">
+                <h1 style="color: #1a73e8; margin: 0 0 20px; font-size: 24px;">KGGL Gig</h1>
+                <h2 style="color: #333; margin: 0 0 10px; font-size: 20px;">Password Reset Code</h2>
+                <p style="color: #555; margin: 0 0 20px; font-size: 16px; line-height: 1.5;">
+                  You have requested to reset your password. Please use the following 8-digit code to proceed with your password reset. This code is valid for 10 minutes.
+                </p>
+                <div style="background-color: #e8f0fe; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                  <h3 style="color: #1a73e8; margin: 0; font-size: 24px; letter-spacing: 2px;">${passkey}</h3>
+                </div>
+                <p style="color: #555; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">
+                  If you did not request a password reset, please ignore this email or contact our support team.
+                </p>
+                <a href="http://localhost:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
+                  Reset Password
+                </a>
+                <p style="color: #999; margin: 20px 0 0; font-size: 12px;">
+                  © ${new Date().getFullYear()} KGGL Gig. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -480,17 +521,54 @@ const ForgotPassword = async (req, res) => {
   }
 };
 
-// Reset Password
-const ResetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { Password } = req.body;
+const VerifyPasskey = async (req, res) => {
+  const { email, passkey } = req.body;
 
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = verified.id;
+    const sql = `
+      SELECT * FROM password_reset_codes 
+      WHERE email = ? AND passkey = ? AND used = FALSE AND expires_at > NOW()`;
+    const result = await dbQuery(sql, [email, passkey]);
 
-    const sql = `UPDATE students SET password = ? WHERE student_id = ?`;
-    await dbQuery(sql, [Password, userId]); // Store password as plain text
+    if (result.length === 0) {
+      return res.status(400).json({ status: "error", message: "Invalid or expired passkey" });
+    }
+
+    res.json({ status: "success", message: "Passkey verified" });
+  } catch (error) {
+    console.error("Error in VerifyPasskey:", error);
+    res.status(500).json({ status: "error", message: "server_error" });
+  }
+};
+
+const ResetPassword = async (req, res) => {
+  const { email, passkey, password } = req.body;
+
+  try {
+    // Verify passkey
+    const sqlVerify = `
+      SELECT * FROM password_reset_codes 
+      WHERE email = ? AND passkey = ? AND used = FALSE AND expires_at > NOW()`;
+    const verifyResult = await dbQuery(sqlVerify, [email, passkey]);
+
+    if (verifyResult.length === 0) {
+      return res.status(400).json({ status: "error", message: "Invalid or expired passkey" });
+    }
+
+    // Validate password
+    if (!password || password.length < 8) {
+      return res.status(400).json({ status: "error", message: "Password must be at least 8 characters long" });
+    }
+
+    // Update password
+    const sqlUpdate = `UPDATE students SET password = ? WHERE email = ?`;
+    await dbQuery(sqlUpdate, [password, email]);
+
+    // Mark passkey as used
+    await dbQuery(
+      `UPDATE password_reset_codes SET used = TRUE WHERE email = ? AND passkey = ?`,
+      [email, passkey]
+    );
 
     res.send("password_updated");
   } catch (error) {
@@ -499,7 +577,6 @@ const ResetPassword = async (req, res) => {
   }
 };
 
-// Student Project Details
 const StudentProjectDetails = async (req, res) => {
   const { id } = req.params;
 
@@ -528,7 +605,6 @@ const StudentProjectDetails = async (req, res) => {
   }
 };
 
-// Quiz Results
 const QuizzResults = async (req, res) => {
   try {
     const { student_name, totalScore, quiz_attempts, questions, student_id } = req.body;
@@ -575,7 +651,6 @@ const QuizzResults = async (req, res) => {
   }
 };
 
-// Student Difficulty Questions
 const studentDifficulty = async (req, res) => {
   const level = req.query.level;
 
@@ -591,7 +666,6 @@ const studentDifficulty = async (req, res) => {
   }
 };
 
-// Student Option Click
 const studentOptionClick = async (req, res) => {
   try {
     const { questionId, selectedOption } = req.body;
@@ -614,20 +688,17 @@ const studentOptionClick = async (req, res) => {
   }
 };
 
-// Verify Authentication
 const Verify = async (req, res) => {
   res.json({ status: true, msg: "authorized" });
 };
 
-// Logout
 const Logout = async (req, res) => {
   try {
-    // Clear the accessToken cookie
     res.cookie("accessToken", "", {
       httpOnly: true,
       sameSite: "strict",
-      secure: process.env.NODE_ENV === "production", // Secure in production
-      expires: new Date(0), // Expire immediately
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(0),
     });
     res.json({ status: true, msg: "logout" });
   } catch (error) {
@@ -725,5 +796,7 @@ export {
   getStudentDataAndTest,
   getBidCredits,
   updateBidCredits,
-  checkDuplicateLinks, // Added new export
+  checkDuplicateLinks,
+  VerifyPasskey,
+  CheckEmailExists,
 };

@@ -21,12 +21,15 @@ import Dash, {
   AddQuizzesWithAI,
   AssigningQuizz,
   TestCreationComponent,
+  AssignTestComponent,
   Addskillpage,
+  Scorearea,
+  AddBulkQuestionsComponent,
 } from './components/Dashboard/admin_dashboard/Dash';
-import { AssignTestComponent } from './components/Dashboard/admin_dashboard/Dash';
 import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
 import ResetPassword from './components/Dashboard/Password/ResetPassword';
 import HomePage from './components/LandingPage/HomePage';
+import BitConfirm from './components/Dashboard/admin_dashboard/BitConfirm';
 
 function App() {
   return (
@@ -58,10 +61,15 @@ function App() {
         <Route path="/assignquiz/:id" element={<AssigningQuizz />} />
         <Route path="/create-test/:id" element={<TestCreationComponent />} />
         <Route path="/assign-test/:id" element={<AssignTestComponent />} />
+        <Route path="/bulk-questions/:id" element={<AddBulkQuestionsComponent />} />
+        {/* BitConfirm Route */}
+        <Route path="/bitconfirm/:id" element={<DashBit />} />
         {/* Forgot Password */}
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/reset/:token" element={<ResetPassword />} />
         <Route path="/addskill" element={<Addskillpage />} />
+        {/* Score Area */}
+        <Route path="/studentscore" element={<Scorearea />} />
         {/* Catch-all route for unmatched paths */}
         <Route path="*" element={<div>404 - Page Not Found</div>} />
       </Routes>

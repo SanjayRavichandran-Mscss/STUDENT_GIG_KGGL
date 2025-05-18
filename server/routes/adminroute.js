@@ -153,7 +153,10 @@ import {
   studentDetails,
   testAssign,
   checkBidStatus,
-  declineBitting, // Add this import
+  declineBitting,
+  getAllStudentAndTestData, // Add this import
+  testsByStudentSkillsCount,
+  allStudentsTestsBySkillsCount
 } from "../controllers/admincontroller.js";
 import { body } from "express-validator";
 
@@ -171,7 +174,8 @@ adminRouter.route("/getallprojects").get(getAllProjects);
 adminRouter.route("/getbit").get(getBitInfo);
 adminRouter.route("/bittedDetail/:id").get(bittedInfo);
 adminRouter.route("/accept/:stuid/:proid").post(acceptBitting);
-adminRouter.route("/decline/:stuid/:proid").post(declineBitting); // Add decline route
+adminRouter.route("/decline/:stuid/:proid").post(declineBitting);
+adminRouter.route("/studentDataAndTest").get(getAllStudentAndTestData) // Add decline route
 
 // Question and quiz assigning
 adminRouter.post(
@@ -190,4 +194,6 @@ adminRouter.route("/categories").get(categories);
 adminRouter.route("/questions/count").get(questionCounting);
 adminRouter.route("/assign-test").post(testAssign);
 adminRouter.route("/checkBid/:stuid/:proid").get(checkBidStatus); // Add new route
+adminRouter.route("/tests-by-skills/:student_id").get(testsByStudentSkillsCount);
+adminRouter.route("/all-students-tests-by-skills").get(allStudentsTestsBySkillsCount);
 export default adminRouter;

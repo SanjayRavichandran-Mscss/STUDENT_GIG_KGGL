@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import img from "../../Assets/Group 289210.png";
 
 function ProfileUpdate() {
@@ -17,7 +19,6 @@ function ProfileUpdate() {
     password: "",
     degree: "",
     year: "",
-    // specialization: "",
     college_id: ""
   });
   const [file, setFile] = useState(null);
@@ -31,8 +32,8 @@ function ProfileUpdate() {
       try {
         setIsLoading(true);
         const [profileRes, collegesRes] = await Promise.all([
-          axios.get(`http://localhost:5000/stu/getdata/${decoded}`),
-          axios.get("http://localhost:5000/college/getcollege")
+          axios.get(`http://localhost:5000/api/stu/getdata/${decoded}`),
+          axios.get("http://localhost:5000/api/college/getcollege")
         ]);
 
         const profile = profileRes.data.msg[0];
@@ -42,7 +43,6 @@ function ProfileUpdate() {
           password: profile.password,
           degree: profile.degree,
           year: profile.year,
-          // specialization: profile.specialization,
           college_id: profile.college_id
         });
 
@@ -50,6 +50,10 @@ function ProfileUpdate() {
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load profile data");
+        toast.error("Failed to load profile data", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -79,20 +83,32 @@ function ProfileUpdate() {
       formDataToSend.append("Password", formData.password);
       formDataToSend.append("Degree", formData.degree);
       formDataToSend.append("Year", formData.year);
-      // formDataToSend.append("Spl", formData.specialization);
       formDataToSend.append("coll", formData.college_id);
       formDataToSend.append("id", decoded);
       if (file) formDataToSend.append("file", file);
 
-      const response = await axios.put("http://localhost:5000/stu/update", formDataToSend);
+      const response = await axios.put("http://localhost:5000/api/stu/update", formDataToSend);
       
       if (response.data.status) {
-        alert("Profile updated successfully");
+        toast.success("Profile updated successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
         navigate(`/profile/${btoa(decoded)}`);
+      } else {
+        setError("Failed to update profile. Please try again.");
+        toast.error("Failed to update profile. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     } catch (err) {
       console.error("Update error:", err);
       setError("Failed to update profile. Please try again.");
+      toast.error(err.response?.data?.message || "Failed to update profile. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +124,7 @@ function ProfileUpdate() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col lg:flex-row">
         {/* Image Section */}
         <div className="lg:w-1/2 bg-indigo-50 flex items-center justify-center p-8">
@@ -126,14 +143,6 @@ function ProfileUpdate() {
 
         {/* Form Section */}
         <div className="lg:w-1/2 p-8 lg:p-10 relative">
-          {/* Close Button */}
-          {/* <Link
-            to="/login"
-            className="absolute top-6 right-6 p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all duration-300"
-          >
-            <FontAwesomeIcon icon={faXmark} size="lg" />
-          </Link> */}
-
           {/* Form Header */}
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold text-gray-800">Edit Profile</h2>
@@ -222,20 +231,6 @@ function ProfileUpdate() {
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200"
                 />
               </div>
-
-              {/* <div>
-                <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 mb-1">
-                  Specialization
-                </label>
-                <input
-                  id="specialization"
-                  type="text"
-                  name="specialization"
-                  value={formData.specialization}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200"
-                />
-              </div> */}
 
               <div className="md:col-span-2">
                 <label htmlFor="college_id" className="block text-sm font-medium text-gray-700 mb-1">
@@ -351,3 +346,4 @@ function ProfileUpdate() {
 }
 
 export default ProfileUpdate;
+

@@ -24,6 +24,10 @@ import {
   checkDuplicateLinks,
   VerifyPasskey,
   CheckEmailExists,
+  getRegisteredStudentsCount,
+  getProjectsCount,
+  getAllStudentsDataAndTest,
+  getProjectsByStudentLevel
 } from "../controllers/studentcontroller.js";
 import upload from "../middleware/multer.js";
 
@@ -105,8 +109,15 @@ studentRouter.route("/admin/dashboard").get(restrictTo([1]), adminDashboard);
 
 studentRouter.route("/student-test-data/:id").get(getStudentDataAndTest);
 
+studentRouter.route("/all-students-test-data").get(getAllStudentsDataAndTest);
+
+
 // Student Bid Credits
 studentRouter.route("/getBidCredits/:id").get(getBidCredits);
 studentRouter.route("/updateBidCredits/:id").put(updateBidCredits);
 
+studentRouter.route("/count").get(getRegisteredStudentsCount);
+studentRouter.route("/projects/count").get(getProjectsCount);
+
+studentRouter.route("/projects-by-level/:id").get(getProjectsByStudentLevel);
 export { studentRouter };

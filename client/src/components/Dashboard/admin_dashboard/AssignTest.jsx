@@ -263,7 +263,7 @@ export default function AssignTest() {
                   </tr>
                   <tr className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
-                      <strong>Easy Questions:</strong>
+                      <strong>Beginner Questions:</strong>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
                       {test.easy_level_question}
@@ -276,7 +276,7 @@ export default function AssignTest() {
                   </tr>
                   <tr className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
-                      <strong>Medium Questions:</strong>
+                      <strong>Intermediate Questions:</strong>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
                       {test.medium_level_question}
@@ -289,13 +289,13 @@ export default function AssignTest() {
                   </tr>
                   <tr className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-200">
-                      <strong>Hard Questions:</strong>
+                      <strong>Advanced Questions:</strong>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
                       {test.hard_level_question}
                       {availabilityMessage.includes("hard") && (
                         <span className="block text-red-600 text-xs mt-1">
-                          {availabilityMessage.split(", ").find(msg => msg.includes("hard"))}
+                          {availabilityMessage.split(", ").find(msg => msg.includes("Advanced"))}
                         </span>
                       )}
                     </td>
@@ -305,7 +305,7 @@ export default function AssignTest() {
                       <strong>Pass Marks:</strong>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
-                      Easy: {test.easy_pass_mark}, Medium: {test.medium_pass_mark}, Hard: {test.hard_pass_mark}
+                      Beginner: {test.easy_pass_mark}, Intermediate: {test.medium_pass_mark}, Advanced: {test.hard_pass_mark}
                     </td>
                   </tr>
                   <tr className="hover:bg-gray-50 transition-colors">
@@ -315,7 +315,7 @@ export default function AssignTest() {
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200">
                       {skillQuestions ? (
                         <>
-                          Easy: {skillQuestions.easy_count}, Medium: {skillQuestions.medium_count}, Hard: {skillQuestions.hard_count}
+                          Beginner: {skillQuestions.easy_count}, Intermediate: {skillQuestions.medium_count}, Advanced: {skillQuestions.hard_count}
                           <br />
                           Total: {skillQuestions.easy_count + skillQuestions.medium_count + skillQuestions.hard_count}
                         </>

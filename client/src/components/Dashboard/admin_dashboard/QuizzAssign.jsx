@@ -20,7 +20,7 @@ function QuizzAssign() {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("http://localhost:5000/admin/categories");
+        const response = await axios.get("http://localhost:5000/api/admin/categories");
         setCategories(response.data);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -36,7 +36,7 @@ function QuizzAssign() {
       if (formData.selectedCategoryId) {
         try {
           const response = await axios.get(
-            `http://localhost:5000/admin/questions/count?category_id=${formData.selectedCategoryId}`
+            `http://localhost:5000/admin/api/questions/count?category_id=${formData.selectedCategoryId}`
           );
           setAvailableQuestions(response.data.count);
         } catch (error) {
@@ -70,7 +70,7 @@ function QuizzAssign() {
         medium_pass_mark: formData.difficultyLevel >= 2 ? formData.mediumPassMark : null,
       };
 
-      const response = await axios.post("http://localhost:5000/admin/assign-test", data);
+      const response = await axios.post("http://localhost:5000/api/admin/assign-test", data);
       
       if (response.data) {
         setIsSuccess(true);

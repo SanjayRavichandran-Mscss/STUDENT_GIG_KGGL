@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import Select from "react-select";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import gifimg from "../../Assets/Animation - 1715065850571.gif";
 import dragim from "../../Assets/Group 1.png";
 import backgroundimg from "../../Assets/upper.png";
@@ -44,15 +46,15 @@ export default function Profile() {
     const fetchData = async () => {
       try {
         const [profileRes, skillsRes, studentSkillsRes, imageRes] = await Promise.all([
-          axios.get(`http://localhost:5000/stu/getdata/${decoded}`),
-          axios.get("http://localhost:5000/college/skill"),
-          axios.get(`http://localhost:5000/stu/getSkill/${decoded}`),
-          axios.get(`http://localhost:5000/stu/getall/${decoded}`),
+          axios.get(`http://localhost:5000/api/stu/getdata/${decoded}`),
+          axios.get("http://localhost:5000/api/college/skill"),
+          axios.get(`http://localhost:5000/api/stu/getSkill/${decoded}`),
+          axios.get(`http://localhost:5000/api/stu/getall/${decoded}`),
         ]);
 
         setProfile({
           image: imageRes.data.result[0]?.profile_photo || "",
-          name: imageRes.data.result[0]?.name || "", // Updated to use getall endpoint
+          name: imageRes.data.result[0]?.name || "",
           github: profileRes.data.msg[0]?.github_link || "",
           skillNames: studentSkillsRes.data.map((e) => e.skill_name) || [],
         });
@@ -70,6 +72,10 @@ export default function Profile() {
       } catch (error) {
         console.error("Error fetching data:", error);
         setErrors((prev) => ({ ...prev, general: "Failed to load profile data. Please try again." }));
+        toast.error("Failed to load profile data. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     };
 
@@ -92,7 +98,7 @@ export default function Profile() {
     if (skillName.length > 50) return "Custom skill name cannot exceed 50 characters.";
 
     try {
-      const response = await axios.get("http://localhost:5000/college/skill");
+      const response = await axios.get("http://localhost:5000/api/college/skill");
       const existingSkills = response.data.msg || [];
       const skillExists = existingSkills.some(
         (skill) => skill.skill_name.toLowerCase() === skillName.trim().toLowerCase()
@@ -110,7 +116,7 @@ export default function Profile() {
   // Check for duplicate GitHub/LinkedIn links
   const checkDuplicateLinks = async (github, linkedin) => {
     try {
-      const response = await axios.post("http://localhost:5000/stu/check-links", {
+      const response = await axios.post("http://localhost:5000/api/stu/check-links", {
         github_link: github,
         linkedin_link: linkedin,
         student_id: decoded,
@@ -118,7 +124,7 @@ export default function Profile() {
       return response.data.duplicates;
     } catch (error) {
       console.error("Error checking duplicate links:", error);
-      return { github: false, linkedin: false }; // Fallback to no duplicates on error
+      return { github: false, linkedin: false };
     }
   };
 
@@ -126,15 +132,17 @@ export default function Profile() {
   const handleDrop = (event) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
-    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const maxSizeInBytes = 5 * 1024 * 1024;
 
     if (!file) {
       setErrors((prev) => ({ ...prev, resume: "Resume is required." }));
+      toast.error("Resume is required.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
     if (file.size > maxSizeInBytes) {
       setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
+      toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
@@ -147,21 +155,24 @@ export default function Profile() {
       setErrors((prev) => ({ ...prev, resume: "" }));
     } else {
       setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
+      toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
     }
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const maxSizeInBytes = 5 * 1024 * 1024;
 
     if (!file) {
       setErrors((prev) => ({ ...prev, resume: "Resume is required." }));
+      toast.error("Resume is required.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
     if (file.size > maxSizeInBytes) {
       setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
       event.target.value = "";
+      toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
@@ -175,6 +186,7 @@ export default function Profile() {
     } else {
       setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
       event.target.value = "";
+      toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
     }
   };
 
@@ -183,7 +195,6 @@ export default function Profile() {
     const { name, value } = e.target;
     setFileData((prev) => ({ ...prev, [name]: value }));
 
-    // Prepare errors
     let newErrors = { ...errors };
 
     if (name === "github") {
@@ -193,10 +204,12 @@ export default function Profile() {
         ? "Please enter a valid GitHub URL."
         : "";
 
-      // Check for duplicate GitHub link
       if (!newErrors.github) {
         const duplicates = await checkDuplicateLinks(value, fileData.linkedIn);
         newErrors.github = duplicates.github ? "GitHub URL already exists." : newErrors.github;
+        if (newErrors.github) {
+          toast.warn("GitHub URL already exists.", { position: "top-right", autoClose: 3000 });
+        }
       }
     } else if (name === "linkedIn") {
       newErrors.linkedIn = !value
@@ -205,10 +218,12 @@ export default function Profile() {
         ? "Please enter a valid LinkedIn URL."
         : "";
 
-      // Check for duplicate LinkedIn link
       if (!newErrors.linkedIn) {
         const duplicates = await checkDuplicateLinks(fileData.github, value);
         newErrors.linkedIn = duplicates.linkedin ? "LinkedIn URL already exists." : newErrors.linkedIn;
+        if (newErrors.linkedIn) {
+          toast.warn("LinkedIn URL already exists.", { position: "top-right", autoClose: 3000 });
+        }
       }
     }
 
@@ -261,6 +276,9 @@ export default function Profile() {
           : value.length > 200
           ? "Description cannot exceed 200 characters."
           : "";
+      if (newErrors[skillId].description) {
+        toast.error(newErrors[skillId].description, { position: "top-right", autoClose: 3000 });
+      }
     }
 
     if (name === "skillUrl") {
@@ -282,11 +300,17 @@ export default function Profile() {
           newErrors[skillId].url = "This project URL is already used for another skill.";
         }
       }
+      if (newErrors[skillId].url) {
+        toast.error(newErrors[skillId].url, { position: "top-right", autoClose: 3000 });
+      }
     }
 
     if (name === "skillName" && skillId === decoded) {
       const customSkillError = await validateCustomSkill(value);
       newErrors[skillId].skillName = customSkillError;
+      if (newErrors[skillId].skillName) {
+        toast.error(newErrors[skillId].skillName, { position: "top-right", autoClose: 3000 });
+      }
     }
 
     setErrors((prev) => ({ ...prev, skills: newErrors }));
@@ -335,9 +359,11 @@ export default function Profile() {
     const duplicates = await checkDuplicateLinks(fileData.github, fileData.linkedIn);
     if (duplicates.github) {
       newErrors.github = "GitHub URL already exists.";
+      toast.warn("GitHub URL already exists.", { position: "top-right", autoClose: 3000 });
     }
     if (duplicates.linkedin) {
       newErrors.linkedIn = "LinkedIn URL already exists.";
+      toast.warn("LinkedIn URL already exists.", { position: "top-right", autoClose: 3000 });
     }
 
     let hasSkillErrors = false;
@@ -411,6 +437,7 @@ export default function Profile() {
       selectedSkills.length === 0
     ) {
       setIsLoading(false);
+      toast.error("Please fix the errors before submitting.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
@@ -418,7 +445,7 @@ export default function Profile() {
       const formData = new FormData();
       formData.append("file", fileData.selectedFile);
       formData.append("id", decoded);
-      formData.append("name", profile.name); // Added name
+      formData.append("name", profile.name);
       formData.append("git", fileData.github);
       formData.append("linkedin", fileData.linkedIn);
 
@@ -433,14 +460,14 @@ export default function Profile() {
       });
       formData.append("skills", JSON.stringify(skillsData));
 
-      const response = await axios.post("http://localhost:5000/stu/upload", formData, {
+      const response = await axios.post("http://localhost:5000/api/stu/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.data === "Profile updated successfully") {
-        const skillRes = await axios.get(`http://localhost:5000/stu/getSkill/${decoded}`);
+        const skillRes = await axios.get(`http://localhost:5000/api/stu/getSkill/${decoded}`);
         setProfile((prev) => ({
           ...prev,
           skillNames: skillRes.data.map((e) => e.skill_name),
@@ -456,7 +483,10 @@ export default function Profile() {
         }));
         setErrors({ github: "", linkedIn: "", resume: "", general: "", skills: {} });
 
-        alert("Profile updated successfully!");
+        toast.success("Profile updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       } else if (response.data.message === "Skill_already_exists") {
         const duplicateSkills = response.data.duplicateSkills || [];
         setErrors((prev) => {
@@ -474,6 +504,10 @@ export default function Profile() {
             general: "Some skills could not be added due to duplicates.",
           };
         });
+        toast.warn("Some skills could not be added due to duplicates.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       } else if (response.data.message === "Duplicate links detected") {
         setErrors((prev) => ({
           ...prev,
@@ -481,11 +515,19 @@ export default function Profile() {
           linkedIn: response.data.duplicates.linkedin ? "LinkedIn URL already exists." : prev.linkedIn,
           general: "Some links are already in use by other users.",
         }));
+        toast.warn("Some links are already in use by other users.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       } else {
         setErrors((prev) => ({
           ...prev,
           general: response.data.message || "Failed to update profile. Please try again.",
         }));
+        toast.error(response.data.message || "Failed to update profile. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
     } catch (error) {
       console.error("Submission error:", error.response?.data || error.message);
@@ -493,6 +535,10 @@ export default function Profile() {
         ...prev,
         general: error.response?.data?.message || "An error occurred during submission. Please try again.",
       }));
+      toast.error(error.response?.data?.message || "An error occurred during submission. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -506,6 +552,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white text-center">
         <h1 className="text-3xl font-bold">KGGL Gig</h1>
@@ -822,3 +869,4 @@ export default function Profile() {
     </div>
   );
 }
+

@@ -12,48 +12,79 @@
 // import GeminiQuizGenerator from "../../AIquiz/GeminiQuizGenerator.jsx";
 // import TestCreation from "./TestCreation.jsx";
 // import AssignTest from "./AssignTest.jsx";
+// import Addskill from "./Addskill.jsx";
+// import Score from "./Score.jsx";
+// // import Addskill from "./Addskill.jsx";
+
+
+// // Main layout container styles
+// const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
+// const sidebarClass = "w-full md:w-64 flex-shrink-0"; // Fixed width for sidebar
+// const contentClass = "flex-1 overflow-auto p-4 md:p-8"; // Added overflow control
+
 
 // function Dash() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
-//         <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">College</h1>
-//         <div className="flex justify-center">
-//           <DoughnutPieChart />
-//         </div>
-//         <h1 className="text-2xl font-semibold text-gray-800 mb-4 mt-8 text-center">Skill</h1>
-//         <div className="flex justify-center">
-//           <Kgcas />
+//       <div className={contentClass}>
+//         <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+//           <div className="flex-1 bg-white rounded-lg shadow p-4">
+//             <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">College</h1>
+//             <div className="flex justify-center">
+//               <DoughnutPieChart />
+//             </div>
+//           </div>
+//           <div className="flex-1 bg-white rounded-lg shadow p-4">
+//             <h1 className="text-2xl font-semibold text-gray-800 mb-4 text-center">Skill</h1>
+//             <div className="flex justify-center">
+//               <Kgcas />
+//             </div>
+//           </div>
 //         </div>
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function Dashprofile() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <MainContent />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function Dashstudent() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <StudentsData />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export function Scorearea() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
+//         <Score/>
 //       </div>
 //     </div>
 //   );
@@ -61,129 +92,131 @@
 
 // export function Dashproject() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <Addproject />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function DashAllProjects() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <Projects />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function DashBit() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <BitConfirm />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function AddQuizzes() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <AddQuestion />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function AddQuizzesWithAI() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <GeminiQuizGenerator />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function AssigningQuizz() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
 //         <QuizzAssign />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export function TestCreationComponent() {
 //   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
-//         <TestCreation />
+//       <div className={`${contentClass} flex flex-col`}>
+//         <div className="flex-1">
+//           <TestCreation />
+//         </div>
 //       </div>
 //     </div>
 //   );
 // }
-
-// export function AssignTestComponent() {
-//   return (
-//     <div className="flex h-screen bg-gray-100">
-//       <div className="w-1/5">
+// export function Addskillpage(){
+//   return(
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
-//       <div className="flex-1 p-8 overflow-auto">
+//       <div className={contentClass}>
+       
+//         <Addskill/>
+     
+//       </div>
+//     </div>
+//   );
+// }
+// export function AssignTestComponent() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
 //         <AssignTest />
 //       </div>
 //     </div>
 //   );
 // }
 
+
 // export default Dash;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -222,14 +255,13 @@ import GeminiQuizGenerator from "../../AIquiz/GeminiQuizGenerator.jsx";
 import TestCreation from "./TestCreation.jsx";
 import AssignTest from "./AssignTest.jsx";
 import Addskill from "./Addskill.jsx";
-// import Addskill from "./Addskill.jsx";
-
+import Score from "./Score.jsx";
+import AddBulkQuestions from "./AddBulkQuestions.jsx";
 
 // Main layout container styles
 const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
 const sidebarClass = "w-full md:w-64 flex-shrink-0"; // Fixed width for sidebar
 const contentClass = "flex-1 overflow-auto p-4 md:p-8"; // Added overflow control
-
 
 function Dash() {
   return (
@@ -257,7 +289,6 @@ function Dash() {
   );
 }
 
-
 export function Dashprofile() {
   return (
     <div className={layoutContainerClass}>
@@ -270,7 +301,6 @@ export function Dashprofile() {
     </div>
   );
 }
-
 
 export function Dashstudent() {
   return (
@@ -285,6 +315,18 @@ export function Dashstudent() {
   );
 }
 
+export function Scorearea() {
+  return (
+    <div className={layoutContainerClass}>
+      <div className={sidebarClass}>
+        <AdminMenu />
+      </div>
+      <div className={contentClass}>
+        <Score />
+      </div>
+    </div>
+  );
+}
 
 export function Dashproject() {
   return (
@@ -299,7 +341,6 @@ export function Dashproject() {
   );
 }
 
-
 export function DashAllProjects() {
   return (
     <div className={layoutContainerClass}>
@@ -312,7 +353,6 @@ export function DashAllProjects() {
     </div>
   );
 }
-
 
 export function DashBit() {
   return (
@@ -327,7 +367,6 @@ export function DashBit() {
   );
 }
 
-
 export function AddQuizzes() {
   return (
     <div className={layoutContainerClass}>
@@ -340,7 +379,6 @@ export function AddQuizzes() {
     </div>
   );
 }
-
 
 export function AddQuizzesWithAI() {
   return (
@@ -355,7 +393,6 @@ export function AddQuizzesWithAI() {
   );
 }
 
-
 export function AssigningQuizz() {
   return (
     <div className={layoutContainerClass}>
@@ -368,7 +405,6 @@ export function AssigningQuizz() {
     </div>
   );
 }
-
 
 export function TestCreationComponent() {
   return (
@@ -384,20 +420,20 @@ export function TestCreationComponent() {
     </div>
   );
 }
-export function Addskillpage(){
-  return(
+
+export function Addskillpage() {
+  return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
         <AdminMenu />
       </div>
-      <div>
-       
-        <Addskill/>
-     
+      <div className={contentClass}>
+        <Addskill />
       </div>
     </div>
   );
 }
+
 export function AssignTestComponent() {
   return (
     <div className={layoutContainerClass}>
@@ -411,5 +447,17 @@ export function AssignTestComponent() {
   );
 }
 
+export function AddBulkQuestionsComponent() {
+  return (
+    <div className={layoutContainerClass}>
+      <div className={sidebarClass}>
+        <AdminMenu />
+      </div>
+      <div className={contentClass}>
+        <AddBulkQuestions />
+      </div>
+    </div>
+  );
+}
 
 export default Dash;

@@ -15,7 +15,7 @@ export function Login() {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:5000/stu/login", {
+      const response = await axios.post("http://localhost:5000/api/stu/login", {
         email,
         password,
       });

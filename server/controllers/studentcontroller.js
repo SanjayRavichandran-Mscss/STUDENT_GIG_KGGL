@@ -744,6 +744,66 @@ const getStudentDataAndTest = async (req, res) => {
   }
 };
 
+const getAllStudentsDataAndTest = async (req, res) => {
+  try {
+    // Query to get all students
+    const studentsQuery = "SELECT * FROM students";
+    // Query to get all test results
+    const testResultsQuery = "SELECT * FROM testresults";
+    // Query to get skill counts for all students
+    const skillCountQuery = "SELECT student_id, COUNT(skill_id) AS skillCount FROM student_skills GROUP BY student_id";
+
+    // Execute all queries concurrently
+    const [studentsResult, testResultsResult, skillCountResult] = await Promise.all([
+      dbQuery(studentsQuery),
+      dbQuery(testResultsQuery),
+      dbQuery(skillCountQuery),
+    ]);
+
+    // If no students found
+    if (studentsResult.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No students found",
+      });
+    }
+
+    // Map skill counts to student_id for efficient lookup
+    const skillCountMap = {};
+    skillCountResult.forEach((row) => {
+      skillCountMap[row.student_id] = row.skillCount;
+    });
+
+    // Map test results to student_id for efficient lookup
+    const testResultsMap = {};
+    testResultsResult.forEach((test) => {
+      if (!testResultsMap[test.student_id]) {
+        testResultsMap[test.student_id] = [];
+      }
+      testResultsMap[test.student_id].push(test);
+    });
+
+    // Build response by combining data for each student
+    const response = {
+      status: "success",
+      students: studentsResult.map((student) => ({
+        student,
+        testResults: testResultsMap[student.student_id] || [],
+        skillCount: skillCountMap[student.student_id] || 0,
+      })),
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error in getAllStudentsDataAndTest:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve data",
+    });
+  }
+};
+
+
 const getBidCredits = async (req, res) => {
   const { id } = req.params;
 
@@ -775,6 +835,147 @@ const updateBidCredits = async (req, res) => {
   }
 };
 
+
+const getRegisteredStudentsCount = async (req, res) => {
+  try {
+    const sql = "SELECT COUNT(*) AS totalStudents FROM students";
+    const result = await dbQuery(sql);
+    res.json({
+      status: "success",
+      totalStudents: result[0].totalStudents
+    });
+  } catch (error) {
+    console.error("Error in getRegisteredStudentsCount:", error);
+    res.status(500).json({ 
+      status: "error", 
+      message: "Failed to retrieve student count" 
+    });
+  }
+};
+
+
+
+const getProjectsCount = async (req, res) => {
+  try {
+    // Query for total projects
+    const totalProjectsQuery = "SELECT COUNT(*) AS totalProjects FROM projects";
+    // Query for live projects (status_id = 2)
+    const liveProjectsQuery = "SELECT COUNT(*) AS liveProjects FROM projects WHERE status_id = 2";
+
+    // Execute both queries concurrently
+    const [totalResult, liveResult] = await Promise.all([
+      dbQuery(totalProjectsQuery),
+      dbQuery(liveProjectsQuery),
+    ]);
+
+    // Log results for debugging
+    console.log("Total Projects Query Result:", totalResult);
+    console.log("Live Projects Query Result:", liveResult);
+
+    // Send response with both counts
+    res.json({
+      status: "success",
+      totalProjects: totalResult[0].totalProjects,
+      liveProjects: liveResult[0].liveProjects,
+    });
+  } catch (error) {
+    console.error("Error in getProjectsCount:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve projects count",
+    });
+  }
+};
+
+
+const getProjectsByStudentLevel = async (req, res) => {
+  const { id } = req.params; // Get student_id from URL parameter
+
+  try {
+    // Validate student_id
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ status: "error", message: "Invalid student ID" });
+    }
+
+    // Fetch the latest test result for the student based on attend_at
+    const testResultQuery = `
+      SELECT student_level 
+      FROM testresults 
+      WHERE student_id = ? 
+      ORDER BY attend_at DESC 
+      LIMIT 1`;
+    const testResult = await dbQuery(testResultQuery, [id]);
+
+    // If no test result found
+    if (testResult.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Please attend a test or contact admin",
+      });
+    }
+
+    const student_level = testResult[0].student_level;
+
+    // Fetch the level_id from difficultylevels table based on student_level
+    const levelQuery = `
+      SELECT level_id 
+      FROM difficultylevels 
+      WHERE level_name = ?`;
+    const levelResult = await dbQuery(levelQuery, [student_level]);
+
+    // If level not found in difficultylevels
+    if (levelResult.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No projects available for this level",
+      });
+    }
+
+    const level_id = levelResult[0].level_id;
+
+    // Fetch the student's skills
+    const skillsQuery = `
+      SELECT skill_id 
+      FROM student_skills 
+      WHERE student_id = ?`;
+    const skillsResult = await dbQuery(skillsQuery, [id]);
+
+    // If no skills found
+    if (skillsResult.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No skills found for this student. Please update your profile.",
+      });
+    }
+
+    const skill_ids = skillsResult.map((skill) => skill.skill_id);
+
+    // Fetch projects with matching level_id and stack (skill_id)
+    const projectsQuery = `
+      SELECT project_id, project_name, description, created_at, expiry_date 
+      FROM projects 
+      WHERE level_id = ? AND stack IN (?)`;
+    const projects = await dbQuery(projectsQuery, [level_id, skill_ids]);
+
+    // If no projects found
+    if (projects.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No projects available for your level and skills",
+      });
+    }
+
+    // Return the projects
+    res.json({
+      status: "success",
+      projects,
+    });
+  } catch (error) {
+    console.error("Error in getProjectsByStudentLevel:", error);
+    res.status(500).json({ status: "error", message: "server_error" });
+  }
+};
+
 export {
   Logout,
   Verify,
@@ -799,4 +1000,8 @@ export {
   checkDuplicateLinks,
   VerifyPasskey,
   CheckEmailExists,
+  getRegisteredStudentsCount,
+  getProjectsCount,
+  getAllStudentsDataAndTest,
+  getProjectsByStudentLevel,
 };

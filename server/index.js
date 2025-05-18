@@ -23,10 +23,10 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 // Routes
-app.use("/stu", studentRouter);
-app.use("/college", collegeRouter);
-app.use("/verify", Verification, studentRouter);
-app.use("/admin", adminRouter);
+app.use("/api/stu", studentRouter);
+app.use("/api/college", collegeRouter);
+app.use("/api/verify", Verification, studentRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/quiz", quizRouter);
 
 // Default route

@@ -11,7 +11,6 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "react-perfect-scrollbar/dist/css/styles.css";
 
-
 function Addskill() {
   const [studentData, setStudentData] = useState([]);
   const [error, setError] = useState("");
@@ -23,11 +22,10 @@ function Addskill() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/admin/student-details");
+        const res = await axios.get("http://localhost:5000/api/admin/student-details");
         if (res.data.status && Array.isArray(res.data.result)) {
           setStudentData(res.data.result);
         } else {
@@ -41,16 +39,13 @@ function Addskill() {
     fetchData();
   }, []);
 
-
   const handlePhotoClick = (photoUrl) => {
     setSelectedPhoto(photoUrl || defaultProfile);
   };
 
-
   const handleClosePhotoModal = () => {
     setSelectedPhoto(null);
   };
-
 
   const handleViewResume = (resumeFile) => {
     const pdfUrl = `http://localhost:5000/images/${resumeFile}`;
@@ -58,60 +53,62 @@ function Addskill() {
     setPdfError("");
   };
 
-
   const handleClosePdfModal = () => {
     setSelectedPdf(null);
     setPdfError("");
   };
-
 
   const handlePdfError = (error) => {
     setPdfError("Failed to load PDF. The file may be missing or inaccessible.");
     console.error("PDF load error:", error);
   };
 
-
   const openAddSkillModal = (student) => {
     setSelectedStudent(student);
     setShowAddSkillModal(true);
   };
 
-
   const handleAddSkill = async () => {
-    if (!newSkill.trim()) {
-      toast.error("Please enter a skill name");
-      return;
+  if (!newSkill.trim()) {
+    toast.error("Please enter a skill name");
+    return;
+  }
+
+  try {
+    if (selectedStudent === null) {
+      // Add skill to all students
+      await Promise.all(
+        studentData.map(student =>
+          axios.post("http://localhost:5000/api/admin/add-skill", {
+            studentId: student.student_id,
+            skill: newSkill,
+          })
+        )
+      );
+      toast.success(`Skill "${newSkill}" added to all students successfully!`);
+    } else {
+      // Add skill to a specific student
+      await axios.post("http://localhost:5000/api/admin/add-skill", {
+        studentId: selectedStudent.student_id,
+        skill: newSkill,
+      });
+      toast.success(`Skill "${newSkill}" added to ${selectedStudent.name} successfully!`);
     }
 
+    setShowAddSkillModal(false);
+    setNewSkill("");
+  } catch (err) {
+    toast.error("Failed to add skill. Please try again.");
+    console.error("Add skill error:", err);
+  }
+};
 
-    try {
-      // Here you would typically make an API call to add the skill
-      // For example:
-      // await axios.post("http://localhost:5000/admin/add-skill", {
-      //   studentId: selectedStudent.student_id,
-      //   skill: newSkill
-      // });
-
-
-      // Simulate API call success
-      toast.success(`Skill "${newSkill}" added successfully!`);
-      setShowAddSkillModal(false);
-      setNewSkill("");
-     
-      // In a real app, you would update the student data after successful API call
-      // setStudentData(prevData => ...update the specific student's skills...);
-     
-    } catch (err) {
-      toast.error("Failed to add skill. Please try again.");
-      console.error("Add skill error:", err);
-    }
-  };
 
 
   return (
     <div className="bg-gray-50">
       <ToastContainer position="top-right" autoClose={3000} />
-     
+      
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-4">
         {error && (
@@ -121,7 +118,7 @@ function Addskill() {
         )}
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="flex justify-end">
-            <button
+            <button 
               className="bg-blue-600 text-white p-2 m-2 rounded-md hover:bg-blue-700 transition-colors"
               onClick={() => setShowAddSkillModal(true)}
             >
@@ -130,7 +127,7 @@ function Addskill() {
           </div>
           <PerfectScrollbar>
             <div className="max-h-[calc(100vh-65px)] overflow-y-auto ">
-              <table className="w-100 table-auto border-collapse">
+              <table className="w-3/2 table-auto border-collapse">
                 <thead className="bg-gray-100 sticky top-0 z-10">
                   <tr>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -153,21 +150,21 @@ function Addskill() {
                       >
                         <td className="px-3 py-2 whitespace-nowrap">
                          {index+1}
-                           
+                            
                         </td>
                         <td className="px-2 py-2 text-sm text-gray-600 truncate max-w-[150px]">
                           {student.skill || "N/A"}
                         </td>
                         <td className="px-2 py-2 text-sm text-gray-600 truncate max-w-[150px]">
-                          <button
+                          <button 
                             className="bg-green-800 text-white font-bold p-2 rounded-md hover:bg-green-500 transition-colors mx-5"
                             onClick={() => openAddSkillModal(student)}
                           >
                             ADD
                           </button>
-                          <button
+                          <button 
                             className="bg-red-800 text-white font-bold p-2 rounded-md hover:bg-red-400 transition-colors"
-                            onClick={() => openAddSkillModal(student)}
+                           
                           >
                             Delete
                           </button>
@@ -187,7 +184,6 @@ function Addskill() {
           </PerfectScrollbar>
         </div>
       </div>
-
 
       {/* Add Skill Modal */}
       {showAddSkillModal && (
@@ -241,7 +237,6 @@ function Addskill() {
         </div>
       )}
 
-
       {/* Modal for Enlarged Profile Photo */}
       {selectedPhoto && (
         <div
@@ -269,7 +264,6 @@ function Addskill() {
           </div>
         </div>
       )}
-
 
       {/* Modal for PDF Viewer */}
       {selectedPdf && (
@@ -349,6 +343,5 @@ function Addskill() {
     </div>
   );
 }
-
 
 export default Addskill;

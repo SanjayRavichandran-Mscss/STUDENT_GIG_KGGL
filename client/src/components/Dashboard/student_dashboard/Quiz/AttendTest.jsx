@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+
 
 export default function AttendTest() {
   const { id, testId, type } = useParams();
@@ -377,25 +379,30 @@ export default function AttendTest() {
       const maxMediumScore = test.medium_level_question * 1;
       const maxHardScore = test.hard_level_question * 1;
 
-      alert(
-        `Test submitted successfully!\n\n` +
-        `Scores:\n` +
-        `- Easy: ${cappedScores.easy}/${maxEasyScore} (${
-          cappedScores.easy >= test.easy_pass_mark ? "Pass" : "Fail"
-        })\n` +
-        `- Medium: ${cappedScores.medium}/${maxMediumScore} (${
-          cappedScores.medium >= test.medium_pass_mark ? "Pass" : "Fail"
-        })\n` +
-        `- Hard: ${cappedScores.hard}/${maxHardScore} (${
-          cappedScores.hard >= test.hard_pass_mark ? "Pass" : "Fail"
-        })\n` +
-        `- Total: ${cappedScores.total}/${maxEasyScore + maxMediumScore + maxHardScore}\n` +
-        `- Percentage: ${percentage}%\n` +
-        `- Student Level: ${studentLevel}`
-      );
+      // alert(
+      //   `Test submitted successfully!\n\n` +
+      //   `Scores:\n` +
+      //   `- Easy: ${cappedScores.easy}/${maxEasyScore} (${
+      //     cappedScores.easy >= test.easy_pass_mark ? "Pass" : "Fail"
+      //   })\n` +
+      //   `- Medium: ${cappedScores.medium}/${maxMediumScore} (${
+      //     cappedScores.medium >= test.medium_pass_mark ? "Pass" : "Fail"
+      //   })\n` +
+      //   `- Hard: ${cappedScores.hard}/${maxHardScore} (${
+      //     cappedScores.hard >= test.hard_pass_mark ? "Pass" : "Fail"
+      //   })\n` +
+      //   `- Total: ${cappedScores.total}/${maxEasyScore + maxMediumScore + maxHardScore}\n` +
+      //   `- Percentage: ${percentage}%\n` +
+      //   `- Student Level: ${studentLevel}`
+      // );
+
+  toast.success("Test Completed successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
 
       // Redirect based on test type
-      navigate(`/my-tests/${id}`);
+      navigate(`/score/${id}`);
     } catch (err) {
       setError(err.response?.data?.msg || "Failed to submit test. Please try again.");
       console.error("Submission error:", err);
@@ -488,3 +495,4 @@ export default function AttendTest() {
     </div>
   );
 }
+

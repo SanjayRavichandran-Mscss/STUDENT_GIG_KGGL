@@ -34,7 +34,7 @@ export default function ForgotPassword() {
 
     setIsCheckingEmail(true);
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/check-email", { email });
+      const response = await axios.post("http://localhost:5000/api/stu/check-email", { email });
       setEmailExists(response.data.exists);
     } catch (error) {
       console.error("Error checking email:", error);
@@ -86,7 +86,7 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/forgot", { Email: email });
+      const response = await axios.post("http://localhost:5000/api/stu/forgot", { Email: email });
       if (response.data === "mail_sended") {
         setStep(2);
         alert("A passkey has been sent to your email.");
@@ -112,7 +112,7 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/verify-passkey", { email, passkey });
+      const response = await axios.post("http://localhost:5000/api/stu/verify-passkey", { email, passkey });
       if (response.data.status === "success") {
         setStep(3);
       } else {
@@ -142,7 +142,7 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/reset", {
+      const response = await axios.post("http://localhost:5000/api/stu/reset", {
         email,
         passkey,
         password: newPassword,

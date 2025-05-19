@@ -11,7 +11,7 @@ export default function Score() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://103.118.158.24/api/api/stu/all-students-test-data`);
+                const response = await axios.get(`http://localhost:5000/api/stu/all-students-test-data`);
                 setData(response.data);
                 console.log(response.data);
                 setError(null);
@@ -112,7 +112,7 @@ export default function Score() {
 
                             {/* Test Result Columns */}
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Test ID
+                                Test Name
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Beginner Score
@@ -157,7 +157,7 @@ export default function Score() {
                                 {/* Test Result Data */}
                                 {row.testResult ? (
                                     <>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.testResult.test_id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.testResult.test_name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.testResult.easy_score}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.testResult.medium_score}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.testResult.hard_score}</td>

@@ -16,7 +16,7 @@ function ResetPassword() {
 
         try {
             const response = await axios.post(
-                `http://103.118.158.24/api/stu/reset/${token}`,
+                `http://localhost:5000/stu/reset/${token}`,
                 { password }
             );
             

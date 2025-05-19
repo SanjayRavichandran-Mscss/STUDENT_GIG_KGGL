@@ -46,10 +46,10 @@ export default function Profile() {
     const fetchData = async () => {
       try {
         const [profileRes, skillsRes, studentSkillsRes, imageRes] = await Promise.all([
-          axios.get(`http://103.118.158.24/api/api/stu/getdata/${decoded}`),
-          axios.get("http://103.118.158.24/api/api/college/skill"),
-          axios.get(`http://103.118.158.24/api/api/stu/getSkill/${decoded}`),
-          axios.get(`http://103.118.158.24/api/api/stu/getall/${decoded}`),
+          axios.get(`http://localhost:5000/api/stu/getdata/${decoded}`),
+          axios.get("http://localhost:5000/api/college/skill"),
+          axios.get(`http://localhost:5000/api/stu/getSkill/${decoded}`),
+          axios.get(`http://localhost:5000/api/stu/getall/${decoded}`),
         ]);
 
         setProfile({
@@ -88,6 +88,18 @@ export default function Profile() {
     return githubRegex.test(url);
   };
 
+
+  const validateVercelUrl = (url) => {
+  const vercelRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.vercel\.app(\/.*)?$/;
+  return vercelRegex.test(url);
+};
+
+const validateNetlifyUrl = (url) => {
+  const netlifyRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.netlify\.app(\/.*)?$/;
+  return netlifyRegex.test(url);
+};
+
+
   const validateLinkedInUrl = (url) => {
     const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9._%+-]+\/?$/;
     return linkedinRegex.test(url);
@@ -98,7 +110,7 @@ export default function Profile() {
     if (skillName.length > 50) return "Custom skill name cannot exceed 50 characters.";
 
     try {
-      const response = await axios.get("http://103.118.158.24/api/api/college/skill");
+      const response = await axios.get("http://localhost:5000:5000/api/college/skill");
       const existingSkills = response.data.msg || [];
       const skillExists = existingSkills.some(
         (skill) => skill.skill_name.toLowerCase() === skillName.trim().toLowerCase()
@@ -116,7 +128,7 @@ export default function Profile() {
   // Check for duplicate GitHub/LinkedIn links
   const checkDuplicateLinks = async (github, linkedin) => {
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/check-links", {
+      const response = await axios.post("http://localhost:5000:5000/api/stu/check-links", {
         github_link: github,
         linkedin_link: linkedin,
         student_id: decoded,
@@ -460,14 +472,14 @@ export default function Profile() {
       });
       formData.append("skills", JSON.stringify(skillsData));
 
-      const response = await axios.post("http://103.118.158.24/api/api/stu/upload", formData, {
+      const response = await axios.post("http://localhost:5000/api/stu/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.data === "Profile updated successfully") {
-        const skillRes = await axios.get(`http://103.118.158.24/api/api/stu/getSkill/${decoded}`);
+        const skillRes = await axios.get(`http://localhost:5000/api/stu/getSkill/${decoded}`);
         setProfile((prev) => ({
           ...prev,
           skillNames: skillRes.data.map((e) => e.skill_name),
@@ -563,7 +575,7 @@ export default function Profile() {
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex items-center mb-6">
           <img
-            src={profile.image ? `http://103.118.158.24/api/images/${profile.image}` : backgroundimg}
+            src={profile.image ? `http://localhost:5000/images/${profile.image}` : backgroundimg}
             className="w-24 h-24 rounded-full border-4 border-white shadow-lg mr-4"
             alt="Profile"
           />
@@ -869,3 +881,28 @@ export default function Profile() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

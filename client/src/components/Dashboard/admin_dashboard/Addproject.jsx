@@ -13,7 +13,7 @@
 
 //   useEffect(() => {
 //     setIsLoading(true);
-//     axios.get("http://103.118.158.24/api/api/college/skill")
+//     axios.get("http://localhost:5000/api/college/skill")
 //       .then((res) => {
 //         setCollege(res.data.msg);
 //         setIsLoading(false);
@@ -24,7 +24,7 @@
 //   }, []);
 
 //   useEffect(() => {
-//     axios.get("http://103.118.158.24/api/api/quiz/difficulty-levels")
+//     axios.get("http://localhost:5000/api/quiz/difficulty-levels")
 //       .then((res) => {
 //         setLevels(res.data); // array of levels
 //       })
@@ -41,7 +41,7 @@
 
 //     setIsLoading(true);
 //     axios
-//       .post(`http://103.118.158.24/api/admin/addproject`, {
+//       .post(`http://localhost:5000/admin/addproject`, {
 //         pname,
 //         pdes,
 //         skill,
@@ -201,7 +201,7 @@ export function Addproject() {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("http://103.118.158.24/api/api/college/skill")
+      .get("http://localhost:5000/api/college/skill")
       .then((res) => {
         setCollege(res.data.msg);
         setIsLoading(false);
@@ -214,7 +214,7 @@ export function Addproject() {
 
   useEffect(() => {
     axios
-      .get("http://103.118.158.24/api/api/quiz/difficulty-levels")
+      .get("http://localhost:5000/api/quiz/difficulty-levels")
       .then((res) => {
         setLevels(res.data);
       })
@@ -231,7 +231,7 @@ export function Addproject() {
 
     setIsLoading(true);
     axios
-      .post(`http://103.118.158.24/api/admin/addproject`, {
+      .post(`http://localhost:5000/admin/addproject`, {
         pname,
         pdes,
         skill,

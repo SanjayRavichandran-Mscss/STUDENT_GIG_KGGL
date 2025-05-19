@@ -32,8 +32,8 @@ function ProfileUpdate() {
       try {
         setIsLoading(true);
         const [profileRes, collegesRes] = await Promise.all([
-          axios.get(`http://103.118.158.24/api/api/stu/getdata/${decoded}`),
-          axios.get("http://103.118.158.24/api/api/college/getcollege")
+          axios.get(`http://localhost:5000/api/stu/getdata/${decoded}`),
+          axios.get("http://localhost:5000/api/college/getcollege")
         ]);
 
         const profile = profileRes.data.msg[0];
@@ -87,7 +87,7 @@ function ProfileUpdate() {
       formDataToSend.append("id", decoded);
       if (file) formDataToSend.append("file", file);
 
-      const response = await axios.put("http://103.118.158.24/api/api/stu/update", formDataToSend);
+      const response = await axios.put("http://localhost:5000/api/stu/update", formDataToSend);
       
       if (response.data.status) {
         toast.success("Profile updated successfully", {

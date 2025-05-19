@@ -17,7 +17,7 @@ export function Login() {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://103.118.158.24/api/api/stu/login", {
+      const response = await axios.post("http://localhost:5000/api/stu/login", {
         email,
         password,
       });

@@ -499,7 +499,7 @@ const ForgotPassword = async (req, res) => {
                 <p style="color: #555; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">
                   If you did not request a password reset, please ignore this email or contact our support team.
                 </p>
-                <a href="http://localhost:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
+                <a href="http://localhost:5000:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
                   Reset Password
                 </a>
                 <p style="color: #999; margin: 20px 0 0; font-size: 12px;">
@@ -707,11 +707,112 @@ const Logout = async (req, res) => {
   }
 };
 
+// const getStudentDataAndTest = async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     const query = "SELECT * FROM testresults WHERE student_id = ?";
+//     const query1 = "SELECT * FROM students WHERE student_id = ?";
+//     const query2 = "SELECT COUNT(skill_id) AS skillCount FROM student_skills WHERE student_id = ?";
+
+//     const [testResults, studentData, skillCountResult] = await Promise.all([
+//       dbQuery(query, [id]),
+//       dbQuery(query1, [id]),
+//       dbQuery(query2, [id]),
+//     ]);
+
+//     if (studentData.length === 0) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "Student not found",
+//       });
+//     }
+
+//     const response = {
+//       status: "success",
+//       student: studentData[0],
+//       testResults: testResults,
+//       skillCount: skillCountResult[0].skillCount,
+//     };
+
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve data",
+//     });
+//   }
+// };
+
+// const getAllStudentsDataAndTest = async (req, res) => {
+//   try {
+//     // Query to get all students
+//     const studentsQuery = "SELECT * FROM students";
+//     // Query to get all test results
+//     const testResultsQuery = "SELECT * FROM testresults";
+//     // Query to get skill counts for all students
+//     const skillCountQuery = "SELECT student_id, COUNT(skill_id) AS skillCount FROM student_skills GROUP BY student_id";
+
+//     // Execute all queries concurrently
+//     const [studentsResult, testResultsResult, skillCountResult] = await Promise.all([
+//       dbQuery(studentsQuery),
+//       dbQuery(testResultsQuery),
+//       dbQuery(skillCountQuery),
+//     ]);
+
+//     // If no students found
+//     if (studentsResult.length === 0) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "No students found",
+//       });
+//     }
+
+//     // Map skill counts to student_id for efficient lookup
+//     const skillCountMap = {};
+//     skillCountResult.forEach((row) => {
+//       skillCountMap[row.student_id] = row.skillCount;
+//     });
+
+//     // Map test results to student_id for efficient lookup
+//     const testResultsMap = {};
+//     testResultsResult.forEach((test) => {
+//       if (!testResultsMap[test.student_id]) {
+//         testResultsMap[test.student_id] = [];
+//       }
+//       testResultsMap[test.student_id].push(test);
+//     });
+
+//     // Build response by combining data for each student
+//     const response = {
+//       status: "success",
+//       students: studentsResult.map((student) => ({
+//         student,
+//         testResults: testResultsMap[student.student_id] || [],
+//         skillCount: skillCountMap[student.student_id] || 0,
+//       })),
+//     };
+
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     console.error("Error in getAllStudentsDataAndTest:", error);
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve data",
+//     });
+//   }
+// };
+
+
+
+
+
+
 const getStudentDataAndTest = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const query = "SELECT * FROM testresults WHERE student_id = ?";
+    const query = "SELECT tr.*, tc.test_name FROM testresults tr JOIN testcreation tc ON tr.test_id = tc.test_id WHERE tr.student_id = ?";
     const query1 = "SELECT * FROM students WHERE student_id = ?";
     const query2 = "SELECT COUNT(skill_id) AS skillCount FROM student_skills WHERE student_id = ?";
 
@@ -748,8 +849,8 @@ const getAllStudentsDataAndTest = async (req, res) => {
   try {
     // Query to get all students
     const studentsQuery = "SELECT * FROM students";
-    // Query to get all test results
-    const testResultsQuery = "SELECT * FROM testresults";
+    // Query to get all test results with test names
+    const testResultsQuery = "SELECT tr.*, tc.test_name FROM testresults tr JOIN testcreation tc ON tr.test_id = tc.test_id";
     // Query to get skill counts for all students
     const skillCountQuery = "SELECT student_id, COUNT(skill_id) AS skillCount FROM student_skills GROUP BY student_id";
 
@@ -802,7 +903,6 @@ const getAllStudentsDataAndTest = async (req, res) => {
     });
   }
 };
-
 
 const getBidCredits = async (req, res) => {
   const { id } = req.params;

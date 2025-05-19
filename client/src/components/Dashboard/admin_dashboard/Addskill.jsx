@@ -7,7 +7,7 @@ function Addskill() {
   const [newSkill, setNewSkill] = useState('');
 
   const fetchSkills = () => {
-    fetch('http://103.118.158.24/api/api/quiz/skills')
+    fetch('http://localhost:5000/api/quiz/skills')
       .then((response) => response.json())
       .then((data) => {
         setSkills(data); // show all skills regardless of skill_status
@@ -41,7 +41,7 @@ function Addskill() {
       skill_status: 0 // default status
     };
 
-    fetch('http://103.118.158.24/api/api/quiz/skills', {
+    fetch('http://localhost:5000/api/quiz/skills', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newSkillData)

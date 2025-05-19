@@ -19,10 +19,10 @@ export default function UserScoreDetails() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://103.118.158.24/api/api/stu/student-test-data/${decoded}`);
+        const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decoded}`);
         setData(response.data);
         const testsResponse = await axios.get(
-              `http://103.118.158.24/api/api/quiz/all-tests/${decoded}`,
+              `http://localhost:5000/api/quiz/all-tests/${decoded}`,
               { withCredentials: true }
         );
 
@@ -126,14 +126,9 @@ export default function UserScoreDetails() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Student ID
-                  </th>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Student Name
-                  </th>
+                 
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Test ID
+                    Test Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Easy Score
@@ -162,9 +157,7 @@ export default function UserScoreDetails() {
                 {testResults.map((result) => (
                  
                   <tr key={result.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.name}</td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.test_id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.test_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.test_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.easy_score}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.medium_score}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.hard_score}</td>

@@ -22,8 +22,8 @@ const GeminiQuizGenerator = () => {
     const fetchInitialData = async () => {
       try {
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get('http://103.118.158.24/api/api/quiz/skills'),
-          axios.get('http://103.118.158.24/api/api/quiz/difficulty-levels')
+          axios.get('http://localhost:5000/api/quiz/skills'),
+          axios.get('http://localhost:5000/api/quiz/difficulty-levels')
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -219,7 +219,7 @@ const GeminiQuizGenerator = () => {
         correct_answer: q.correctAnswer
       }));
 
-      const response = await axios.post('http://103.118.158.24/api/api/quiz/mcq', { mcqs: questionsToSave });
+      const response = await axios.post('http://localhost:5000/api/quiz/mcq', { mcqs: questionsToSave });
       Swal.fire({
         title: 'Success!',
         text: `${approvedQuestions.length} questions saved successfully.`,

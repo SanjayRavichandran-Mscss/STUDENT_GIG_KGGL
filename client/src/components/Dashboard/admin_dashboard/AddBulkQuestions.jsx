@@ -18,8 +18,8 @@ function AddBulkQuestions() {
       try {
         setIsLoading(true);
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get("http://103.118.158.24/api/api/quiz/skills"),
-          axios.get("http://103.118.158.24/api/api/quiz/difficulty-levels"),
+          axios.get("http://localhost:5000/api/quiz/skills"),
+          axios.get("http://localhost:5000/api/quiz/difficulty-levels"),
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -122,7 +122,7 @@ function AddBulkQuestions() {
         }
 
         // Send MCQs to the new bulk API
-        const response = await axios.post("http://103.118.158.24/api/api/quiz/bulk-mcq", mcqs);
+        const response = await axios.post("http://localhost:5000/api/quiz/bulk-mcq", mcqs);
 
         setSuccess(response.data.msg);
         Swal.fire({

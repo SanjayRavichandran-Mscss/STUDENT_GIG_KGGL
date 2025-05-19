@@ -8,7 +8,7 @@
 //   const [projects, setProjects] = useState([]);
 
 //   useEffect(() => {
-//     axios.get("http://103.118.158.24/api/admin/getallprojects").then((res) => {
+//     axios.get("http://localhost:5000/admin/getallprojects").then((res) => {
 //       setProjects(
 //         res.data.map((project) => ({
 //           ...project,
@@ -17,7 +17,7 @@
 //         }))
 //       );
 //     });
-//     fetch("http://103.118.158.24/api/admin/getbit")
+//     fetch("http://localhost:5000/admin/getbit")
 //       .then(res => res.json())
 //       .then(data => setNotificationCount(data.length));
 //   }, []);
@@ -96,7 +96,7 @@
 
 //   useEffect(() => {
 //     // Fetch all projects
-//     axios.get("http://103.118.158.24/api/admin/getallprojects").then((res) => {
+//     axios.get("http://localhost:5000/admin/getallprojects").then((res) => {
 //       setProjects(
 //         res.data.map((project) => ({
 //           ...project,
@@ -107,7 +107,7 @@
 //     });
 
 //     // Fetch pending bid counts
-//     fetch("http://103.118.158.24/api/admin/getbit")
+//     fetch("http://localhost:5000/admin/getbit")
 //       .then((res) => res.json())
 //       .then((data) => {
 //         const countMap = {};
@@ -196,7 +196,7 @@ function Projects() {
 
   useEffect(() => {
     // Fetch all projects
-    axios.get("http://103.118.158.24/api/api/admin/getallprojects").then((res) => {
+    axios.get("http://localhost:5000/api/admin/getallprojects").then((res) => {
       setProjects(
         res.data.map((project) => ({
           ...project,
@@ -207,7 +207,7 @@ function Projects() {
     });
 
     // Fetch pending bid counts
-    fetch("http://103.118.158.24/api/admin/getbit")
+    fetch("http://localhost:5000/admin/getbit")
       .then((res) => res.json())
       .then((data) => {
         const countMap = {};

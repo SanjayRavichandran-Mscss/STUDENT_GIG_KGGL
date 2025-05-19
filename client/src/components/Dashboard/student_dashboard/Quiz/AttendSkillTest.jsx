@@ -25,7 +25,7 @@ export default function AttendSkillTest() {
     const fetchTest = async () => {
       try {
         const response = await axios.get(
-          `http://103.118.158.24/api/api/quiz/skill-based-tests/${studentId}`,
+          `http://localhost:5000/api/quiz/skill-based-tests/${studentId}`,
           { withCredentials: true }
         );
         const selectedTest = response.data.find((t) => t.test_id === Number(testId));
@@ -150,7 +150,7 @@ export default function AttendSkillTest() {
     try {
       const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
       const response = await axios.get(
-        `http://103.118.158.24/api/api/quiz/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
+        `http://localhost:5000/api/quiz/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
         { withCredentials: true }
       );
       return response.data;
@@ -331,7 +331,7 @@ export default function AttendSkillTest() {
       const { studentLevel, percentage, cappedScores } = determineStudentLevelAndPercentage();
 
       const response = await axios.post(
-        "http://103.118.158.24/api/api/quiz/submit-test",
+        "http://localhost:5000/api/quiz/submit-test",
         {
           test_id: test.test_id,
           student_id: studentId,

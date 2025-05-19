@@ -24,7 +24,7 @@ const Kgcas = () => {
   const [Data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://103.118.158.24/api/api/admin/skill`).then((res) => {
+    axios.get(`http://localhost:5000/api/admin/skill`).then((res) => {
       setData(res.data.result);
     });
   }, []);

@@ -19,9 +19,9 @@ export default function AssignTest() {
       setIsLoading(true);
       try {
         const [testsResponse, studentsResponse, questionsResponse] = await Promise.all([
-          axios.get("http://103.118.158.24/api/api/quiz/tests", { withCredentials: true }),
-          axios.get("http://103.118.158.24/api/api/quiz/students", { withCredentials: true }),
-          axios.get("http://103.118.158.24/api/api/quiz/available-questions", { withCredentials: true }),
+          axios.get("http://localhost:5000/api/quiz/tests", { withCredentials: true }),
+          axios.get("http://localhost:5000/api/quiz/students", { withCredentials: true }),
+          axios.get("http://localhost:5000/api/quiz/available-questions", { withCredentials: true }),
         ]);
         setTests(testsResponse.data);
         setStudents(studentsResponse.data);
@@ -39,7 +39,7 @@ export default function AssignTest() {
 
         // Fetch assigned students for each test
         const assignedPromises = testsResponse.data.map((test) =>
-          axios.get(`http://103.118.158.24/api/api/quiz/assigned-students/${test.test_id}`, {
+          axios.get(`http://localhost:5000/api/quiz/assigned-students/${test.test_id}`, {
             withCredentials: true,
           })
         );
@@ -119,7 +119,7 @@ export default function AssignTest() {
 
     try {
       await axios.post(
-        "http://103.118.158.24/api/api/quiz/assign-test",
+        "http://localhost:5000/api/quiz/assign-test",
         { test_id: testId, student_ids: studentsToAssign, active_status: 0 },
         { withCredentials: true }
       );
@@ -145,7 +145,7 @@ export default function AssignTest() {
     try {
       const newStatus = currentStatus ? 0 : 1;
       await axios.post(
-        "http://103.118.158.24/api/api/quiz/toggle-test-status",
+        "http://localhost:5000/api/quiz/toggle-test-status",
         { test_id: testId, active_status: newStatus },
         { withCredentials: true }
       );

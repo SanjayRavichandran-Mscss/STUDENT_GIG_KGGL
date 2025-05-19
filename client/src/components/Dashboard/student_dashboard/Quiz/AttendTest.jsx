@@ -23,7 +23,7 @@ export default function AttendTest() {
   const navigate = useNavigate();
 
   // Use the consolidated API endpoint for all tests
-  const apiEndpoint = `http://103.118.158.24/api/api/quiz/all-tests/${studentId}`;
+  const apiEndpoint = `http://localhost:5000/api/quiz/all-tests/${studentId}`;
 
   // Strip HTML tags
   const stripHtml = useCallback((html) => {
@@ -162,7 +162,7 @@ export default function AttendTest() {
     try {
       const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
       const response = await axios.get(
-        `http://103.118.158.24/api/api/quiz/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
+        `http://localhost:5000/api/quiz/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
         { withCredentials: true }
       );
       return response.data;
@@ -359,7 +359,7 @@ export default function AttendTest() {
       const { studentLevel, percentage, cappedScores } = determineStudentLevelAndPercentage();
 
       const response = await axios.post(
-        "http://103.118.158.24/api/api/quiz/submit-test",
+        "http://localhost:5000/api/quiz/submit-test",
         {
           test_id: test.test_id,
           student_id: studentId,

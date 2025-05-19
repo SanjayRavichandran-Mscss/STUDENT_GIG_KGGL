@@ -19,9 +19,62 @@ const studentsData = async (req, res) => {
 };
 
 
+// const studentDetails = async (req, res) => {
+//   try {
+//     const sql = `
+//       SELECT 
+//         s.student_id,
+//         s.roll_no,
+//         s.name,
+//         s.email,
+//         s.profile_photo,
+//         s.year,
+//         s.resume_file,
+//         s.github_link,
+//         c.college_name,
+//         co.course_name AS department,
+//         GROUP_CONCAT(
+//           JSON_OBJECT(
+//             'skill_id', ss.skill_id,
+//             'skill_name', sk.skill_name,
+//             'skill_url', ss.skill_url,
+//             'skill_description', ss.skill_description
+//           )
+//         ) AS skills
+//       FROM students s
+//       LEFT JOIN colleges c ON s.college_id = c.college_id
+//       LEFT JOIN course co ON s.degree = co.course_id
+//       LEFT JOIN student_skills ss ON s.student_id = ss.student_id
+//       LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
+//       WHERE s.role_id = 2
+//       GROUP BY s.student_id
+//     `;
+
+//     db.query(sql, (err, result) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ status: false, msg: "db_error" });
+//       }
+
+//       // Parse skills JSON strings into arrays
+//       const parsedResult = result.map((row) => ({
+//         ...row,
+//         skills: row.skills ? JSON.parse(`[${row.skills}]`) : [],
+//       }));
+
+//       res.json({ status: true, result: parsedResult });
+//     });
+//   } catch (err) {
+//     console.error("Server error:", err);
+//     res.status(500).json({ status: false, msg: "admin_error" });
+//   }
+// };
+
+
 const studentDetails = async (req, res) => {
   try {
-    const sql = `
+    // First get all student basic info
+    const studentsSql = `
       SELECT 
         s.student_id,
         s.roll_no,
@@ -32,44 +85,66 @@ const studentDetails = async (req, res) => {
         s.resume_file,
         s.github_link,
         c.college_name,
-        co.course_name AS department,
-        GROUP_CONCAT(
-          JSON_OBJECT(
-            'skill_id', ss.skill_id,
-            'skill_name', sk.skill_name,
-            'skill_url', ss.skill_url,
-            'skill_description', ss.skill_description
-          )
-        ) AS skills
+        co.course_name AS department
       FROM students s
       LEFT JOIN colleges c ON s.college_id = c.college_id
       LEFT JOIN course co ON s.degree = co.course_id
-      LEFT JOIN student_skills ss ON s.student_id = ss.student_id
-      LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
       WHERE s.role_id = 2
-      GROUP BY s.student_id
     `;
 
-    db.query(sql, (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ status: false, msg: "db_error" });
+    // Then get all skills
+    const skillsSql = `
+      SELECT 
+        ss.student_id,
+        ss.skill_id,
+        sk.skill_name,
+        ss.skill_url,
+        ss.skill_description
+      FROM student_skills ss
+      LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
+    `;
+
+    const [students, skills] = await Promise.all([
+      new Promise((resolve, reject) => {
+        db.query(studentsSql, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query(skillsSql, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      })
+    ]);
+
+    // Group skills by student_id
+    const skillsByStudent = {};
+    skills.forEach(skill => {
+      if (!skillsByStudent[skill.student_id]) {
+        skillsByStudent[skill.student_id] = [];
       }
-
-      // Parse skills JSON strings into arrays
-      const parsedResult = result.map((row) => ({
-        ...row,
-        skills: row.skills ? JSON.parse(`[${row.skills}]`) : [],
-      }));
-
-      res.json({ status: true, result: parsedResult });
+      skillsByStudent[skill.student_id].push({
+        skill_id: skill.skill_id,
+        skill_name: skill.skill_name,
+        skill_url: skill.skill_url,
+        skill_description: skill.skill_description
+      });
     });
+
+    // Combine the data
+    const result = students.map(student => ({
+      ...student,
+      skills: skillsByStudent[student.student_id] || []
+    }));
+
+    res.json({ status: true, result });
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ status: false, msg: "admin_error" });
   }
 };
-
 
 
 

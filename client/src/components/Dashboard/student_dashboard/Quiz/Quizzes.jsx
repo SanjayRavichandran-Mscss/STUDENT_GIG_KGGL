@@ -23,7 +23,7 @@ function Quizzes() {
 
   const fetchQuestions = (level) => {
     axios
-      .get(`http://103.118.158.24/api/stu/questions?level=${level}`)
+      .get(`http://localhost:5000/stu/questions?level=${level}`)
       .then((res) => {
         const questionsWithParsedOptions = res.data.map((question) => ({
           ...question,
@@ -43,7 +43,7 @@ function Quizzes() {
     });
 
     axios
-      .post("http://103.118.158.24/api/stu/option-click", {
+      .post("http://localhost:5000/stu/option-click", {
         questionId,
         selectedOption: option,
         correctAnswersCount,
@@ -96,7 +96,7 @@ function Quizzes() {
     };
 
     axios
-      .post("http://103.118.158.24/api/stu/compare-and-submit", data)
+      .post("http://localhost:5000/stu/compare-and-submit", data)
       .then((response) => {
         setQuizScore(response.data.totalScore);
         setIsSubmitted(true);

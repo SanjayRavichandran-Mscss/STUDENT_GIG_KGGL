@@ -17,7 +17,7 @@ export default function StudentMenu() {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.get("http://103.118.158.24/api/api/stu/logout", {
+      const response = await axios.get("http://localhost:5000/api/stu/logout", {
         withCredentials: true,
       });
       if (response.data.status) {

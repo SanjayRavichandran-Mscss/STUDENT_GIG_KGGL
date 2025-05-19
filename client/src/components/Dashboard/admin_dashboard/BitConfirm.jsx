@@ -17,7 +17,7 @@ function BitConfirm() {
     const fetchBitInfo = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/admin/bittedDetail/${decoded}`,
+          `http://103.118.158.24/api/api/admin/bittedDetail/${decoded}`,
           {
             withCredentials: true,
           }
@@ -50,7 +50,7 @@ function BitConfirm() {
   const handleAccept = async (stuid, proid, email) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/admin/accept/${stuid}/${proid}`,
+        `http://103.118.158.24/api/api/admin/accept/${stuid}/${proid}`,
         { email },
         { withCredentials: true }
       );
@@ -86,7 +86,7 @@ function BitConfirm() {
   const handleDecline = async (stuid, proid, email) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/admin/decline/${stuid}/${proid}`,
+        `http://103.118.158.24/api/api/admin/decline/${stuid}/${proid}`,
         { email },
         { withCredentials: true }
       );

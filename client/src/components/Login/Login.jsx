@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import loginimage from "../Assets/Group 289210.png";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -15,7 +17,7 @@ export function Login() {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:5000/api/stu/login", {
+      const response = await axios.post("http://103.118.158.24/api/api/stu/login", {
         email,
         password,
       });
@@ -30,25 +32,26 @@ export function Login() {
         } else if (role === 1) {
           navigate(`/manager/${btoa(id)}`);
         } else {
-          alert("Unsupported role. Please contact admin.");
+          toast.error("Unsupported role. Please contact admin.");
         }
       } else if (status === "invalid_user") {
-        alert(msg || "Please check your password");
+        toast.error(msg || "Please check your password");
       } else if (status === "both_are_invalid") {
-        alert(msg || "Please check your username");
+        toast.error(msg || "Please check your username");
       } else if (status === "error") {
-        alert(msg || "Login failed. Please contact admin.");
+        toast.error(msg || "Login failed. Please contact admin.");
       } else {
-        alert("Unexpected response. Please try again.");
+         toast.error("Unexpected response. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert(error.response?.data?.message || "Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Left Side Image */}
       <div className="w-full lg:w-1/2">
         <img

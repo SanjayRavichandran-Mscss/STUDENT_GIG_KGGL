@@ -7,7 +7,7 @@ const MainContent = () => {
   const [student, setStudent] = useState();
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/admin/stucount").then((res) => {
+    axios.get("http://103.118.158.24/api/api/admin/stucount").then((res) => {
       setStudent(res.data.result[0].total_students);
     });
   }, []);

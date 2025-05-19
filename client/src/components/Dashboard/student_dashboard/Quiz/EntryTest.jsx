@@ -20,7 +20,7 @@ export default function EntryTest() {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/quiz/entry-test/${studentId}`, {
+        const response = await axios.get(`http://103.118.158.24/api/api/quiz/entry-test/${studentId}`, {
           withCredentials: true,
         });
         setQuestions(response.data);
@@ -50,7 +50,7 @@ export default function EntryTest() {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/quiz/submit-entry-test",
+        "http://103.118.158.24/api/api/quiz/submit-entry-test",
         {
           student_id: studentId,
           answers,
@@ -76,7 +76,7 @@ export default function EntryTest() {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/quiz/entry-test/${studentId}`, {
+        const response = await axios.get(`http://103.118.158.24/api/api/quiz/entry-test/${studentId}`, {
           withCredentials: true,
         });
         setQuestions(response.data);

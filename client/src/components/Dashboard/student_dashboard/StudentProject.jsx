@@ -13,7 +13,7 @@ export default function StudentProject({ credits }) {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/stu/projects-by-level/${decoded}`);
+        const response = await axios.get(`http://103.118.158.24/api/api/stu/projects-by-level/${decoded}`);
 
         // Check if the response status is success
         if (response.data.status === "success") {

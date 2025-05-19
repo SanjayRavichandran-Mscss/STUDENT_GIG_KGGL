@@ -28,8 +28,8 @@
 //       try {
 //         setIsLoading(true);
 //         const [skillsRes, levelsRes] = await Promise.all([
-//           axios.get("http://localhost:5000/api/quiz/skills"),
-//           axios.get("http://localhost:5000/api/quiz/difficulty-levels"),
+//           axios.get("http://103.118.158.24/api/api/quiz/skills"),
+//           axios.get("http://103.118.158.24/api/api/quiz/difficulty-levels"),
 //         ]);
 //         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
 //         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -109,7 +109,7 @@
 //         correct_answer: formData.correctAnswer,
 //       };
 
-//       const response = await axios.post("http://localhost:5000/api/quiz/mcq", {
+//       const response = await axios.post("http://103.118.158.24/api/api/quiz/mcq", {
 //         mcqs: [questionToSave],
 //       });
 
@@ -398,8 +398,8 @@ function AddQuestion() {
       try {
         setIsLoading(true);
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/quiz/skills"),
-          axios.get("http://localhost:5000/api/quiz/difficulty-levels"),
+          axios.get("http://103.118.158.24/api/api/quiz/skills"),
+          axios.get("http://103.118.158.24/api/api/quiz/difficulty-levels"),
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -479,7 +479,7 @@ function AddQuestion() {
         correct_answer: formData.correctAnswer,
       };
 
-      const response = await axios.post("http://localhost:5000/api/quiz/mcq", questionToSave);
+      const response = await axios.post("http://103.118.158.24/api/api/quiz/mcq", questionToSave);
 
       Swal.fire({
         title: "Success!",

@@ -19,10 +19,10 @@ export default function UserScoreDetails() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decoded}`);
+        const response = await axios.get(`http://103.118.158.24/api/api/stu/student-test-data/${decoded}`);
         setData(response.data);
         const testsResponse = await axios.get(
-              `http://localhost:5000/api/quiz/all-tests/${decoded}`,
+              `http://103.118.158.24/api/api/quiz/all-tests/${decoded}`,
               { withCredentials: true }
         );
 

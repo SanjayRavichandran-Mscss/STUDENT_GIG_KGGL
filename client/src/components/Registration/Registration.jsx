@@ -33,7 +33,7 @@ export function Registration() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const collegeRes = await axios.get("http://localhost:5000/api/college/getcollege");
+        const collegeRes = await axios.get("http://103.118.158.24/api/api/college/getcollege");
         setCollege(collegeRes.data.msg || []);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -47,7 +47,7 @@ export function Registration() {
   useEffect(() => {
     if (selectedCategory) {
       axios
-        .get(`http://localhost:5000/api/college/course/${selectedCategory}`)
+        .get(`http://103.118.158.24/api/api/college/course/${selectedCategory}`)
         .then((res) => {
           setColleges(res.data.result || []);
         })
@@ -66,7 +66,7 @@ export function Registration() {
   useEffect(() => {
     if (selectedCollege) {
       axios
-        .get(`http://localhost:5000/api/college/years/${selectedCollege}`)
+        .get(`http://103.118.158.24/api/api/college/years/${selectedCollege}`)
         .then((res) => {
           setCourses(res.data.result[0]?.years || 0);
         })
@@ -160,7 +160,7 @@ export function Registration() {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/stu/registration", payload);
+      const res = await axios.post("http://103.118.158.24/api/api/stu/registration", payload);
       if (res.data.status === "inserted") {
         toast.success("Data registered successfully!", {
           position: "top-right",
@@ -201,20 +201,18 @@ export function Registration() {
   const semesterOptions = getSemesterOptions();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8 px-4">
+    <div className="mx-5 min-h-screen flex flex-col lg:flex-row">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="container max-w-6xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col lg:flex-row">
+    
         {/* Left Image Section */}
-        <div className="lg:w-5/12 hidden lg:block">
+        <div className="w-full lg:w-1/2">
           <img src={img} className="w-full h-full object-cover" alt="Illustration" />
         </div>
 
         {/* Right Form Section */}
         <div className="lg:w-7/12 p-6 lg:p-10 relative">
           {/* Close Button */}
-          <Link to="/" className="absolute top-4 right-4 text-gray-600 hover:text-gray-800">
-            <FontAwesomeIcon icon={faXmark} className="text-2xl" />
-          </Link>
+         
 
           <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center">Sign Up</h3>
 
@@ -449,12 +447,12 @@ export function Registration() {
 
           <p className="mt-4 text-center text-gray-600">
             Already have an account?{" "}
-            <Link to="/" className="text-blue-600 hover:underline">
+            <Link to="/login" className="text-blue-600 hover:underline">
               Sign In
             </Link>
           </p>
         </div>
       </div>
-    </div>
+
   );
 }

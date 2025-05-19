@@ -33,7 +33,7 @@ function Landingpage() {
 
   useEffect(() => {
     // Fetch total students
-    fetch('http://localhost:5000/api/stu/count')
+    fetch('http://103.118.158.24/api/api/stu/count')
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success') {
@@ -43,7 +43,7 @@ function Landingpage() {
       .catch((error) => console.error('Error fetching students count:', error));
 
     // Fetch total and live projects
-    fetch('http://localhost:5000/api/stu/projects/count')
+    fetch('http://103.118.158.24/api/api/stu/projects/count')
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success') {
@@ -72,7 +72,7 @@ function Landingpage() {
 
         <div className="relative z-10 h-full flex justify-center items-center text-center text-white">
           <div className="space-y-6 tracking-[2.8px] px-4">
-            <h1 className="text-3xl md:text-8xl lg:text-[80px] font-bold">Learn | Earn | Lead.</h1>
+            <h1 className="text-3xl md:text-8xl lg:text-[80px] font-bold">Learn | Earn | Lead</h1>
             <p className="text-2xl md:text-3xl lg:text-4xl">
               ENHANCE YOUR  
               <span className="text-[#dbff00]"> SKILLS </span> AND{' '}

@@ -1,6 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ProjectDetails() {
   const { id, proid, credits } = useParams();
@@ -22,7 +24,7 @@ function ProjectDetails() {
         setIsLoading(true);
         // Fetch project details
         const projectResponse = await axios.get(
-          `http://localhost:5000/api/stu/prodeatil/${decodedProject}`
+          `http://103.118.158.24/api/api/stu/prodeatil/${decodedProject}`
         );
         setProjectDetails(
           projectResponse.data.map((project) => ({
@@ -33,7 +35,7 @@ function ProjectDetails() {
 
         // Check if student has bidded and get bid status
         const bidResponse = await axios.get(
-          `http://localhost:5000/api/admin/checkBid/${decoded}/${decodedProject}`
+          `http://103.118.158.24/api/api/admin/checkBid/${decoded}/${decodedProject}`
         );
         setHasBidded(bidResponse.data.hasBidded);
         setBitStatus(bidResponse.data.bitStatus); // Store bid status
@@ -65,7 +67,7 @@ function ProjectDetails() {
     try {
       setIsSubmitting(true);
       const response = await axios.post(
-        `http://localhost:5000/api/admin/bitinfo`,
+        `http://103.118.158.24/api/api/admin/bitinfo`,
         {
           stu_id,
           pro_id,
@@ -73,23 +75,23 @@ function ProjectDetails() {
       );
 
       if (response.data === "bit_added") {
-        alert("Request sent successfully");
+        toast.success("Request sent successfully");
         setHasBidded(true);
         setBitStatus("pending"); // Set status to pending after placing bid
       }
 
       const updateCreditsResponse = await axios.put(
-        `http://localhost:5000/api/stu/updateBidCredits/${decoded}`,
+        `http://103.118.158.24/api/api/stu/updateBidCredits/${decoded}`,
         {
           bid_credits: updatedCredits,
         }
       );
       if (updateCreditsResponse.status === "credits_updated") {
-        alert("Bid credits updated successfully");
+        toast.success("Bid credits updated successfully");
       }
     } catch (err) {
       console.error("Error submitting bid:", err);
-      alert("Failed to submit bid. Please try again.");
+      toast.error("Failed to submit bid. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,6 +117,8 @@ function ProjectDetails() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+            <ToastContainer position="top-right" autoClose={3000} />
+      
       <h1 className="text-3xl font-bold text-center mb-8">Project Details</h1>
 
       {projectDetails.map((val, ind) => (

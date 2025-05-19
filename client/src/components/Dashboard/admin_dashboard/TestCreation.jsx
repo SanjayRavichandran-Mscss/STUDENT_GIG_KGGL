@@ -32,9 +32,9 @@ export default function TestCreation() {
       setIsLoading(true);
       try {
         const [skillsResponse, difficultyResponse, questionsResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/quiz/skills", { credentials: 'include' }),
-          fetch("http://localhost:5000/api/quiz/difficulty-levels", { credentials: 'include' }),
-          fetch("http://localhost:5000/api/quiz/available-questions", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api/quiz/skills", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api/quiz/difficulty-levels", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api/quiz/available-questions", { credentials: 'include' }),
         ]);
         
         const skillsData = await skillsResponse.json();
@@ -238,7 +238,7 @@ export default function TestCreation() {
         total_no_of_questions: Number(formData.total_no_of_questions),
       };
 
-      const response = await fetch("http://localhost:5000/api/quiz/create-test", {
+      const response = await fetch("http://103.118.158.24/api/api/quiz/create-test", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

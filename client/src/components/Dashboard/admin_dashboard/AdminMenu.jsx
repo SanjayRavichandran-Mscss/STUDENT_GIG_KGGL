@@ -11,7 +11,7 @@ export function AdminMenu() {
 
   axios.defaults.withCredentials = true;
   const handleLogout = () => {
-    axios.get("http://localhost:5000/api/stu/logout").then((res) => {
+    axios.get("http://103.118.158.24/api/api/stu/logout").then((res) => {
       if (res.data.status) {
         navigate("/");
       }

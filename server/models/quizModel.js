@@ -861,6 +861,22 @@ const getAllTransactions = () => {
 };
 
 
+// Check payment status by student_id and project_id
+const checkPaymentStatus = (studentId, projectId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT payment_id, student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot,created_at
+      FROM payment_details
+      WHERE student_id = ? AND project_id = ?
+    `;
+    db.query(sql, [studentId, projectId], (err, result) => {
+      if (err) reject(err);
+      else resolve(result[0]);
+    });
+  });
+};
+
+
 
 export default {
   createSkill,
@@ -903,5 +919,7 @@ export default {
   getTestTime,
   completeTestAttempt,
   getAllTransactions, // New export
+
+checkPaymentStatus, // New export
 
 };

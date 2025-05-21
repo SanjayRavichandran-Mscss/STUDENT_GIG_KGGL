@@ -1019,6 +1019,30 @@ const getTransactions = async (req, res) => {
   }
 };
 
+// Check payment status for a student's project
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const { student_id, project_id } = req.params;
+    if (!student_id || !project_id) {
+      return res.status(400).json({ msg: "Student ID and Project ID are required" });
+    }
+
+    const payment = await QuizModel.checkPaymentStatus(student_id, project_id);
+    if (!payment) {
+      return res.status(200).json({ status: false, payment: null, msg: "No payment details found" });
+    }
+
+    return res.status(200).json({
+      status: true,
+      payment,
+      msg: "Payment details found",
+    });
+  } catch (error) {
+    console.error("Error in checkPaymentStatus:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
 export default {
   createSkill,
   getAllSkills,
@@ -1060,4 +1084,6 @@ export default {
   getTestTime,
 
 getTransactions,  //new 
+
+  checkPaymentStatus, // New export
 };

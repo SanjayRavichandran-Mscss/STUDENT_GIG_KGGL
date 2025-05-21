@@ -61,5 +61,7 @@ quizRouter.get("/test-time/:attempt_id", quizController.getTestTime);
 
 quizRouter.get("/transactions", quizController.getTransactions);
 
+// Add new route for checking payment status
+quizRouter.get("/check-payment/:student_id/:project_id", quizController.checkPaymentStatus);
 
 export default quizRouter;

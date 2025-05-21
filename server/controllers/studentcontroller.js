@@ -499,7 +499,7 @@ const ForgotPassword = async (req, res) => {
                 <p style="color: #555; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">
                   If you did not request a password reset, please ignore this email or contact our support team.
                 </p>
-                <a href="http://localhost:5000:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
+                <a href="http://103.118.158.24/api:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
                   Reset Password
                 </a>
                 <p style="color: #999; margin: 20px 0 0; font-size: 12px;">
@@ -848,7 +848,7 @@ const getStudentDataAndTest = async (req, res) => {
 const getAllStudentsDataAndTest = async (req, res) => {
   try {
     // Query to get all students
-    const studentsQuery = "SELECT * FROM students";
+    const studentsQuery = "SELECT * FROM students WHERE role_id =2";
     // Query to get all test results with test names
     const testResultsQuery = "SELECT tr.*, tc.test_name FROM testresults tr JOIN testcreation tc ON tr.test_id = tc.test_id";
     // Query to get skill counts for all students

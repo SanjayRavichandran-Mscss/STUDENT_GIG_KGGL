@@ -41,7 +41,7 @@
 
 //     setIsLoading(true);
 //     axios
-//       .post(`http://localhost:5000/admin/addproject`, {
+//       .post(`http://103.118.158.24/api/admin/addproject`, {
 //         pname,
 //         pdes,
 //         skill,
@@ -231,7 +231,7 @@ export function Addproject() {
 
     setIsLoading(true);
     axios
-      .post(`http://localhost:5000/admin/addproject`, {
+      .post(`http://localhost:5000/api/admin/addproject`, {
         pname,
         pdes,
         skill,

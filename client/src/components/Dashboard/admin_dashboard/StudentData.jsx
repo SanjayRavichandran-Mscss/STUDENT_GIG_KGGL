@@ -176,7 +176,7 @@ function StudentsData() {
                                             <img
                                                 src={
                                                     student.profile_photo
-                                                        ? `http://localhost:5000/images/${student.profile_photo}`
+                                                        ? `http://103.118.158.24/api/images/${student.profile_photo}`
                                                         : defaultProfile
                                                 }
                                                 alt="Profile"
@@ -232,7 +232,7 @@ function StudentsData() {
                                 <img
                                     src={
                                         selectedStudent.profile_photo
-                                            ? `http://localhost:5000/images/${selectedStudent.profile_photo}`
+                                            ? `http://103.118.158.24/api/images/${selectedStudent.profile_photo}`
                                             : defaultProfile
                                     }
                                     alt="Profile"
@@ -273,7 +273,7 @@ function StudentsData() {
                                     <div className="h-96 border mt-2">
                                         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
                                             <Viewer
-                                                fileUrl={`http://localhost:5000/images/${selectedStudent.resume_file}`}
+                                                fileUrl={`http://103.118.158.24/api/images/${selectedStudent.resume_file}`}
                                                 plugins={[defaultLayoutPluginInstance]}
                                             />
                                         </Worker>

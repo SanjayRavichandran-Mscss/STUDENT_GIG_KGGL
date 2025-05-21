@@ -56,5 +56,10 @@ quizRouter.post("/bulk-mcq", quizController.createBulkMcq);
 
 quizRouter.get("/student-test-attended/:student_id", quizController.studentTestAttended);
 
+quizRouter.post("/start-test", quizController.startTest);
+quizRouter.get("/test-time/:attempt_id", quizController.getTestTime);
+
+quizRouter.get("/transactions", quizController.getTransactions);
+
 
 export default quizRouter;

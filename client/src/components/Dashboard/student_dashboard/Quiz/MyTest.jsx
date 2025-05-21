@@ -12,7 +12,7 @@ export default function MyTest() {
   const [tests, setTests] = useState([]);
   const [error, setError] = useState("");
   const [schedules, setSchedules] = useState({}); // Store test schedules { test_id: moment }
-  const [enabledTests, setEnabledTests] = useState({}); // Store enabled test IDs { test_id: boolean }
+  const [enabledTests, setEnabledTests] = useState({}); // Sre enabled test IDs { test_id: boolean }
   const [attendedTests, setAttendedTests] = useState([]); // Store attended test IDs
   const navigate = useNavigate();
 
@@ -229,14 +229,3 @@ export default function MyTest() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

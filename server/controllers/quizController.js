@@ -630,98 +630,98 @@ const getAllTestsWithQuestions = async (req, res) => {
 };
 
 // Submit test (for both assigned and skill-based tests)
-const submitTest = async (req, res) => {
-  try {
-    const {
-      test_id,
-      student_id,
-      answers,
-      easy_score,
-      medium_score,
-      hard_score,
-      total_score,
-      incorrect_answer_count,
-      student_level,
-      percentage,
-    } = req.body;
+// const submitTest = async (req, res) => {
+//   try {
+//     const {
+//       test_id,
+//       student_id,
+//       answers,
+//       easy_score,
+//       medium_score,
+//       hard_score,
+//       total_score,
+//       incorrect_answer_count,
+//       student_level,
+//       percentage,
+//     } = req.body;
 
-    if (
-      !test_id ||
-      !student_id ||
-      !answers ||
-      typeof answers !== "object" ||
-      !student_level ||
-      percentage === undefined
-    ) {
-      return res.status(400).json({ msg: "Test ID, student ID, answers, student level, and percentage are required" });
-    }
+//     if (
+//       !test_id ||
+//       !student_id ||
+//       !answers ||
+//       typeof answers !== "object" ||
+//       !student_level ||
+//       percentage === undefined
+//     ) {
+//       return res.status(400).json({ msg: "Test ID, student ID, answers, student level, and percentage are required" });
+//     }
 
-    // Check if test is available for the student
-    const tests = await QuizModel.getAllTestsWithQuestions(student_id);
-    const test = tests.find((t) => t.test_id === Number(test_id));
+//     // Check if test is available for the student
+//     const tests = await QuizModel.getAllTestsWithQuestions(student_id);
+//     const test = tests.find((t) => t.test_id === Number(test_id));
 
-    if (!test) {
-      return res.status(404).json({ msg: "Test not found or not available for this student" });
-    }
+//     if (!test) {
+//       return res.status(404).json({ msg: "Test not found or not available for this student" });
+//     }
 
-    const maxEasyScore = test.easy_level_question;
-    const maxMediumScore = test.medium_level_question;
-    const maxHardScore = test.hard_level_question;
-    const maxTotalScore = maxEasyScore + maxMediumScore + maxHardScore;
+//     const maxEasyScore = test.easy_level_question;
+//     const maxMediumScore = test.medium_level_question;
+//     const maxHardScore = test.hard_level_question;
+//     const maxTotalScore = maxEasyScore + maxMediumScore + maxHardScore;
 
-    if (
-      easy_score > maxEasyScore ||
-      medium_score > maxMediumScore ||
-      hard_score > maxHardScore ||
-      total_score > maxTotalScore
-    ) {
-      return res.status(400).json({ msg: "Submitted scores exceed maximum possible values" });
-    }
+//     if (
+//       easy_score > maxEasyScore ||
+//       medium_score > maxMediumScore ||
+//       hard_score > maxHardScore ||
+//       total_score > maxTotalScore
+//     ) {
+//       return res.status(400).json({ msg: "Submitted scores exceed maximum possible values" });
+//     }
 
-    const totalQuestions = test.total_no_of_questions;
-    const correctEasy = easy_score;
-    const correctMedium = medium_score;
-    const correctHard = hard_score;
-    const correctCount = correctEasy + correctMedium + correctHard;
+//     const totalQuestions = test.total_no_of_questions;
+//     const correctEasy = easy_score;
+//     const correctMedium = medium_score;
+//     const correctHard = hard_score;
+//     const correctCount = correctEasy + correctMedium + correctHard;
 
-    if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
-      return res.status(400).json({ msg: "Incorrect answer count is invalid" });
-    }
+//     if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
+//       return res.status(400).json({ msg: "Incorrect answer count is invalid" });
+//     }
 
-    // Validate student_level
-    let expectedLevel = "Failed";
-    if (easy_score >= test.easy_pass_mark) {
-      expectedLevel = "Easy";
-      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
-        expectedLevel = "Medium";
-        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark) {
-          expectedLevel = "Hard";
-        }
-      }
-    }
-    if (student_level !== expectedLevel) {
-      return res.status(400).json({ msg: "Invalid student level based on scores" });
-    }
+//     // Validate student_level
+//     let expectedLevel = "Failed";
+//     if (easy_score >= test.easy_pass_mark) {
+//       expectedLevel = "Easy";
+//       if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
+//         expectedLevel = "Medium";
+//         if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark) {
+//           expectedLevel = "Hard";
+//         }
+//       }
+//     }
+//     if (student_level !== expectedLevel) {
+//       return res.status(400).json({ msg: "Invalid student level based on scores" });
+//     }
 
-    const resultData = {
-      test_id,
-      student_id,
-      easy_score,
-      medium_score,
-      hard_score,
-      total_score,
-      incorrect_answer_count,
-      student_level,
-      percentage,
-    };
+//     const resultData = {
+//       test_id,
+//       student_id,
+//       easy_score,
+//       medium_score,
+//       hard_score,
+//       total_score,
+//       incorrect_answer_count,
+//       student_level,
+//       percentage,
+//     };
 
-    const result = await QuizModel.saveTestResult(resultData);
-    return res.status(201).json({ msg: "Test results saved successfully", result_id: result.insertId });
-  } catch (error) {
-    console.error("Error in submitTest:", error);
-    return res.status(500).json({ msg: "Server error" });
-  }
-};
+//     const result = await QuizModel.saveTestResult(resultData);
+//     return res.status(201).json({ msg: "Test results saved successfully", result_id: result.insertId });
+//   } catch (error) {
+//     console.error("Error in submitTest:", error);
+//     return res.status(500).json({ msg: "Server error" });
+//   }
+// };
 
 // Get questions by skill and difficulty level
 const getQuestionsBySkillAndLevel = async (req, res) => {
@@ -846,6 +846,179 @@ const studentTestAttended = async (req, res) => {
   }
 };
 
+// Start a test attempt
+const startTest = async (req, res) => {
+  try {
+    const { student_id, test_id, test_type } = req.body;
+    if (!student_id || !test_id || !test_type) {
+      return res.status(400).json({ msg: "Student ID, test ID, and test type are required" });
+    }
+
+    const result = await QuizModel.startTest(student_id, test_id, test_type);
+    return res.status(200).json({
+      attempt_id: result.attempt_id,
+      time_left_seconds: result.time_left_seconds,
+      start_time: result.start_time,
+    });
+  } catch (error) {
+    console.error("Error in startTest:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Get remaining time for a test attempt
+const getTestTime = async (req, res) => {
+  try {
+    const { attempt_id } = req.params;
+    if (!attempt_id) {
+      return res.status(400).json({ msg: "Attempt ID is required" });
+    }
+
+    const timeLeftSeconds = await QuizModel.getTestTime(attempt_id);
+    return res.status(200).json({ time_left_seconds: timeLeftSeconds });
+  } catch (error) {
+    console.error("Error in getTestTime:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Updated submitTest to include attempt_id and mark attempt as completed
+const submitTest = async (req, res) => {
+  try {
+    const {
+      test_id,
+      student_id,
+      answers,
+      easy_score,
+      medium_score,
+      hard_score,
+      total_score,
+      incorrect_answer_count,
+      student_level,
+      percentage,
+      attempt_id, // New field
+    } = req.body;
+
+    if (
+      !test_id ||
+      !student_id ||
+      !answers ||
+      typeof answers !== "object" ||
+      !student_level ||
+      percentage === undefined ||
+      !attempt_id
+    ) {
+      return res.status(400).json({ msg: "Test ID, student ID, answers, student level, percentage, and attempt ID are required" });
+    }
+
+    // Mark test attempt as completed
+    await QuizModel.completeTestAttempt(attempt_id);
+
+    // Existing validation and submission logic
+    const tests = await QuizModel.getAllTestsWithQuestions(student_id);
+    const test = tests.find((t) => t.test_id === Number(test_id));
+
+    if (!test) {
+      return res.status(404).json({ msg: "Test not found or not available for this student" });
+    }
+
+    const maxEasyScore = test.easy_level_question;
+    const maxMediumScore = test.medium_level_question;
+    const maxHardScore = test.hard_level_question;
+    const maxTotalScore = maxEasyScore + maxMediumScore + maxHardScore;
+
+    if (
+      easy_score > maxEasyScore ||
+      medium_score > maxMediumScore ||
+      hard_score > maxHardScore ||
+      total_score > maxTotalScore
+    ) {
+      return res.status(400).json({ msg: "Submitted scores exceed maximum possible values" });
+    }
+
+    const totalQuestions = test.total_no_of_questions;
+    const correctEasy = easy_score;
+    const correctMedium = medium_score;
+    const correctHard = hard_score;
+    const correctCount = correctEasy + correctMedium + correctHard;
+
+    if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
+      return res.status(400).json({ msg: "Incorrect answer count is invalid" });
+    }
+
+    let expectedLevel = "Failed";
+    if (easy_score >= test.easy_pass_mark) {
+      expectedLevel = "Easy";
+      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
+        expectedLevel = "Medium";
+        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark) {
+          expectedLevel = "Hard";
+        }
+      }
+    }
+    if (student_level !== expectedLevel) {
+      return res.status(400).json({ msg: "Invalid student level based on scores" });
+    }
+
+    // Check if test attempt is completed
+const checkTestAttemptStatus = async (req, res) => {
+  try {
+    const { attempt_id } = req.params;
+    if (!attempt_id) {
+      return res.status(400).json({ msg: "Attempt ID is required" });
+    }
+    const attempt = await QuizModel.getTestAttemptStatus(attempt_id);
+    if (!attempt) {
+      return res.status(404).json({ msg: "Test attempt not found" });
+    }
+    return res.status(200).json({
+      attempt_id,
+      completed: attempt.completed,
+    });
+  } catch (error) {
+    console.error("Error in checkTestAttemptStatus:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+    const resultData = {
+      test_id,
+      student_id,
+      easy_score,
+      medium_score,
+      hard_score,
+      total_score,
+      incorrect_answer_count,
+      student_level,
+      percentage,
+    };
+
+    const result = await QuizModel.saveTestResult(resultData);
+    return res.status(201).json({ msg: "Test results saved successfully", result_id: result.insertId });
+  } catch (error) {
+    console.error("Error in submitTest:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+const getTransactions = async (req, res) => {
+  try {
+    const transactions = await QuizModel.getAllTransactions();
+    res.status(200).json({
+      status: true,
+      message: "Transactions fetched successfully",
+      result: transactions,
+    });
+  } catch (error) {
+    console.error("Error in getTransactions:", error);
+    res.status(500).json({
+      status: false,
+      message: "Failed to fetch transactions",
+      error: error.message,
+    });
+  }
+};
+
 export default {
   createSkill,
   getAllSkills,
@@ -881,6 +1054,10 @@ export default {
   getTestSchedules,
   getActiveSkills,
   createBulkMcq,
-  studentTestAttended
-  
+
+  studentTestAttended,
+  startTest,
+  getTestTime,
+
+getTransactions,  //new 
 };

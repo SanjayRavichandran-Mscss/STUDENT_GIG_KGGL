@@ -36,7 +36,7 @@ function QuizzAssign() {
       if (formData.selectedCategoryId) {
         try {
           const response = await axios.get(
-            `http://localhost:5000/admin/api/questions/count?category_id=${formData.selectedCategoryId}`
+            `http://localhost:5000/api/admin/questions/count?category_id=${formData.selectedCategoryId}`
           );
           setAvailableQuestions(response.data.count);
         } catch (error) {

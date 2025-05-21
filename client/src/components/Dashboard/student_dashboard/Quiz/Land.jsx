@@ -16,7 +16,7 @@ function Land() {
     const fetchQuizAttempts = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:5000/stu/getdata/${decoded}`);
+        const response = await axios.get(`http://103.118.158.24/api/stu/getdata/${decoded}`);
         setQuizAttempts(response.data.msg[0]?.quiz_attempts || 0);
       } catch (err) {
         console.error("Error fetching quiz attempts:", err);

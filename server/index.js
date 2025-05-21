@@ -1,3 +1,4 @@
+// latest index , configured multer for transaction screenshot
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -7,20 +8,24 @@ import { collegeRouter } from "./routes/collegeroute.js";
 import Verification from "./middleware/Verification.js";
 import adminRouter from "./routes/adminroute.js";
 import quizRouter from "./routes/quizRoutes.js";
+import path from "path";
+import multer from "multer";
 
 const app = express();
-
 dotenv.config();
 
+// Serve static files
+app.use(express.static(path.join(process.cwd(), "public")));
+
+// Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5000:3000", "http://localhost:5000:5173" , "http://localhost:5173"],
+    origin: ["http://103.118.158.24:3000", "http://103.118.158.24:5173", "http://localhost:5173"],
     credentials: true,
   })
 );
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static("public"));
 
 // Routes
 app.use("/api/stu", studentRouter);
@@ -34,9 +39,19 @@ app.get("/", (req, res) => {
   res.send("Hello World...");
 });
 
+// Error handling for multer and other errors
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ status: false, msg: "File upload error", error: err.message });
+  } else if (err) {
+    console.error("Server error:", err);
+    return res.status(500).json({ status: false, msg: "Server error", error: err.message });
+  }
+  next();
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

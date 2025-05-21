@@ -14,14 +14,13 @@
 // import AssignTest from "./AssignTest.jsx";
 // import Addskill from "./Addskill.jsx";
 // import Score from "./Score.jsx";
-// // import Addskill from "./Addskill.jsx";
-
+// import AddBulkQuestions from "./AddBulkQuestions.jsx";
+// import ApprovedProjects from "./ApprovedProjects.jsx"; // Add new import
 
 // // Main layout container styles
 // const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
 // const sidebarClass = "w-full md:w-64 flex-shrink-0"; // Fixed width for sidebar
 // const contentClass = "flex-1 overflow-auto p-4 md:p-8"; // Added overflow control
-
 
 // function Dash() {
 //   return (
@@ -49,7 +48,6 @@
 //   );
 // }
 
-
 // export function Dashprofile() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -62,7 +60,6 @@
 //     </div>
 //   );
 // }
-
 
 // export function Dashstudent() {
 //   return (
@@ -84,7 +81,7 @@
 //         <AdminMenu />
 //       </div>
 //       <div className={contentClass}>
-//         <Score/>
+//         <Score />
 //       </div>
 //     </div>
 //   );
@@ -103,7 +100,6 @@
 //   );
 // }
 
-
 // export function DashAllProjects() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -116,7 +112,6 @@
 //     </div>
 //   );
 // }
-
 
 // export function DashBit() {
 //   return (
@@ -131,7 +126,6 @@
 //   );
 // }
 
-
 // export function AddQuizzes() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -144,7 +138,6 @@
 //     </div>
 //   );
 // }
-
 
 // export function AddQuizzesWithAI() {
 //   return (
@@ -159,7 +152,6 @@
 //   );
 // }
 
-
 // export function AssigningQuizz() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -172,7 +164,6 @@
 //     </div>
 //   );
 // }
-
 
 // export function TestCreationComponent() {
 //   return (
@@ -188,20 +179,20 @@
 //     </div>
 //   );
 // }
-// export function Addskillpage(){
-//   return(
+
+// export function Addskillpage() {
+//   return (
 //     <div className={layoutContainerClass}>
 //       <div className={sidebarClass}>
 //         <AdminMenu />
 //       </div>
 //       <div className={contentClass}>
-       
-//         <Addskill/>
-     
+//         <Addskill />
 //       </div>
 //     </div>
 //   );
 // }
+
 // export function AssignTestComponent() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -215,14 +206,33 @@
 //   );
 // }
 
+// export function AddBulkQuestionsComponent() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
+//         <AddBulkQuestions />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export function ApprovedProjectsComponent() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
+//         <ApprovedProjects />
+//       </div>
+//     </div>
+//   );
+// }
 
 // export default Dash;
-
-
-
-
-
-
 
 
 
@@ -257,6 +267,8 @@ import AssignTest from "./AssignTest.jsx";
 import Addskill from "./Addskill.jsx";
 import Score from "./Score.jsx";
 import AddBulkQuestions from "./AddBulkQuestions.jsx";
+import ApprovedProjects from "./ApprovedProjects.jsx";
+import TransactionDetails from "./TransactionDetails.jsx"; // Add new import
 
 // Main layout container styles
 const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
@@ -455,6 +467,32 @@ export function AddBulkQuestionsComponent() {
       </div>
       <div className={contentClass}>
         <AddBulkQuestions />
+      </div>
+    </div>
+  );
+}
+
+export function ApprovedProjectsComponent() {
+  return (
+    <div className={layoutContainerClass}>
+      <div className={sidebarClass}>
+        <AdminMenu />
+      </div>
+      <div className={contentClass}>
+        <ApprovedProjects />
+      </div>
+    </div>
+  );
+}
+
+export function TransactionDetailsComponent() {
+  return (
+    <div className={layoutContainerClass}>
+      <div className={sidebarClass}>
+        <AdminMenu />
+      </div>
+      <div className={contentClass}>
+        <TransactionDetails />
       </div>
     </div>
   );

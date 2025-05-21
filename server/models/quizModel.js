@@ -732,7 +732,7 @@ const getTestSchedules = (student_id) => {
 };
 
 
-// Add this function to the existing quizModel.js
+
 const getStudentTestResults = (studentId) => {
   return new Promise((resolve, reject) => {
     const sql = `
@@ -746,6 +746,121 @@ const getStudentTestResults = (studentId) => {
     });
   });
 };
+
+
+// Start a test attempt
+const startTest = (studentId, testId, testType) => {
+  return new Promise((resolve, reject) => {
+    // Check for existing active attempt
+    const checkSql = `
+      SELECT * FROM test_attempts 
+      WHERE student_id = ? AND test_id = ? AND test_type = ? AND completed = FALSE
+    `;
+    db.query(checkSql, [studentId, testId, testType], (err, results) => {
+      if (err) return reject(err);
+
+      if (results.length > 0) {
+        // Existing attempt found
+        const attempt = results[0];
+        const startTime = new Date(attempt.start_time);
+        const durationMs = attempt.duration_minutes * 60 * 1000;
+        const endTime = new Date(startTime.getTime() + durationMs);
+        const now = new Date();
+        const timeLeftMs = endTime - now;
+        const timeLeftSeconds = Math.max(0, Math.floor(timeLeftMs / 1000));
+
+        return resolve({
+          attempt_id: attempt.id,
+          time_left_seconds: timeLeftSeconds,
+          start_time: startTime,
+        });
+      }
+
+      // Create new attempt
+      const startTime = new Date();
+      const insertSql = `
+        INSERT INTO test_attempts (student_id, test_id, test_type, start_time, duration_minutes)
+        VALUES (?, ?, ?, ?, ?)
+      `;
+      db.query(insertSql, [studentId, testId, testType, startTime, 30], (err, result) => {
+        if (err) return reject(err);
+        resolve({
+          attempt_id: result.insertId,
+          time_left_seconds: 30 * 60, // 30 minutes in seconds
+          start_time: startTime,
+        });
+      });
+    });
+  });
+};
+
+// Get remaining time for a test attempt
+const getTestTime = (attemptId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT start_time, duration_minutes, completed 
+      FROM test_attempts 
+      WHERE id = ?
+    `;
+    db.query(sql, [attemptId], (err, results) => {
+      if (err) return reject(err);
+      if (results.length === 0) return reject(new Error("Test attempt not found"));
+
+      const attempt = results[0];
+      if (attempt.completed) return resolve(0);
+
+      const startTime = new Date(attempt.start_time);
+      const durationMs = attempt.duration_minutes * 60 * 1000;
+      const endTime = new Date(startTime.getTime() + durationMs);
+      const now = new Date();
+      const timeLeftMs = endTime - now;
+      const timeLeftSeconds = Math.max(0, Math.floor(timeLeftMs / 1000));
+
+      resolve(timeLeftSeconds);
+    });
+  });
+};
+
+// Mark test attempt as completed
+const completeTestAttempt = (attemptId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE test_attempts 
+      SET completed = TRUE 
+      WHERE id = ?
+    `;
+    db.query(sql, [attemptId], (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+};
+
+
+
+// Get all transactions with student and project details
+const getAllTransactions = () => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT 
+        pd.from_account_number,
+        pd.to_account_number,
+        pd.transaction_id,
+        pd.transaction_screenshot,
+        s.name AS student_name,
+        p.project_name
+      FROM payment_details pd
+      JOIN students s ON pd.student_id = s.student_id
+      JOIN projects p ON pd.project_id = p.project_id
+    `;
+    db.query(sql, (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+};
+
+
 
 export default {
   createSkill,
@@ -783,5 +898,10 @@ export default {
   saveTestSchedule,
   getTestSchedules,
   getActiveSkills,
-  getStudentTestResults
+  getStudentTestResults,
+  startTest,
+  getTestTime,
+  completeTestAttempt,
+  getAllTransactions, // New export
+
 };

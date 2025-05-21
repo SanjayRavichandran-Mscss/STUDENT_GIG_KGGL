@@ -1,6 +1,9 @@
 import db from "../config/db.js";
 import nodemailer from "nodemailer";
 import { validationResult } from "express-validator";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 const studentsData = async (req, res) => {
   try {
@@ -516,8 +519,9 @@ const getAllStudentAndTestData = async (req, res) => {
         tr.medium_attend_question,
         tr.hard_attend_question
 
-      FROM student s
+      FROM students s
       LEFT JOIN testresults tr ON s.student_id = tr.student_id
+      WHERE s.role_id = 2
       ORDER BY s.student_id, tr.attend_at DESC;
     `;
 
@@ -807,33 +811,44 @@ const testAssign = async (req, res) => {
 
 
 const checkBidStatus = async (req, res) => {
-  const { stuid, proid } = req.params;
-
   try {
+    const { stuid, proid } = req.params;
+
     const sql = `
       SELECT 
-        b.bit_status_id,
-        COALESCE(bs.bit_status_name, 'pending') AS bit_status_name
+        CASE 
+          WHEN COUNT(*) > 0 THEN true 
+          ELSE false 
+        END AS hasBidded,
+        (SELECT bs.bit_status_name
+         FROM bit b2
+         JOIN bitstatuses bs ON b2.bit_status_id = bs.bit_status_id
+         WHERE b2.student_id = ? 
+         AND b2.project_id = ?
+         ORDER BY b2.datetime DESC
+         LIMIT 1) AS bitStatus
       FROM bit b
-      LEFT JOIN bitstatuses bs ON b.bit_status_id = bs.bit_status_id
-      WHERE b.student_id = ? AND b.project_id = ?
-      LIMIT 1
+      WHERE b.student_id = ? 
+      AND b.project_id = ?
     `;
 
-    db.query(sql, [stuid, proid], (err, result) => {
+    db.query(sql, [stuid, proid, stuid, proid], (err, result) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ status: false, msg: "db_error" });
       }
-      const hasBidded = result.length > 0;
-      const bitStatus = hasBidded ? result[0].bit_status_name : null;
-      res.json({ hasBidded, bitStatus });
+      res.json({
+        status: true,
+        hasBidded: result[0].hasBidded === 1,
+        bitStatus: result[0].bitStatus || null,
+      });
     });
   } catch (e) {
     console.error("Server error:", e);
-    res.status(500).json({ status: false, msg: "admin_error" });
+    res.status(500).json({ status: false, msg: "server_error" });
   }
 };
+
 
 
 
@@ -889,6 +904,362 @@ const allStudentsTestsBySkillsCount = async (req, res) => {
 };
 
 
+
+const getAcceptedBits = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        b.bit_id,
+        b.student_id,
+        s.name AS student_name,
+        s.email,
+        s.roll_no,
+        p.project_id,
+        p.project_name,
+        c.college_name,
+        b.datetime,
+        COALESCE(bs.bit_status_name, 'accepted') AS bit_status_name,
+        (SELECT bs2.bit_status_name
+         FROM bit b2
+         JOIN bitstatuses bs2 ON b2.bit_status_id = bs2.bit_status_id
+         WHERE b2.student_id = b.student_id 
+         AND b2.project_id = b.project_id
+         ORDER BY b2.datetime DESC
+         LIMIT 1) AS latest_status_name
+      FROM bit b
+      JOIN students s ON b.student_id = s.student_id
+      JOIN projects p ON b.project_id = p.project_id
+      JOIN colleges c ON s.college_id = c.college_id
+      LEFT JOIN bitstatuses bs ON b.bit_status_id = bs.bit_status_id
+      WHERE b.bit_status_id = 1
+      ORDER BY b.datetime DESC
+    `;
+
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      res.json({ status: true, result });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+}
+
+
+
+
+const getBitStatuses = async (req, res) => {
+  try {
+    const sql = `SELECT bit_status_id, bit_status_name FROM bitstatuses`;
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      res.json({ status: true, result });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
+const updateOrCreateBitStatus = async (req, res) => {
+  const { bit_id, student_id, project_id, bit_status_id, email } = req.body;
+
+  try {
+    // Validate required fields
+    if (!bit_id || !student_id || !project_id || !bit_status_id || !email) {
+      return res.status(400).json({ status: false, msg: "All fields are required" });
+    }
+
+    // If bit_status_id is 2 (declined), update the existing record
+    if (bit_status_id === 2) {
+      const sql = `
+        UPDATE bit
+        SET bit_status_id = ?
+        WHERE bit_id = ? AND student_id = ? AND project_id = ? AND bit_status_id = 1
+      `;
+      db.query(sql, [bit_status_id, bit_id, student_id, project_id], (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ status: false, msg: "db_error" });
+        }
+        if (result.affectedRows === 0) {
+          return res.status(400).json({ status: false, msg: "No approved bid found to decline" });
+        }
+
+        // Send email notification for decline
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "sivaranji5670@gmail.com",
+            pass: "zicd vrfo zxbs jsfb",
+          },
+        });
+
+        const mailOptions = {
+          from: "sivaranji5670@gmail.com",
+          to: email,
+          subject: "Request Declined",
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                    .header { text-align: center; padding: 10px 0; background-color: #dc3545; color: #ffffff; }
+                    .content { padding: 20px; }
+                    .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Request Declined</h1>
+                    </div>
+                    <div class="content">
+                        <p>Dear User,</p>
+                        <p>We regret to inform you that your request has been declined by the admin.</p>
+                        <p>Please contact us if you have any questions or need further assistance.</p>
+                        <p>Best regards,</p>
+                        <p><strong>Your Company Name</strong></p>
+                    </div>
+                    <div class="footer">
+                        <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
+                        <p>1234 Street Name, City, State, 12345</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Email error:", error);
+          } else {
+            console.log("Decline email sent: " + info.response);
+          }
+        });
+
+        res.json({ status: true, msg: "declined" });
+      });
+    } else {
+      // For other statuses, create a new bit record
+      const sql = `
+        INSERT INTO bit (student_id, project_id, bit_status_id, datetime)
+        VALUES (?, ?, ?, NOW())
+      `;
+      db.query(sql, [student_id, project_id, bit_status_id], (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ status: false, msg: "db_error" });
+        }
+
+        // Send email notification for status change
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "sivaranji5670@gmail.com",
+            pass: "zicd vrfo zxbs jsfb",
+          },
+        });
+
+        const mailOptions = {
+          from: "sivaranji5670@gmail.com",
+          to: email,
+          subject: "Bid Status Updated",
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                    .header { text-align: center; padding: 10px 0; background-color: #007bff; color: #ffffff; }
+                    .content { padding: 20px; }
+                    .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Bid Status Updated</h1>
+                    </div>
+                    <div class="content">
+                        <p>Dear User,</p>
+                        <p>Your bid status has been updated to "${bit_status_id === 3 ? 'In Progress' : bit_status_id === 4 ? 'Completed' : bit_status_id === 5 ? 'Waiting for Client Approval' : bit_status_id === 6 ? 'Client Approved' : 'Payment Received'}" by the admin.</p>
+                        <p>Please contact us if you have any questions or need further assistance.</p>
+                        <p>Best regards,</p>
+                        <p><strong>Your Company Name</strong></p>
+                    </div>
+                    <div class="footer">
+                        <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
+                        <p>1234 Street Name, City, State, 12345</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+          `,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Email error:", error);
+          } else {
+            console.log("Status update email sent: " + info.response);
+          }
+        });
+
+        res.json({ status: true, msg: "status_updated" });
+      });
+    }
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
+
+// const savePaymentDetails = async (req, res) => {
+//   const { student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot } = req.body;
+
+//   try {
+//     // Validate required fields
+//     if (!student_id || !project_id || !from_account_number || !to_account_number || !transaction_id || !transaction_screenshot) {
+//       return res.status(400).json({ status: false, msg: "All payment fields are required" });
+//     }
+
+//     const sql = `
+//       INSERT INTO payment_details (student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot)
+//       VALUES (?, ?, ?, ?, ?, ?)
+//     `;
+
+//     db.query(sql, [student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot], (err, result) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ status: false, msg: "db_error" });
+//       }
+
+//       res.json({ status: true, msg: "payment_details_saved" });
+//     });
+//   } catch (e) {
+//     console.error("Server error:", e);
+//     res.status(500).json({ status: false, msg: "server_error" });
+//   }
+// };
+
+
+
+
+// Set up multer storage configuration
+// Set up multer storage configuration
+
+
+
+// Set up multer storage configuration
+
+
+// Set up multer storage configuration
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(process.cwd(), 'public', 'payment_screenshots');
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, `payment-${uniqueSuffix}${ext}`);
+  },
+});
+
+// File filter to allow only images and PDFs
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|pdf/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only JPEG, JPG, PNG, and PDF files are allowed'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
+
+const savePaymentDetails = async (req, res) => {
+  try {
+    const { student_id, project_id, from_account_number, to_account_number, transaction_id } = req.body;
+    const transaction_screenshot = req.file ? `payment_screenshots/${req.file.filename}` : null;
+
+    // Validate all required fields
+    if (!student_id || !project_id || !from_account_number || !to_account_number || !transaction_id || !transaction_screenshot) {
+      return res.status(400).json({ status: false, msg: 'All payment details, including the screenshot, are required' });
+    }
+
+    // Validate student_id exists
+    const studentCheck = await db.query('SELECT student_id FROM students WHERE student_id = ?', [student_id]);
+    if (!studentCheck || studentCheck.length === 0) {
+      return res.status(400).json({ status: false, msg: 'Invalid student_id: Student does not exist' });
+    }
+
+    // Validate project_id exists
+    const projectCheck = await db.query('SELECT project_id FROM projects WHERE project_id = ?', [project_id]);
+    if (!projectCheck || projectCheck.length === 0) {
+      return res.status(400).json({ status: false, msg: 'Invalid project_id: Project does not exist' });
+    }
+
+    // Execute the query
+    const query = `
+      INSERT INTO payment_details (
+        student_id, 
+        project_id, 
+        from_account_number, 
+        to_account_number, 
+        transaction_id, 
+        transaction_screenshot
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      student_id,
+      project_id,
+      from_account_number,
+      to_account_number,
+      transaction_id,
+      transaction_screenshot,
+    ];
+
+    const result = await db.query(query, values);
+
+    // Check if the query was successful
+    if (result && result.affectedRows > 0) {
+      return res.json({ status: true, msg: 'Payment details saved successfully' });
+    } else {
+      return res.status(500).json({ status: false, msg: 'Failed to save payment details' });
+    }
+  } catch (err) {
+    console.error('Error saving payment details:', err);
+    // Handle specific foreign key errors
+    if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ status: false, msg: 'Foreign key constraint failed: Invalid student_id or project_id' });
+    }
+    return res.status(500).json({ status: false, msg: `Server error: ${err.message}` });
+  }
+};
+
 export {
   studentsData,
   studentDetails,
@@ -911,5 +1282,13 @@ export {
   checkBidStatus, // Add to exports,
   getAllStudentAndTestData,
   testsByStudentSkillsCount,
-  allStudentsTestsBySkillsCount
+  
+  allStudentsTestsBySkillsCount,
+  getAcceptedBits, // Add new function to exports
+  getBitStatuses, // New function
+  updateOrCreateBitStatus, // New function
+
+  savePaymentDetails, // New function
+
+
 };

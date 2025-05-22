@@ -153,11 +153,35 @@ const deleteLevel = async (req, res) => {
 };
 
 // Create MCQ
+// const createMCQ = async (req, res) => {
+//   try {
+//     const mcqData = req.body;
+//     if (!mcqData.questions || !mcqData.option || !mcqData.correct_answer || !mcqData.skill_id || !mcqData.difficulty_level_id) {
+//       return res.status(400).json({ msg: "All fields are required" });
+//     }
+//     mcqData.option = JSON.stringify(mcqData.option);
+//     const result = await QuizModel.createMCQ(mcqData);
+//     return res.status(201).json({ msg: "MCQ created successfully", id: result.insertId });
+//   } catch (error) {
+//     console.error("Error in createMCQ:", error);
+//     return res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+
+
 const createMCQ = async (req, res) => {
   try {
     const mcqData = req.body;
-    if (!mcqData.questions || !mcqData.option || !mcqData.correct_answer || !mcqData.skill_id || !mcqData.difficulty_level_id) {
-      return res.status(400).json({ msg: "All fields are required" });
+    if (
+      !mcqData.questions ||
+      !mcqData.option ||
+      !mcqData.correct_answer ||
+      !mcqData.skill_id ||
+      !mcqData.difficulty_level_id ||
+      !mcqData.question_status
+    ) {
+      return res.status(400).json({ msg: "All fields are required, including question_status" });
     }
     mcqData.option = JSON.stringify(mcqData.option);
     const result = await QuizModel.createMCQ(mcqData);
@@ -167,6 +191,7 @@ const createMCQ = async (req, res) => {
     return res.status(500).json({ msg: "Server error" });
   }
 };
+
 
 // Get all MCQs
 const getAllMcqs = async (req, res) => {
@@ -771,6 +796,68 @@ const getTestSchedules = async (req, res) => {
 };
 
 
+// const createBulkMcq = async (req, res) => {
+//   try {
+//     const mcqs = req.body;
+
+//     if (!Array.isArray(mcqs) || mcqs.length === 0) {
+//       return res.status(400).json({ msg: "An array of MCQs is required" });
+//     }
+
+//     const insertedIds = [];
+
+//     for (const mcq of mcqs) {
+//       // Validate required fields
+//       if (
+//         !mcq.questions ||
+//         !mcq.option ||
+//         !Array.isArray(mcq.option) ||
+//         mcq.option.length < 4 ||
+//         !mcq.correct_answer ||
+//         !mcq.skill_id ||
+//         !mcq.difficulty_level_id
+//       ) {
+//         return res.status(400).json({ msg: `Invalid MCQ: ${JSON.stringify(mcq)}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id) are required.` });
+//       }
+
+//       // Validate options have option and feedback
+//       for (const opt of mcq.option) {
+//         if (!opt.option || !opt.feedback) {
+//           return res.status(400).json({ msg: `Invalid option in MCQ: ${JSON.stringify(mcq)}. Each option must have option text and feedback.` });
+//         }
+//       }
+
+//       // Validate correct_answer matches one of the options
+//       if (!mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
+//         return res.status(400).json({ msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.` });
+//       }
+
+//       // Stringify options
+//       const mcqData = {
+//         ...mcq,
+//         option: JSON.stringify(mcq.option),
+//       };
+
+//       const result = await QuizModel.createMCQ(mcqData);
+//       insertedIds.push(result.insertId);
+//     }
+
+//     return res.status(201).json({
+//       msg: `Successfully created ${insertedIds.length} MCQ(s)`,
+//       ids: insertedIds,
+//     });
+//   } catch (error) {
+//     console.error("Error in createBulkMcq:", error);
+//     return res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+
+
+
+
+
+
 const createBulkMcq = async (req, res) => {
   try {
     const mcqs = req.body;
@@ -790,21 +877,28 @@ const createBulkMcq = async (req, res) => {
         mcq.option.length < 4 ||
         !mcq.correct_answer ||
         !mcq.skill_id ||
-        !mcq.difficulty_level_id
+        !mcq.difficulty_level_id ||
+        !mcq.question_status
       ) {
-        return res.status(400).json({ msg: `Invalid MCQ: ${JSON.stringify(mcq)}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id) are required.` });
+        return res.status(400).json({ 
+          msg: `Invalid MCQ: ${JSON.stringify(mcq)}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id, question_status) are required.` 
+        });
       }
 
       // Validate options have option and feedback
       for (const opt of mcq.option) {
         if (!opt.option || !opt.feedback) {
-          return res.status(400).json({ msg: `Invalid option in MCQ: ${JSON.stringify(mcq)}. Each option must have option text and feedback.` });
+          return res.status(400).json({ 
+            msg: `Invalid option in MCQ: ${JSON.stringify(mcq)}. Each option must have option text and feedback.` 
+          });
         }
       }
 
       // Validate correct_answer matches one of the options
       if (!mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
-        return res.status(400).json({ msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.` });
+        return res.status(400).json({ 
+          msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.` 
+        });
       }
 
       // Stringify options

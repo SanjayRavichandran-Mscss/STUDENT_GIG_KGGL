@@ -187,15 +187,34 @@ const deleteLevel = (levelId) => {
 };
 
 // Create MCQ
+// const createMCQ = (mcqData) => {
+//   return new Promise((resolve, reject) => {
+//     const sql = "INSERT INTO questions_mcq SET ?";
+//     db.query(sql, mcqData, (err, result) => {
+//       if (err) reject(err);
+//       else resolve(result);
+//     });
+//   });
+// };
+
 const createMCQ = (mcqData) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO questions_mcq SET ?";
-    db.query(sql, mcqData, (err, result) => {
+    const sql = "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
+    const values = [
+      mcqData.skill_id,
+      mcqData.difficulty_level_id,
+      mcqData.questions,
+      mcqData.option,
+      mcqData.correct_answer,
+      mcqData.question_status,
+    ];
+    db.query(sql, values, (err, result) => {
       if (err) reject(err);
       else resolve(result);
     });
   });
 };
+
 
 // Get all MCQs
 const getAllMcqs = () => {

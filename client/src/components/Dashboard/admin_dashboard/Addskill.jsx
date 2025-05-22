@@ -1,126 +1,1001 @@
+// import React, { useEffect, useState } from 'react';
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+// import Swal from 'sweetalert2';
+// import { Pencil, Trash2, Search, Check, Plus, X } from 'lucide-react';
+// import Modal from 'react-modal';
+
+// // Bind modal to app element for accessibility
+// Modal.setAppElement('#root');
+
+// function Addskill() {
+//   const [skills, setSkills] = useState([]);
+//   const [activeSkills, setActiveSkills] = useState([]);
+//   const [newSkill, setNewSkill] = useState('');
+//   const [editingSkill, setEditingSkill] = useState(null);
+//   const [editingSkillName, setEditingSkillName] = useState('');
+//   const [originalSkillName, setOriginalSkillName] = useState(''); // Store original skill name
+//   const [adminFilter, setAdminFilter] = useState('');
+//   const [studentFilter, setStudentFilter] = useState('');
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+
+//   // Fetch all skills (inactive only for admin table)
+//   const fetchSkills = async () => {
+//     try {
+//       const response = await fetch('http://localhost:5000/api/quiz/skills');
+//       const data = await response.json();
+//       setSkills(data.filter((skill) => skill.skill_status === 0)); // Only inactive skills
+//     } catch (error) {
+//       toast.error('Error fetching skills.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       console.error('Error fetching skills:', error);
+//     }
+//   };
+
+//   // Fetch active skills (skill_status = 1)
+//   const fetchActiveSkills = async () => {
+//     try {
+//       const response = await fetch('http://localhost:5000/api/quiz/skills/active');
+//       const data = await response.json();
+//       setActiveSkills(data);
+//     } catch (error) {
+//       toast.error('Error fetching active skills.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       console.error('Error fetching active skills:', error);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchSkills();
+//     fetchActiveSkills();
+//   }, []);
+
+//   // Handle adding a new skill
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!newSkill.trim()) {
+//       toast.warn('Please enter a skill name.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       return;
+//     }
+
+//     const newSkillData = {
+//       skill_name: newSkill.trim(),
+//       skill_status: 0, // Default status (inactive)
+//     };
+
+//     try {
+//       const res = await fetch('http://localhost:5000/api/quiz/skills', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(newSkillData),
+//       });
+
+//       if (res.ok) {
+//         toast.success('Skill added successfully!', {
+//           position: 'top-right',
+//           autoClose: 1000,
+//         });
+//         setNewSkill('');
+//         setIsModalOpen(false);
+//         fetchSkills();
+//       } else {
+//         toast.error('Failed to add skill.', {
+//           position: 'top-right',
+//           autoClose: 2000,
+//         });
+//       }
+//     } catch (error) {
+//       toast.error('Server error while adding skill.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       console.error('Error adding skill:', error);
+//     }
+//   };
+
+//   // Handle editing a skill
+//   const handleEdit = (skill) => {
+//     setEditingSkill(skill.skill_id);
+//     setEditingSkillName(skill.skill_name);
+//     setOriginalSkillName(skill.skill_name); // Store original name
+//   };
+
+//   const handleUpdate = async (skillId) => {
+//     if (!editingSkillName.trim()) {
+//       toast.warn('Skill name cannot be empty.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       return;
+//     }
+
+//     const hasChanged = editingSkillName.trim() !== originalSkillName.trim();
+
+//     try {
+//       const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ skill_name: editingSkillName.trim() }),
+//       });
+
+//       if (res.ok) {
+//         if (hasChanged) {
+//           toast.success('Skill updated successfully!', {
+//             position: 'top-right',
+//             autoClose: 1000,
+//           });
+//         }
+//         setEditingSkill(null);
+//         setEditingSkillName('');
+//         setOriginalSkillName('');
+//         fetchSkills();
+//         fetchActiveSkills();
+//       } else {
+//         if (hasChanged) {
+//           toast.error('Failed to update skill.', {
+//             position: 'top-right',
+//             autoClose: 2000,
+//           });
+//         }
+//       }
+//     } catch (error) {
+//       if (hasChanged) {
+//         toast.error('Server error while updating skill.', {
+//           position: 'top-right',
+//           autoClose: 2000,
+//         });
+//       }
+//       console.error('Error updating skill:', error);
+//     }
+//   };
+
+//   // Handle deleting a skill
+//   const handleDelete = async (skillId) => {
+//     const result = await Swal.fire({
+//       title: 'Are you sure?',
+//       text: 'This action will permanently delete the skill.',
+//       icon: 'warning',
+//       showCancelButton: true,
+//       confirmButtonColor: '#dc2626',
+//       cancelButtonColor: '#6b7280',
+//       confirmButtonText: 'Yes, delete it!',
+//       cancelButtonText: 'Cancel',
+//       customClass: {
+//         popup: 'rounded-md shadow-lg',
+//         title: 'text-lg font-semibold text-gray-800',
+//         content: 'text-gray-600',
+//         confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+//         cancelButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+//       },
+//     });
+
+//     if (!result.isConfirmed) return;
+
+//     try {
+//       const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+//         method: 'DELETE',
+//       });
+
+//       if (res.ok) {
+//         toast.success('Skill deleted successfully!', {
+//           position: 'top-right',
+//           autoClose: 2000,
+//         });
+//         fetchSkills();
+//         fetchActiveSkills();
+//       } else {
+//         toast.error('Failed to delete skill. because Test was created for this skill', {
+//           position: 'top-right',
+//           autoClose: 4000,
+//         });
+//       }
+//     } catch (error) {
+//       toast.error('Server error while deleting skill.', {
+//         position: 'top-right',
+//         autoClose: 2000,
+//       });
+//       console.error('Error deleting skill:', error);
+//     }
+//   };
+
+//   // Filter skills by name
+//   const filteredAdminSkills = skills.filter((skill) =>
+//     skill.skill_name.toLowerCase().includes(adminFilter.toLowerCase())
+//   );
+//   const filteredStudentSkills = activeSkills.filter((skill) =>
+//     skill.skill_name.toLowerCase().includes(studentFilter.toLowerCase())
+//   );
+
+//   return (
+//     <div className="min-h-screen bg-blue-50 py-6 px-4 sm:px-6 lg:px-8">
+//       <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
+
+//       <div className="max-w-5xl mx-auto">
+//         <h1 className="text-2xl font-bold text-blue-800 text-center mb-6">Skills</h1>
+
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//           {/* Added by Admin (Inactive Skills) */}
+//           <div className="bg-white shadow-md rounded-md border border-blue-100">
+//             <div className="px-4 py-3 bg-blue-100 text-blue-800 border-b border-blue-200 flex justify-between items-center">
+//               <div className="flex items-center space-x-4">
+//                 <button
+//                   onClick={() => setIsModalOpen(true)}
+//                   className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none rounded-full bg-blue-200 hover:bg-blue-300 transition duration-200"
+//                   title="Add New Skill"
+//                 >
+//                   <Plus className="h-5 w-5" />
+//                 </button>
+//                 <h2 className="text-md font-semibold">Added by Admin</h2>
+//               </div>
+//               <div className="relative w-48">
+//                 <input
+//                   type="text"
+//                   value={adminFilter}
+//                   onChange={(e) => setAdminFilter(e.target.value)}
+//                   placeholder="Filter skills..."
+//                   className="w-full pl-8 pr-3 py-1.5 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                 />
+//                 <Search className="absolute left-2 top-2 h-4 w-4 text-blue-500" />
+//               </div>
+//             </div>
+//             <div className="overflow-x-auto">
+//               <table className="w-full table-auto">
+//                 <thead className="bg-blue-50 text-blue-700 text-sm">
+//                   <tr>
+//                     <th className="p-3 text-left font-medium">S.No</th>
+//                     <th className="p-3 text-left font-medium">Skill Name</th>
+//                     <th className="p-3 text-left font-medium">Actions</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {filteredAdminSkills.length > 0 ? (
+//                     filteredAdminSkills.map((skill, index) => (
+//                       <tr key={skill.skill_id} className="hover:bg-blue-50 transition duration-150">
+//                         <td className="p-3 border-b border-blue-100 text-sm">{index + 1}</td>
+//                         <td className="p-3 border-b border-blue-100 text-sm">
+//                           {editingSkill === skill.skill_id ? (
+//                             <input
+//                               type="text"
+//                               value={editingSkillName}
+//                               onChange={(e) => setEditingSkillName(e.target.value)}
+//                               className="w-full border border-blue-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                             />
+//                           ) : (
+//                             skill.skill_name
+//                           )}
+//                         </td>
+//                         <td className="p-3 border-b border-blue-100 flex space-x-2">
+//                           {editingSkill === skill.skill_id ? (
+//                             <>
+//                               <button
+//                                 onClick={() => handleUpdate(skill.skill_id)}
+//                                 className={`p-1.5 ${
+//                                   editingSkillName.trim() !== skill.skill_name.trim()
+//                                     ? 'text-green-600 hover:text-green-800'
+//                                     : 'text-blue-600 hover:text-blue-800'
+//                                 } focus:outline-none`}
+//                               >
+//                                 {editingSkillName.trim() !== skill.skill_name.trim() ? (
+//                                   <Check className="h-4 w-4" />
+//                                 ) : (
+//                                   <Pencil className="h-4 w-4" />
+//                                 )}
+//                               </button>
+//                               <button
+//                                 onClick={() => setEditingSkill(null)}
+//                                 className="p-1.5 text-gray-600 hover:text-gray-800 focus:outline-none"
+//                               >
+//                                 <Trash2 className="h-4 w-4" />
+//                               </button>
+//                             </>
+//                           ) : (
+//                             <>
+//                               <button
+//                                 onClick={() => handleEdit(skill)}
+//                                 className="p-1.5 text-blue-600 hover:text-blue-800 focus:outline-none"
+//                               >
+//                                 <Pencil className="h-4 w-4" />
+//                               </button>
+//                               <button
+//                                 onClick={() => handleDelete(skill.skill_id)}
+//                                 className="p-1.5 text-red-600 hover:text-red-800 focus:outline-none"
+//                               >
+//                                 <Trash2 className="h-4 w-4" />
+//                               </button>
+//                             </>
+//                           )}
+//                         </td>
+//                       </tr>
+//                     ))
+//                   ) : (
+//                     <tr>
+//                       <td colSpan="3" className="p-4 text-center text-gray-500 text-sm">
+//                         No inactive skills found.
+//                       </td>
+//                     </tr>
+//                   )}
+//                 </tbody>
+//               </table>
+//             </div>
+//           </div>
+
+//           {/* Added by Student (Active Skills) */}
+//           <div className="bg-white shadow-md rounded-md border border-blue-100">
+//             <div className="px-4 py-3 bg-blue-100 text-blue-800 border-b border-blue-200 flex justify-between items-center">
+//               <h2 className="text-md font-semibold">Added by Student (custom skill)</h2>
+//               <div className="relative w-48">
+//                 <input
+//                   type="text"
+//                   value={studentFilter}
+//                   onChange={(e) => setStudentFilter(e.target.value)}
+//                   placeholder="Filter skills..."
+//                   className="w-full pl-8 pr-3 py-1.5 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                 />
+//                 <Search className="absolute left-2 top-2 h-4 w-4 text-blue-500" />
+//               </div>
+//             </div>
+//             <div className="overflow-x-auto">
+//               <table className="w-full table-auto">
+//                 <thead className="bg-blue-50 text-blue-700 text-sm">
+//                   <tr>
+//                     <th className="p-3 text-left font-medium">S.No</th>
+//                     <th className="p-3 text-left font-medium">Skill Name</th>
+//                     <th className="p-3 text-left font-medium">Actions</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {filteredStudentSkills.length > 0 ? (
+//                     filteredStudentSkills.map((skill, index) => (
+//                       <tr key={skill.skill_id} className="hover:bg-blue-50 transition duration-150">
+//                         <td className="p-3 border-b border-blue-100 text-sm">{index + 1}</td>
+//                         <td className="p-3 border-b border-blue-100 text-sm">
+//                           {editingSkill === skill.skill_id ? (
+//                             <input
+//                               type="text"
+//                               value={editingSkillName}
+//                               onChange={(e) => setEditingSkillName(e.target.value)}
+//                               className="w-full border border-blue-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                             />
+//                           ) : (
+//                             skill.skill_name
+//                           )}
+//                         </td>
+//                         <td className="p-3 border-b border-blue-100 flex space-x-2">
+//                           {editingSkill === skill.skill_id ? (
+//                             <>
+//                               <button
+//                                 onClick={() => handleUpdate(skill.skill_id)}
+//                                 className={`p-1.5 ${
+//                                   editingSkillName.trim() !== skill.skill_name.trim()
+//                                     ? 'text-green-600 hover:text-green-800'
+//                                     : 'text-blue-600 hover:text-blue-800'
+//                                 } focus:outline-none`}
+//                               >
+//                                 {editingSkillName.trim() !== skill.skill_name.trim() ? (
+//                                   <Check className="h-4 w-4" />
+//                                 ) : (
+//                                   <Pencil className="h-4 w-4" />
+//                                 )}
+//                               </button>
+//                               <button
+//                                 onClick={() => setEditingSkill(null)}
+//                                 className="p-1.5 text-gray-600 hover:text-gray-800 focus:outline-none"
+//                               >
+//                                 <Trash2 className="h-4 w-4" />
+//                               </button>
+//                             </>
+//                           ) : (
+//                             <>
+//                               <button
+//                                 onClick={() => handleEdit(skill)}
+//                                 className="p-1.5 text-blue-600 hover:text-blue-800 focus:outline-none"
+//                               >
+//                                 <Pencil className="h-4 w-4" />
+//                               </button>
+//                               <button
+//                                 onClick={() => handleDelete(skill.skill_id)}
+//                                 className="p-1.5 text-red-600 hover:text-red-800 focus:outline-none"
+//                               >
+//                                 <Trash2 className="h-4 w-4" />
+//                               </button>
+//                             </>
+//                           )}
+//                         </td>
+//                       </tr>
+//                     ))
+//                   ) : (
+//                     <tr>
+//                       <td colSpan="3" className="p-4 text-center text-gray-500 text-sm">
+//                         No active skills found.
+//                       </td>
+//                     </tr>
+//                   )}
+//                 </tbody>
+//               </table>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Modal for Adding Skill */}
+//         <Modal
+//           isOpen={isModalOpen}
+//           onRequestClose={() => setIsModalOpen(false)}
+//           className="max-w-md mx-auto mt-20 bg-white/80 rounded-lg shadow-lg p-6 backdrop-blur-md"
+//           overlayClassName="fixed inset-0 bg-gray-100/50 backdrop-blur-md flex items-center justify-center"
+//         >
+//           <div className="relative">
+//             <button
+//               onClick={() => setIsModalOpen(false)}
+//               className="absolute top-0 right-0 p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+//             >
+//               <X className="h-5 w-5" />
+//             </button>
+//             <h2 className="text-lg font-semibold text-blue-800 mb-4">Add New Skill</h2>
+//             <form onSubmit={handleSubmit} className="space-y-4">
+//               <div>
+//                 <input
+//                   type="text"
+//                   value={newSkill}
+//                   onChange={(e) => setNewSkill(e.target.value)}
+//                   placeholder="e.g. JavaScript"
+//                   className="w-full border border-blue-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                 />
+//               </div>
+//               <div className="text-right">
+//                 <button
+//                   type="submit"
+//                   className="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 text-sm"
+//                 >
+//                   Add
+//                 </button>
+//               </div>
+//             </form>
+//           </div>
+//         </Modal>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Addskill;
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
+import { Pencil, Trash2, Search, Check, Plus, X } from 'lucide-react';
+import Modal from 'react-modal';
+
+// Bind modal to app element for accessibility
+Modal.setAppElement('#root');
 
 function Addskill() {
   const [skills, setSkills] = useState([]);
+  const [activeSkills, setActiveSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [editingSkillName, setEditingSkillName] = useState('');
+  const [originalSkillName, setOriginalSkillName] = useState(''); // Store original skill name
+  const [adminFilter, setAdminFilter] = useState('');
+  const [studentFilter, setStudentFilter] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchSkills = () => {
-    fetch('http://localhost:5000/api/quiz/skills')
-      .then((response) => response.json())
-      .then((data) => {
-        setSkills(data); // show all skills regardless of skill_status
-      })
-      .catch((error) => {
-        toast.error('Error fetching skills.', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        console.error('Error fetching skills:', error);
+  // Fetch all skills (inactive only for admin table)
+  const fetchSkills = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/quiz/skills');
+      const data = await response.json();
+      setSkills(data.filter((skill) => skill.skill_status === 0)); // Only inactive skills
+    } catch (error) {
+      toast.error('Failed to fetch skills. Please try again.', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
+      console.error('Error fetching skills:', error);
+    }
+  };
+
+  // Fetch active skills (skill_status = 1)
+  const fetchActiveSkills = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/quiz/skills/active');
+      const data = await response.json();
+      setActiveSkills(data);
+    } catch (error) {
+      toast.error('Failed to fetch active skills. Please try again.', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      console.error('Error fetching active skills:', error);
+    }
   };
 
   useEffect(() => {
     fetchSkills();
+    fetchActiveSkills();
   }, []);
 
-  const handleSubmit = (e) => {
+  // Handle adding a new skill
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!newSkill.trim()) {
-      toast.warn('Please enter a skill name.', {
+      toast.warning('Please enter a valid skill name.', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
       return;
     }
 
     const newSkillData = {
       skill_name: newSkill.trim(),
-      skill_status: 0 // default status
+      skill_status: 0, // Default status (inactive)
     };
 
-    fetch('http://localhost:5000/api/quiz/skills', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newSkillData)
-    })
-      .then((res) => {
-        if (res.ok) {
-          toast.success('Skill added successfully!', {
-            position: 'top-right',
-            autoClose: 3000,
-          });
-          setNewSkill('');
-          fetchSkills();
-        } else {
-          toast.error('Failed to add skill.', {
-            position: 'top-right',
-            autoClose: 3000,
-          });
-        }
-      })
-      .catch(() => {
-        toast.error('Server error while adding skill.', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
+    try {
+      const res = await fetch('http://localhost:5000/api/quiz/skills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSkillData),
       });
+
+      if (res.ok) {
+        toast.success('Skill added successfully!', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        setNewSkill('');
+        setIsModalOpen(false);
+        fetchSkills();
+      } else {
+        toast.error('Failed to add skill. Please try again.', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      toast.error('An error occurred while adding the skill. Please try again.', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      console.error('Error adding skill:', error);
+    }
   };
 
-  return (
-    <div className="w-full p-6 bg-gray-50 min-h-screen">
-      <div className="text-2xl font-semibold text-center mb-6">Skill Management</div>
+  // Handle editing a skill
+  const handleEdit = (skill) => {
+    setEditingSkill(skill.skill_id);
+    setEditingSkillName(skill.skill_name);
+    setOriginalSkillName(skill.skill_name); // Store original name
+  };
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Skill Table */}
-        <div className="w-full md:w-1/2 bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="w-full table-auto">
-            <thead className="bg-blue-100 text-blue-800">
-              <tr>
-                <th className="p-3 text-left border-b">S.NO</th>
-                <th className="p-3 text-left border-b">Skill</th>
-              </tr>
-            </thead>
-            <tbody>
-              {skills.length > 0 ? (
-                skills.map((skill, index) => (
-                  <tr key={skill.skill_id} className="hover:bg-gray-100">
-                    <td className="p-3 border-b">{index + 1}</td>
-                    <td className="p-3 border-b">{skill.skill_name}</td>
+  const handleUpdate = async (skillId) => {
+    if (!editingSkillName.trim()) {
+      toast.warning('Skill name cannot be empty.', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    const hasChanged = editingSkillName.trim() !== originalSkillName.trim();
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill_name: editingSkillName.trim() }),
+      });
+
+      if (res.ok) {
+        if (hasChanged) {
+          toast.success('Skill updated successfully!', {
+            position: 'top-right',
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+        setEditingSkill(null);
+        setEditingSkillName('');
+        setOriginalSkillName('');
+        fetchSkills();
+        fetchActiveSkills();
+      } else {
+        if (hasChanged) {
+          toast.error('Failed to update skill. Please try again.', {
+            position: 'top-right',
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      }
+    } catch (error) {
+      if (hasChanged) {
+        toast.error('An error occurred while updating the skill. Please try again.', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+      console.error('Error updating skill:', error);
+    }
+  };
+
+  // Handle deleting a skill
+  const handleDelete = async (skillId) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will permanently delete the skill.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        popup: 'rounded-md shadow-lg',
+        title: 'text-lg font-semibold text-gray-800',
+        content: 'text-gray-600',
+        confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        cancelButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+      },
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        toast.success('Skill deleted successfully!', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        fetchSkills();
+        fetchActiveSkills();
+      } else {
+        toast.error('Cannot delete skill. Tests have been created for this skill.', {
+          position: 'top-right',
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      toast.error('An error occurred while deleting the skill. Please try again.', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      console.error('Error deleting skill:', error);
+    }
+  };
+
+  // Filter skills by name
+  const filteredAdminSkills = skills.filter((skill) =>
+    skill.skill_name.toLowerCase().includes(adminFilter.toLowerCase())
+  );
+  const filteredStudentSkills = activeSkills.filter((skill) =>
+    skill.skill_name.toLowerCase().includes(studentFilter.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-blue-50 py-6 px-4 sm:px-6 lg:px-8">
+      <ToastContainer 
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-2xl font-bold text-blue-800 text-center mb-6">Skills</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Added by Admin (Inactive Skills) */}
+          <div className="bg-white shadow-md rounded-md border border-blue-100">
+            <div className="px-4 py-3 bg-blue-100 text-blue-800 border-b border-blue-200 flex justify-between items-center">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none rounded-full bg-blue-200 hover:bg-blue-300 transition duration-200"
+                  title="Add New Skill"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+                <h2 className="text-md font-semibold">Added by Admin</h2>
+              </div>
+              <div className="relative w-48">
+                <input
+                  type="text"
+                  value={adminFilter}
+                  onChange={(e) => setAdminFilter(e.target.value)}
+                  placeholder="Filter skills..."
+                  className="w-full pl-8 pr-3 py-1.5 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <Search className="absolute left-2 top-2 h-4 w-4 text-blue-500" />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto">
+                <thead className="bg-blue-50 text-blue-700 text-sm">
+                  <tr>
+                    <th className="p-3 text-left font-medium">S.No</th>
+                    <th className="p-3 text-left font-medium">Skill Name</th>
+                    <th className="p-3 text-left font-medium">Actions</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="2" className="p-4 text-center text-gray-500">No skills found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {filteredAdminSkills.length > 0 ? (
+                    filteredAdminSkills.map((skill, index) => (
+                      <tr key={skill.skill_id} className="hover:bg-blue-50 transition duration-150">
+                        <td className="p-3 border-b border-blue-100 text-sm">{index + 1}</td>
+                        <td className="p-3 border-b border-blue-100 text-sm">
+                          {editingSkill === skill.skill_id ? (
+                            <input
+                              type="text"
+                              value={editingSkillName}
+                              onChange={(e) => setEditingSkillName(e.target.value)}
+                              className="w-full border border-blue-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          ) : (
+                            skill.skill_name
+                          )}
+                        </td>
+                        <td className="p-3 border-b border-blue-100 flex space-x-2">
+                          {editingSkill === skill.skill_id ? (
+                            <>
+                              <button
+                                onClick={() => handleUpdate(skill.skill_id)}
+                                className={`p-1.5 ${
+                                  editingSkillName.trim() !== skill.skill_name.trim()
+                                    ? 'text-green-600 hover:text-green-800'
+                                    : 'text-blue-600 hover:text-blue-800'
+                                } focus:outline-none`}
+                              >
+                                {editingSkillName.trim() !== skill.skill_name.trim() ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Pencil className="h-4 w-4" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => setEditingSkill(null)}
+                                className="p-1.5 text-gray-600 hover:text-gray-800 focus:outline-none"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEdit(skill)}
+                                className="p-1.5 text-blue-600 hover:text-blue-800 focus:outline-none"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(skill.skill_id)}
+                                className="p-1.5 text-red-600 hover:text-red-800 focus:outline-none"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="p-4 text-center text-gray-500 text-sm">
+                        No inactive skills found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Added by Student (Active Skills) */}
+          <div className="bg-white shadow-md rounded-md border border-blue-100">
+            <div className="px-4 py-3 bg-blue-100 text-blue-800 border-b border-blue-200 flex justify-between items-center">
+              <h2 className="text-md font-semibold">Added by Student (custom skill)</h2>
+              <div className="relative w-48">
+                <input
+                  type="text"
+                  value={studentFilter}
+                  onChange={(e) => setStudentFilter(e.target.value)}
+                  placeholder="Filter skills..."
+                  className="w-full pl-8 pr-3 py-1.5 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <Search className="absolute left-2 top-2 h-4 w-4 text-blue-500" />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto">
+                <thead className="bg-blue-50 text-blue-700 text-sm">
+                  <tr>
+                    <th className="p-3 text-left font-medium">S.No</th>
+                    <th className="p-3 text-left font-medium">Skill Name</th>
+                    <th className="p-3 text-left font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredStudentSkills.length > 0 ? (
+                    filteredStudentSkills.map((skill, index) => (
+                      <tr key={skill.skill_id} className="hover:bg-blue-50 transition duration-150">
+                        <td className="p-3 border-b border-blue-100 text-sm">{index + 1}</td>
+                        <td className="p-3 border-b border-blue-100 text-sm">
+                          {editingSkill === skill.skill_id ? (
+                            <input
+                              type="text"
+                              value={editingSkillName}
+                              onChange={(e) => setEditingSkillName(e.target.value)}
+                              className="w-full border border-blue-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          ) : (
+                            skill.skill_name
+                          )}
+                        </td>
+                        <td className="p-3 border-b border-blue-100 flex space-x-2">
+                          {editingSkill === skill.skill_id ? (
+                            <>
+                              <button
+                                onClick={() => handleUpdate(skill.skill_id)}
+                                className={`p-1.5 ${
+                                  editingSkillName.trim() !== skill.skill_name.trim()
+                                    ? 'text-green-600 hover:text-green-800'
+                                    : 'text-blue-600 hover:text-blue-800'
+                                } focus:outline-none`}
+                              >
+                                {editingSkillName.trim() !== skill.skill_name.trim() ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Pencil className="h-4 w-4" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => setEditingSkill(null)}
+                                className="p-1.5 text-gray-600 hover:text-gray-800 focus:outline-none"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEdit(skill)}
+                                className="p-1.5 text-blue-600 hover:text-blue-800 focus:outline-none"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(skill.skill_id)}
+                                className="p-1.5 text-red-600 hover:text-red-800 focus:outline-none"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="p-4 text-center text-gray-500 text-sm">
+                        No active skills found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        {/* Add Skill Form */}
-        <form onSubmit={handleSubmit} className="w-full md:w-1/2 bg-white shadow-md rounded-lg p-6 flex flex-col gap-4">
-          <label className="font-medium text-gray-700">Add Skill</label>
-          <input
-            type="text"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="e.g. JavaScript"
-            className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200"
-          >
-            Add Skill
-          </button>
-        </form>
+        {/* Modal for Adding Skill */}
+        <Modal
+          isOpen={isModalOpen}
+          onRequestClose={() => setIsModalOpen(false)}
+          className="max-w-lg mx-auto mt-20 bg-white/80 rounded-lg shadow-lg p-6 backdrop-blur-md"
+          overlayClassName="fixed inset-0 bg-gray-100/50 backdrop-blur-md flex items-center justify-center"
+        >
+          <div className="relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-0 right-0 p-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="text-lg font-semibold text-blue-800 mb-4">Add New Skill</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="e.g. JavaScript"
+                  className="w-full border border-blue-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="text-right">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
       </div>
-
-      {/* Toast Notifications */}
-      <ToastContainer />
     </div>
   );
 }

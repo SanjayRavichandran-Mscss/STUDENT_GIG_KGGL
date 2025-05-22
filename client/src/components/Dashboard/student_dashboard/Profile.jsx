@@ -12,6 +12,7 @@ export default function Profile() {
   const { id } = useParams();
   const decoded = atob(id);
   const navigate = useNavigate();
+
   // State management
   const [profile, setProfile] = useState({
     image: "",
@@ -36,10 +37,12 @@ export default function Profile() {
     resume: "",
     general: "",
     skills: {},
+    customSkill: "",
   });
   const [availableSkills, setAvailableSkills] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSkills, setExpandedSkills] = useState({});
+  const [customSkillName, setCustomSkillName] = useState("");
 
   // API calls
   useEffect(() => {
@@ -65,10 +68,7 @@ export default function Profile() {
           linkedIn: profileRes.data.msg[0]?.linkedin_link || "",
         }));
 
-        setAvailableSkills([
-          ...(skillsRes.data.msg || []),
-          { skill_id: decoded, skill_name: "Custom Skill" },
-        ]);
+        setAvailableSkills(skillsRes.data.msg || []);
       } catch (error) {
         console.error("Error fetching data:", error);
         setErrors((prev) => ({ ...prev, general: "Failed to load profile data. Please try again." }));
@@ -88,17 +88,15 @@ export default function Profile() {
     return githubRegex.test(url);
   };
 
-
   const validateVercelUrl = (url) => {
-  const vercelRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.vercel\.app(\/.*)?$/;
-  return vercelRegex.test(url);
-};
+    const vercelRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.vercel\.app(\/.*)?$|^https?:\/\/(www\.)?vercel\.com(\/[A-Za-z0-9._%+-]+)*\/?$/;
+    return vercelRegex.test(url);
+  };
 
-const validateNetlifyUrl = (url) => {
-  const netlifyRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.netlify\.app(\/.*)?$/;
-  return netlifyRegex.test(url);
-};
-
+  const validateNetlifyUrl = (url) => {
+    const netlifyRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.netlify\.app(\/.*)?$|^https?:\/\/(www\.)?app\.netlify\.com(\/[A-Za-z0-9._%+-]+)*\/?$/;
+    return netlifyRegex.test(url);
+  };
 
   const validateLinkedInUrl = (url) => {
     const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9._%+-]+\/?$/;
@@ -110,7 +108,7 @@ const validateNetlifyUrl = (url) => {
     if (skillName.length > 50) return "Custom skill name cannot exceed 50 characters.";
 
     try {
-      const response = await axios.get("http://103.118.158.24/api:5000/api/college/skill");
+      const response = await axios.get("http://localhost:5000/api/college/skill");
       const existingSkills = response.data.msg || [];
       const skillExists = existingSkills.some(
         (skill) => skill.skill_name.toLowerCase() === skillName.trim().toLowerCase()
@@ -128,7 +126,7 @@ const validateNetlifyUrl = (url) => {
   // Check for duplicate GitHub/LinkedIn links
   const checkDuplicateLinks = async (github, linkedin) => {
     try {
-      const response = await axios.post("http://103.118.158.24/api:5000/api/stu/check-links", {
+      const response = await axios.post("http://localhost:5000/api/stu/check-links", {
         github_link: github,
         linkedin_link: linkedin,
         student_id: decoded,
@@ -213,38 +211,75 @@ const validateNetlifyUrl = (url) => {
       newErrors.github = !value
         ? "GitHub URL is required."
         : !validateGithubUrl(value)
-        ? ""
+        ? "Please enter a valid GitHub URL."
         : "";
 
       if (!newErrors.github) {
         const duplicates = await checkDuplicateLinks(value, fileData.linkedIn);
         newErrors.github = duplicates.github ? "GitHub URL already exists." : newErrors.github;
-        if (newErrors.github) {
-          toast.warn("GitHub URL already exists.", { position: "top-right", autoClose: 3000 });
-        }
       }
     } else if (name === "linkedIn") {
       newErrors.linkedIn = !value
         ? "LinkedIn URL is required."
         : !validateLinkedInUrl(value)
-        ? ""
+        ? "Please enter a valid LinkedIn URL."
         : "";
 
       if (!newErrors.linkedIn) {
         const duplicates = await checkDuplicateLinks(fileData.github, value);
         newErrors.linkedIn = duplicates.linkedin ? "LinkedIn URL already exists." : newErrors.linkedIn;
-        if (newErrors.linkedIn) {
-          toast.warn("LinkedIn URL already exists.", { position: "top-right", autoClose: 3000 });
-        }
       }
     }
 
     setErrors(newErrors);
   };
 
+  // Custom skill handling
+  const handleCustomSkillChange = async (e) => {
+    const value = e.target.value;
+    setCustomSkillName(value);
+
+    const customSkillError = await validateCustomSkill(value);
+    setErrors((prev) => ({ ...prev, customSkill: customSkillError }));
+
+    // Update skill details for custom skill
+    const customSkillId = `custom_${decoded}`;
+    if (value.trim()) {
+      setSkillDetails((prev) => ({
+        ...prev,
+        [customSkillId]: {
+          ...prev[customSkillId],
+          skillName: value,
+          skillUrl: prev[customSkillId]?.skillUrl || "",
+          description: prev[customSkillId]?.description || "",
+        },
+      }));
+      if (!selectedSkills.includes(customSkillId)) {
+        setSelectedSkills((prev) => [...prev, customSkillId]);
+        setExpandedSkills((prev) => ({ ...prev, [customSkillId]: true }));
+      }
+    } else {
+      setSelectedSkills((prev) => prev.filter((id) => id !== customSkillId));
+      setSkillDetails((prev) => {
+        const newDetails = { ...prev };
+        delete newDetails[customSkillId];
+        return newDetails;
+      });
+      setExpandedSkills((prev) => {
+        const newExpanded = { ...prev };
+        delete newExpanded[customSkillId];
+        return newExpanded;
+      });
+    }
+  };
+
   // Skill selection
   const handleSkillChange = (selectedOptions) => {
     const newSelectedSkills = selectedOptions.map((option) => option.value);
+    const customSkillId = `custom_${decoded}`;
+    if (customSkillName.trim()) {
+      newSelectedSkills.push(customSkillId);
+    }
     setSelectedSkills(newSelectedSkills);
 
     const newSkillDetails = {};
@@ -252,9 +287,8 @@ const validateNetlifyUrl = (url) => {
     const newExpandedSkills = {};
 
     newSelectedSkills.forEach((skillId) => {
-      const skill = availableSkills.find((s) => s.skill_id === skillId);
       newSkillDetails[skillId] = skillDetails[skillId] || {
-        skillName: skillId === decoded ? "" : skill?.skill_name || "",
+        skillName: skillId === customSkillId ? customSkillName : getSkillNameById(skillId),
         skillUrl: "",
         description: "",
       };
@@ -288,22 +322,21 @@ const validateNetlifyUrl = (url) => {
           : value.length > 200
           ? "Description cannot exceed 200 characters."
           : "";
-      if (newErrors[skillId].description) {
-        // toast.error(newErrors[skillId].description, { position: "top-right", autoClose: 3000 });
-      }
     }
 
     if (name === "skillUrl") {
       const isValidGithub = validateGithubUrl(value);
+      const isValidVercel = validateVercelUrl(value);
+      const isValidNetlify = validateNetlifyUrl(value);
       newErrors[skillId].url = !value
         ? "Project link is required."
-        : !isValidGithub
-        ? ""
+        : !(isValidGithub || isValidVercel || isValidNetlify)
+        ? "Please enter a valid GitHub (github.com), Vercel (vercel.com or *.vercel.app), or Netlify (app.netlify.com or *.netlify.app) URL."
         : fileData.github === value
         ? "Project URL cannot be the same as GitHub profile URL."
         : "";
 
-      if (isValidGithub && value) {
+      if ((isValidGithub || isValidVercel || isValidNetlify) && value) {
         const otherSkills = selectedSkills.filter((id) => id !== skillId);
         const isDuplicate = otherSkills.some(
           (otherId) => skillDetails[otherId]?.skillUrl === value
@@ -311,17 +344,6 @@ const validateNetlifyUrl = (url) => {
         if (isDuplicate) {
           newErrors[skillId].url = "This project URL is already used for another skill.";
         }
-      }
-      if (newErrors[skillId].url) {
-        toast.error(newErrors[skillId].url, { position: "top-right", autoClose: 3000 });
-      }
-    }
-
-    if (name === "skillName" && skillId === decoded) {
-      const customSkillError = await validateCustomSkill(value);
-      newErrors[skillId].skillName = customSkillError;
-      if (newErrors[skillId].skillName) {
-        toast.error(newErrors[skillId].skillName, { position: "top-right", autoClose: 3000 });
       }
     }
 
@@ -338,9 +360,6 @@ const validateNetlifyUrl = (url) => {
 
   // Get skill name
   const getSkillNameById = (skillId) => {
-    if (skillId === decoded) {
-      return skillDetails[skillId]?.skillName || "Custom Skill";
-    }
     const skill = availableSkills.find((s) => s.skill_id === skillId);
     return skill ? skill.skill_name : "";
   };
@@ -365,17 +384,16 @@ const validateNetlifyUrl = (url) => {
       resume: !fileData.selectedFile ? "Resume is required." : "",
       general: selectedSkills.length === 0 ? "Please select at least one skill." : "",
       skills: {},
+      customSkill: customSkillName.trim() ? await validateCustomSkill(customSkillName) : "",
     };
 
     // Check for duplicate links
     const duplicates = await checkDuplicateLinks(fileData.github, fileData.linkedIn);
     if (duplicates.github) {
       newErrors.github = "GitHub URL already exists.";
-      toast.warn("GitHub URL already exists.", { position: "top-right", autoClose: 3000 });
     }
     if (duplicates.linkedin) {
       newErrors.linkedIn = "LinkedIn URL already exists.";
-      toast.warn("LinkedIn URL already exists.", { position: "top-right", autoClose: 3000 });
     }
 
     let hasSkillErrors = false;
@@ -390,8 +408,12 @@ const validateNetlifyUrl = (url) => {
 
       if (!details.skillUrl) {
         skillErrors.url = "Project link is required.";
-      } else if (!validateGithubUrl(details.skillUrl)) {
-        skillErrors.url = "Please enter a valid GitHub URL.";
+      } else if (
+        !validateGithubUrl(details.skillUrl) &&
+        !validateVercelUrl(details.skillUrl) &&
+        !validateNetlifyUrl(details.skillUrl)
+      ) {
+        skillErrors.url = "Please enter a valid GitHub (github.com), Vercel (vercel.com or *.vercel.app), or Netlify (app.netlify.com or *.netlify.app) URL.";
       } else if (fileData.github === details.skillUrl) {
         skillErrors.url = "Project URL cannot be the same as GitHub profile URL.";
       } else {
@@ -413,7 +435,7 @@ const validateNetlifyUrl = (url) => {
           ? "Description cannot exceed 200 characters."
           : "";
 
-      if (skillId === decoded) {
+      if (skillId === `custom_${decoded}`) {
         skillErrors.skillName =
           !details.skillName
             ? "Skill name is required."
@@ -428,17 +450,6 @@ const validateNetlifyUrl = (url) => {
       }
     });
 
-    // Validate custom skills
-    for (const skillId of selectedSkills) {
-      if (skillId === decoded) {
-        const customSkillError = await validateCustomSkill(skillDetails[skillId]?.skillName);
-        if (customSkillError) {
-          newErrors.skills[skillId].skillName = customSkillError;
-          hasSkillErrors = true;
-        }
-      }
-    }
-
     setErrors(newErrors);
 
     if (
@@ -446,7 +457,8 @@ const validateNetlifyUrl = (url) => {
       newErrors.linkedIn ||
       newErrors.resume ||
       hasSkillErrors ||
-      selectedSkills.length === 0
+      selectedSkills.length === 0 ||
+      newErrors.customSkill
     ) {
       setIsLoading(false);
       toast.error("Please fix the errors before submitting.", { position: "top-right", autoClose: 3000 });
@@ -464,8 +476,8 @@ const validateNetlifyUrl = (url) => {
       const skillsData = selectedSkills.map((skillId) => {
         const details = skillDetails[skillId];
         return {
-          skillId: skillId === decoded ? null : skillId,
-          skillName: skillId === decoded ? details.skillName : getSkillNameById(skillId),
+          skillId: skillId === `custom_${decoded}` ? null : skillId,
+          skillName: skillId === `custom_${decoded}` ? details.skillName : getSkillNameById(skillId),
           projectUrl: details.skillUrl,
           description: details.description,
         };
@@ -488,12 +500,13 @@ const validateNetlifyUrl = (url) => {
         setSelectedSkills([]);
         setSkillDetails({});
         setExpandedSkills({});
+        setCustomSkillName("");
         setFileData((prev) => ({
           ...prev,
           selectedFile: null,
           fileName: "",
         }));
-        setErrors({ github: "", linkedIn: "", resume: "", general: "", skills: {} });
+        setErrors({ github: "", linkedIn: "", resume: "", general: "", skills: {}, customSkill: "" });
 
         toast.success("Profile updated successfully!", {
           position: "top-right",
@@ -505,7 +518,7 @@ const validateNetlifyUrl = (url) => {
         setErrors((prev) => {
           const newSkillErrors = { ...prev.skills };
           duplicateSkills.forEach((skill) => {
-            const skillId = skill.skillId || decoded;
+            const skillId = skill.skillId || `custom_${decoded}`;
             newSkillErrors[skillId] = {
               ...newSkillErrors[skillId],
               general: `The skill "${skill.skillName}" is already associated with your profile.`,
@@ -517,7 +530,7 @@ const validateNetlifyUrl = (url) => {
             general: "Some skills could not be added due to duplicates.",
           };
         });
-        toast.warn("Some skills could not be added due to duplicates.", {
+        toast.error("Some skills could not be added due to duplicates.", {
           position: "top-right",
           autoClose: 3000,
         });
@@ -528,7 +541,7 @@ const validateNetlifyUrl = (url) => {
           linkedIn: response.data.duplicates.linkedin ? "LinkedIn URL already exists." : prev.linkedIn,
           general: "Some links are already in use by other users.",
         }));
-        toast.warn("Some links are already in use by other users.", {
+        toast.error("Some links are already in use by other users.", {
           position: "top-right",
           autoClose: 3000,
         });
@@ -575,7 +588,7 @@ const validateNetlifyUrl = (url) => {
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex items-center mb-6">
           <img
-            src={profile.image ? `http://103.118.158.24/api/images/${profile.image}` : backgroundimg}
+            src={profile.image ? `http://localhost:5000/images/${profile.image}` : backgroundimg}
             className="w-24 h-24 rounded-full border-4 border-white shadow-lg mr-4"
             alt="Profile"
           />
@@ -616,6 +629,21 @@ const validateNetlifyUrl = (url) => {
             {/* Add Skills Section */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Skills</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Custom Skill (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={customSkillName}
+                  onChange={handleCustomSkillChange}
+                  placeholder="Enter a custom skill (e.g., Advanced React)"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
+                />
+                {errors.customSkill && (
+                  <p className="mt-1 text-sm text-red-600">{errors.customSkill}</p>
+                )}
+              </div>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Select your Skills <span className="text-red-500">*</span>
@@ -645,7 +673,7 @@ const validateNetlifyUrl = (url) => {
                         className="w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors"
                       >
                         <span className="font-medium text-gray-700">
-                          {getSkillNameById(skillId)}
+                          {skillId === `custom_${decoded}` ? customSkillName || "Custom Skill" : getSkillNameById(skillId)}
                         </span>
                         <svg
                           className={`w-5 h-5 transform transition-transform ${
@@ -666,31 +694,6 @@ const validateNetlifyUrl = (url) => {
                       </button>
                       {expandedSkills[skillId] && (
                         <div className="p-4 bg-white space-y-4">
-                          {skillId === decoded && (
-                            <div>
-                              <label
-                                htmlFor={`skillName-${skillId}`}
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                              >
-                                Skill Name <span className="text-red-500">*</span>
-                              </label>
-                              <input
-                                id={`skillName-${skillId}`}
-                                type="text"
-                                name="skillName"
-                                value={skillDetails[skillId]?.skillName || ""}
-                                onChange={(e) => handleSkillDetailChange(skillId, e)}
-                                placeholder="Enter custom skill name"
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                              />
-                              {errors.skills[skillId]?.skillName && (
-                                <p className="mt-1 text-sm text-red-600">
-                                  {errors.skills[skillId].skillName}
-                                </p>
-                              )}
-                            </div>
-                          )}
                           <div>
                             <label
                               htmlFor={`skillUrl-${skillId}`}
@@ -704,7 +707,7 @@ const validateNetlifyUrl = (url) => {
                               name="skillUrl"
                               value={skillDetails[skillId]?.skillUrl || ""}
                               onChange={(e) => handleSkillDetailChange(skillId, e)}
-                              placeholder="Paste GitHub project URL (e.g., https://github.com/user/repo)"
+                              placeholder="Paste GitHub, Vercel, or Netlify URL"
                               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               required
                             />
@@ -881,28 +884,3 @@ const validateNetlifyUrl = (url) => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

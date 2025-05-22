@@ -72,15 +72,52 @@ const updateSkill = (skillId, skillData) => {
 };
 
 // Delete skill
+// const deleteSkill = (skillId) => {
+//   return new Promise((resolve, reject) => {
+//     const sql = "DELETE FROM skills WHERE skill_id = ?";
+//     db.query(sql, [skillId], (err, result) => {
+//       if (err) reject(err);
+//       else resolve(result);
+//     });
+//   });
+// };
+
+
 const deleteSkill = (skillId) => {
   return new Promise((resolve, reject) => {
-    const sql = "DELETE FROM skills WHERE skill_id = ?";
-    db.query(sql, [skillId], (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
+    // Begin transaction
+    db.beginTransaction((err) => {
+      if (err) {
+        return reject(err);
+      }
+
+      // Delete from student_skills first
+      const deleteStudentSkillsSql = "DELETE FROM student_skills WHERE skill_id = ?";
+      db.query(deleteStudentSkillsSql, [skillId], (err, studentSkillsResult) => {
+        if (err) {
+          return db.rollback(() => reject(err));
+        }
+
+        // Delete from skills
+        const deleteSkillsSql = "DELETE FROM skills WHERE skill_id = ?";
+        db.query(deleteSkillsSql, [skillId], (err, skillsResult) => {
+          if (err) {
+            return db.rollback(() => reject(err));
+          }
+
+          // Commit transaction
+          db.commit((err) => {
+            if (err) {
+              return db.rollback(() => reject(err));
+            }
+            resolve(skillsResult);
+          });
+        });
+      });
     });
   });
 };
+
 
 // Create difficulty level
 const createLevel = (levelData) => {

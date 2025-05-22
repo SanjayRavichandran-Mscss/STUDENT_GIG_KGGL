@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Modal from 'react-modal';
 import { format, parseISO } from 'date-fns';
 import { ZoomIn, Download } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 // Bind modal to app element
 Modal.setAppElement('#root');
@@ -168,6 +169,34 @@ function ApprovedProjects() {
   const handleSave = async (bitId, studentId, projectId, email, val) => {
     const selectedStatusId = selectedStatuses[bitId];
     let isPaymentDetailsSaved = false;
+
+    // Confirmation alert for denied (bit_status_id = 2) or payment_received (bit_status_id = 12)
+    if (selectedStatusId === 2 || selectedStatusId === 12) {
+      const actionText = selectedStatusId === 2 ? 'decline this bid' : 'mark this bid as payment received';
+      const confirmColor = selectedStatusId === 2 ? '#dc2626' : '#16a34a'; // Red for denied, green for payment_received
+      const result = await Swal.fire({
+        title: `Are you sure you want to ${actionText}?`,
+        text: `This action will update the status to "${selectedStatusId === 2 ? 'Declined' : 'Payment Received'}".`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: confirmColor,
+        cancelButtonColor: '#6b7280', // Neutral gray for cancel
+        confirmButtonText: 'Yes, proceed!',
+        cancelButtonText: 'Cancel',
+        customClass: {
+          popup: 'rounded-lg shadow-xl',
+          title: 'text-xl font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-4 py-2 text-white font-medium rounded-md',
+          cancelButton: 'px-4 py-2 text-white font-medium rounded-md',
+        },
+      });
+
+      if (!result.isConfirmed) {
+        setIsSubmitting((prev) => ({ ...prev, [bitId]: false }));
+        return;
+      }
+    }
 
     if (val.latest_status_name === 'payment_received' && !paymentStatus[bitId]) {
       const details = paymentDetails[bitId] || {};
@@ -632,28 +661,29 @@ function ApprovedProjects() {
 
                       {!paymentStatus[project.bit_id] && (
                         <div className="mt-6">
-                          <h4 className="text-sm font-medium text-blue-600 mb-3">
+                          {/* <h4 className="text-sm font-medium text-blue-600 mb-3">
                             Update Project Status
-                          </h4>
+                          </h4> */}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
-                            <select
-                              value={selectedStatuses[project.bit_id] || ''}
-                              onChange={(e) =>
-                                handleStatusChange(project.bit_id, parseInt(e.target.value))
-                              }
-                              className="block w-full pl-3 pr-10 py-2 text-base border-blue-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
-                            >
-                              <option value="" disabled>
-                                Select new status
-                              </option>
-                              {bitStatuses.map((status) => (
-                                <option key={status.bit_status_id} value={status.bit_status_id}>
-                                  {status.bit_status_name.charAt(0).toUpperCase() +
-                                    status.bit_status_name.slice(1)}
+                            {project.latest_status_name !== 'payment_received' && (
+                              <select
+                                value={selectedStatuses[project.bit_id] || ''}
+                                onChange={(e) =>
+                                  handleStatusChange(project.bit_id, parseInt(e.target.value))
+                                }
+                                className="block w-full pl-3 pr-10 py-2 text-base border-blue-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                              >
+                                <option value="" disabled>
+                                  Select new status
                                 </option>
-                              ))}
-                            </select>
-
+                                {bitStatuses.map((status) => (
+                                  <option key={status.bit_status_id} value={status.bit_status_id}>
+                                    {status.bit_status_name.charAt(0).toUpperCase() +
+                                      status.bit_status_name.slice(1)}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                             <button
                               onClick={() =>
                                 handleSave(
@@ -687,7 +717,6 @@ function ApprovedProjects() {
                                       stroke="currentColor"
                                       strokeWidth="4"
                                     ></circle>
-=0A
                                     <path
                                       className="opacity-75"
                                       fill="currentColor"

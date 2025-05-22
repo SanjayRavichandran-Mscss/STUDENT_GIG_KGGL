@@ -24,7 +24,7 @@ import {
   allStudentsTestsBySkillsCount,
   getAcceptedBits,
   getBitStatuses,
-  updateOrCreateBitStatus,
+  updateBitStatus,
   savePaymentDetails,
 } from "../controllers/admincontroller.js";
 import { body, validationResult } from "express-validator"; // Added validationResult import
@@ -83,7 +83,7 @@ adminRouter.route("/update-bit-status").post(
     body("bit_status_id").isInt(),
     body("email").isEmail(),
   ],
-  updateOrCreateBitStatus
+  updateBitStatus
 );
 
 // Question and quiz assigning

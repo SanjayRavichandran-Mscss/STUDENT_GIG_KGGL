@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Select from 'react-select';
 
 export default function TestCreation() {
   const [formData, setFormData] = useState({
@@ -6,6 +7,7 @@ export default function TestCreation() {
     test_description: "",
     skill_id: "",
     difficulty_level_id: "",
+    duration_minutes: "", // Empty string to allow manual entry
     total_no_of_questions: 0,
     easy_pass_mark: 0,
     medium_pass_mark: 0,
@@ -102,25 +104,25 @@ export default function TestCreation() {
       case 'easy':
         distribution.easy_level_question = totalQuestions;
         if (!manualPassCriteria) {
-          passMarks.easy_pass_mark = 0; // No minimum pass criteria for easy
+          passMarks.easy_pass_mark = 0;
         }
         break;
 
       case 'medium':
         distribution.easy_level_question = totalQuestions;
         if (!manualPassCriteria) {
-          passMarks.easy_pass_mark = Math.ceil(totalQuestions * 0.33); // 33% pass criteria for easy
+          passMarks.easy_pass_mark = Math.ceil(totalQuestions * 0.33);
         }
         distribution.medium_level_question = totalQuestions - (manualPassCriteria ? formData.easy_pass_mark : passMarks.easy_pass_mark);
         if (!manualPassCriteria) {
-          passMarks.medium_pass_mark = 0; // No additional criteria for medium
+          passMarks.medium_pass_mark = 0;
         }
         break;
 
       case 'hard':
         distribution.easy_level_question = totalQuestions;
         if (!manualPassCriteria) {
-          passMarks.easy_pass_mark = Math.ceil(totalQuestions * 0.17); // ~17% pass criteria for easy
+          passMarks.easy_pass_mark = Math.ceil(totalQuestions * 0.17);
         }
         
         const easyPass = manualPassCriteria ? formData.easy_pass_mark : passMarks.easy_pass_mark;
@@ -128,7 +130,7 @@ export default function TestCreation() {
         distribution.medium_level_question = remainingAfterEasy;
         
         if (!manualPassCriteria) {
-          passMarks.medium_pass_mark = Math.ceil(remainingAfterEasy * 0.4); // 40% of remaining for medium
+          passMarks.medium_pass_mark = Math.ceil(remainingAfterEasy * 0.4);
         }
         
         const mediumPass = manualPassCriteria ? formData.medium_pass_mark : passMarks.medium_pass_mark;
@@ -136,7 +138,7 @@ export default function TestCreation() {
         distribution.hard_level_question = remainingAfterMedium;
         
         if (!manualPassCriteria) {
-          passMarks.hard_pass_mark = Math.ceil(remainingAfterMedium * 0.75); // 75% of remaining for hard
+          passMarks.hard_pass_mark = Math.ceil(remainingAfterMedium * 0.75);
         }
         break;
 
@@ -158,6 +160,12 @@ export default function TestCreation() {
   useEffect(() => {
     const errors = {};
     
+    // Only check for negative duration
+    const duration = Number(formData.duration_minutes);
+    if (duration < 0) {
+      errors.duration_minutes = "Test duration cannot be negative.";
+    }
+
     if (formData.skill_id && questionDistribution.easy_level_question > 0) {
       const easyShortage = questionDistribution.easy_level_question - selectedSkillQuestions.easy_count;
       const mediumShortage = questionDistribution.medium_level_question - selectedSkillQuestions.medium_count;
@@ -199,14 +207,29 @@ export default function TestCreation() {
     }
 
     setValidationErrors(errors);
-  }, [questionDistribution, selectedSkillQuestions, formData.skill_id, formData.easy_pass_mark, formData.medium_pass_mark, formData.hard_pass_mark, selectedDifficultyLevel, formData.total_no_of_questions]);
+  }, [questionDistribution, selectedSkillQuestions, formData.skill_id, formData.easy_pass_mark, formData.medium_pass_mark, formData.hard_pass_mark, selectedDifficultyLevel, formData.total_no_of_questions, formData.duration_minutes]);
 
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "total_no_of_questions" || name.includes("pass_mark") ? Number(value) || 0 : value,
+      [name]: name === "total_no_of_questions" || name.includes("pass_mark") || name === "duration_minutes" ? value : value,
+    }));
+  };
+
+  // Handle duration increment/decrement
+  const handleDurationAdjust = (direction) => {
+    const currentDuration = Number(formData.duration_minutes) || 0;
+    let newDuration;
+    if (direction === 'up') {
+      newDuration = currentDuration + 1;
+    } else {
+      newDuration = currentDuration > 1 ? currentDuration - 1 : 1;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      duration_minutes: newDuration.toString(),
     }));
   };
 
@@ -216,6 +239,19 @@ export default function TestCreation() {
     setError("");
     setSuccess("");
     setIsSubmitting(true);
+
+    // Validate required fields
+    const errors = {};
+    const duration = Number(formData.duration_minutes);
+    if (!duration || duration <= 0) {
+      errors.duration_minutes = "Required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(prev => ({ ...prev, ...errors }));
+      setError("Please fill in all required fields.");
+      setIsSubmitting(false);
+      return;
+    }
 
     if (Object.keys(validationErrors).length > 0) {
       setError("Please correct the validation errors.");
@@ -236,6 +272,7 @@ export default function TestCreation() {
         skill_id: Number(formData.skill_id),
         difficulty_level_id: Number(formData.difficulty_level_id),
         total_no_of_questions: Number(formData.total_no_of_questions),
+        duration_minutes: Number(formData.duration_minutes),
       };
 
       const response = await fetch("http://localhost:5000/api/quiz/create-test", {
@@ -258,6 +295,7 @@ export default function TestCreation() {
         test_description: "",
         skill_id: "",
         difficulty_level_id: "",
+        duration_minutes: "",
         total_no_of_questions: 0,
         easy_pass_mark: 0,
         medium_pass_mark: 0,
@@ -293,7 +331,7 @@ export default function TestCreation() {
           <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{success}</div>
         )}
 
-        <div onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-gray-700 font-medium mb-1" htmlFor="test_name">
               Test Name
@@ -372,6 +410,49 @@ export default function TestCreation() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="duration_minutes">
+              Test Duration (Minutes)
+            </label>
+            <div className="relative flex items-center max-w-[200px]">
+              <input
+                type="number"
+                id="duration_minutes"
+                name="duration_minutes"
+                value={formData.duration_minutes}
+                onChange={handleChange}
+                min="1"
+                className={`w-full p-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  validationErrors.duration_minutes ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g., 70"
+              />
+              <div className="absolute right-2 flex flex-col">
+                <button
+                  type="button"
+                  onClick={() => handleDurationAdjust('up')}
+                  className="p-1 text-gray-600 hover:text-blue-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDurationAdjust('down')}
+                  className="p-1 text-gray-600 hover:text-blue-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {validationErrors.duration_minutes && (
+              <p className="text-xs text-red-600 mt-1">{validationErrors.duration_minutes}</p>
+            )}
           </div>
 
           {formData.difficulty_level_id && (
@@ -542,8 +623,7 @@ export default function TestCreation() {
           )}
 
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             disabled={isSubmitting || isLoading || Object.keys(validationErrors).length > 0}
             className={`w-full py-3 px-4 rounded-lg text-white font-medium transition duration-200 ${
               isSubmitting || isLoading || Object.keys(validationErrors).length > 0
@@ -553,7 +633,7 @@ export default function TestCreation() {
           >
             {isSubmitting ? "Creating..." : "Create Test"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

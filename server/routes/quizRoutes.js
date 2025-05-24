@@ -6,10 +6,7 @@ const quizRouter = express.Router();
 // Skills routes
 quizRouter.post("/skills", quizController.createSkill);
 quizRouter.get("/skills", quizController.getAllSkills);
-
-quizRouter.get("/skills/active", quizController.getActiveSkills); // New route for active skills
-
-
+quizRouter.get("/skills/active", quizController.getActiveSkills);
 quizRouter.get("/skills/:skill_id", quizController.getSkillById);
 quizRouter.put("/skills/:skill_id", quizController.updateSkill);
 quizRouter.delete("/skills/:skill_id", quizController.deleteSkill);
@@ -45,14 +42,11 @@ quizRouter.get("/all-tests/:student_id", quizController.getAllTestsWithQuestions
 quizRouter.post("/submit-test", quizController.submitTest);
 quizRouter.get("/questions/:skill_id/:level_id", quizController.getQuestionsBySkillAndLevel);
 
-
 // Test schedule routes
 quizRouter.post("/schedule", quizController.saveTestSchedule);
 quizRouter.get("/schedules/:student_id", quizController.getTestSchedules);
 
-
 quizRouter.post("/bulk-mcq", quizController.createBulkMcq);
-
 
 quizRouter.get("/student-test-attended/:student_id", quizController.studentTestAttended);
 
@@ -61,7 +55,6 @@ quizRouter.get("/test-time/:attempt_id", quizController.getTestTime);
 
 quizRouter.get("/transactions", quizController.getTransactions);
 
-// Add new route for checking payment status
 quizRouter.get("/check-payment/:student_id/:project_id", quizController.checkPaymentStatus);
 
 export default quizRouter;

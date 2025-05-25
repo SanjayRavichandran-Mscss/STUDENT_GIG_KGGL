@@ -997,71 +997,80 @@ const getProjectsByStudentLevel = async (req, res) => {
       return res.status(400).json({ status: "error", message: "Invalid student ID" });
     }
 
-    // Fetch the latest test result for the student based on attend_at
-    const testResultQuery = `
-      SELECT student_level 
-      FROM testresults 
-      WHERE student_id = ? 
-      ORDER BY attend_at DESC 
-      LIMIT 1`;
-    const testResult = await dbQuery(testResultQuery, [id]);
+    // Fetch the most recent test result for each skill
+    const testResultsQuery = `
+      SELECT tr.student_level, tr.test_id, tc.skill_id
+      FROM testresults tr
+      JOIN testcreation tc ON tr.test_id = tc.test_id
+      WHERE tr.student_id = ?
+      AND tr.student_level IN ('Easy', 'Medium', 'Hard')
+      AND (tr.test_id, tc.skill_id) IN (
+        SELECT tr2.test_id, tc2.skill_id
+        FROM testresults tr2
+        JOIN testcreation tc2 ON tr2.test_id = tc2.test_id
+        WHERE tr2.student_id = ?
+        AND tr2.attend_at = (
+          SELECT MAX(tr3.attend_at)
+          FROM testresults tr3
+          JOIN testcreation tc3 ON tr3.test_id = tc3.test_id
+          WHERE tc3.skill_id = tc2.skill_id
+          AND tr3.student_id = ?
+        )
+      )
+      ORDER BY tr.attend_at DESC`;
+    const testResults = await dbQuery(testResultsQuery, [id, id, id]);
 
-    // If no test result found
-    if (testResult.length === 0) {
+    // If no passed test results found
+    if (testResults.length === 0) {
       return res.status(404).json({
         status: "error",
-        message: "Please attend a test or contact admin",
+        message: "No passed tests found. Please pass a test to view projects.",
       });
     }
 
-    const student_level = testResult[0].student_level;
+    // Map passed tests to level_id and skill_id
+    const levelSkills = [];
+    for (const test of testResults) {
+      const { student_level, skill_id } = test;
 
-    // Fetch the level_id from difficultylevels table based on student_level
-    const levelQuery = `
-      SELECT level_id 
-      FROM difficultylevels 
-      WHERE level_name = ?`;
-    const levelResult = await dbQuery(levelQuery, [student_level]);
+      // Fetch level_id from difficultylevels
+      const levelQuery = `
+        SELECT level_id 
+        FROM difficultylevels 
+        WHERE level_name = ?`;
+      const levelResult = await dbQuery(levelQuery, [student_level]);
 
-    // If level not found in difficultylevels
-    if (levelResult.length === 0) {
+      if (levelResult.length === 0) {
+        continue; // Skip if no level found
+      }
+
+      const level_id = levelResult[0].level_id;
+      levelSkills.push({ level_id, skill_id });
+    }
+
+    // If no valid level-skill pairs found
+    if (levelSkills.length === 0) {
       return res.status(404).json({
         status: "error",
-        message: "No projects available for this level",
+        message: "No valid levels found for passed tests.",
       });
     }
 
-    const level_id = levelResult[0].level_id;
-
-    // Fetch the student's skills
-    const skillsQuery = `
-      SELECT skill_id 
-      FROM student_skills 
-      WHERE student_id = ?`;
-    const skillsResult = await dbQuery(skillsQuery, [id]);
-
-    // If no skills found
-    if (skillsResult.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        message: "No skills found for this student. Please update your profile.",
-      });
-    }
-
-    const skill_ids = skillsResult.map((skill) => skill.skill_id);
-
-    // Fetch projects with matching level_id and stack (skill_id)
+    // Fetch projects for all passed tests' level_id and skill_id
     const projectsQuery = `
       SELECT project_id, project_name, description, created_at, expiry_date 
       FROM projects 
-      WHERE level_id = ? AND stack IN (?)`;
-    const projects = await dbQuery(projectsQuery, [level_id, skill_ids]);
+      WHERE (${levelSkills
+        .map(() => `(level_id = ? AND stack = ?)`)
+        .join(' OR ')})`;
+    const projectsParams = levelSkills.flatMap(({ level_id, skill_id }) => [level_id, skill_id]);
+    const projects = await dbQuery(projectsQuery, projectsParams);
 
     // If no projects found
     if (projects.length === 0) {
       return res.status(404).json({
         status: "error",
-        message: "No projects available for your level and skills",
+        message: "No projects available for your most recent test levels and skills",
       });
     }
 
@@ -1075,6 +1084,11 @@ const getProjectsByStudentLevel = async (req, res) => {
     res.status(500).json({ status: "error", message: "server_error" });
   }
 };
+
+
+
+
+
 
 export {
   Logout,

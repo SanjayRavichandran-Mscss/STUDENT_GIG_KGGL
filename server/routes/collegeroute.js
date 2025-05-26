@@ -7,4 +7,4 @@ collegeRouter.route('/skill').get(Skills)
 collegeRouter.route('/course/:id').get(getCourseDetails)
 collegeRouter.route('/years/:id').get(getCourseYear)
 
-export {collegeRouter}
+export default collegeRouter

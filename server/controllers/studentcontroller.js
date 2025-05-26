@@ -707,106 +707,6 @@ const Logout = async (req, res) => {
   }
 };
 
-// const getStudentDataAndTest = async (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     const query = "SELECT * FROM testresults WHERE student_id = ?";
-//     const query1 = "SELECT * FROM students WHERE student_id = ?";
-//     const query2 = "SELECT COUNT(skill_id) AS skillCount FROM student_skills WHERE student_id = ?";
-
-//     const [testResults, studentData, skillCountResult] = await Promise.all([
-//       dbQuery(query, [id]),
-//       dbQuery(query1, [id]),
-//       dbQuery(query2, [id]),
-//     ]);
-
-//     if (studentData.length === 0) {
-//       return res.status(404).json({
-//         status: "error",
-//         message: "Student not found",
-//       });
-//     }
-
-//     const response = {
-//       status: "success",
-//       student: studentData[0],
-//       testResults: testResults,
-//       skillCount: skillCountResult[0].skillCount,
-//     };
-
-//     return res.status(200).json(response);
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: "error",
-//       message: "Failed to retrieve data",
-//     });
-//   }
-// };
-
-// const getAllStudentsDataAndTest = async (req, res) => {
-//   try {
-//     // Query to get all students
-//     const studentsQuery = "SELECT * FROM students";
-//     // Query to get all test results
-//     const testResultsQuery = "SELECT * FROM testresults";
-//     // Query to get skill counts for all students
-//     const skillCountQuery = "SELECT student_id, COUNT(skill_id) AS skillCount FROM student_skills GROUP BY student_id";
-
-//     // Execute all queries concurrently
-//     const [studentsResult, testResultsResult, skillCountResult] = await Promise.all([
-//       dbQuery(studentsQuery),
-//       dbQuery(testResultsQuery),
-//       dbQuery(skillCountQuery),
-//     ]);
-
-//     // If no students found
-//     if (studentsResult.length === 0) {
-//       return res.status(404).json({
-//         status: "error",
-//         message: "No students found",
-//       });
-//     }
-
-//     // Map skill counts to student_id for efficient lookup
-//     const skillCountMap = {};
-//     skillCountResult.forEach((row) => {
-//       skillCountMap[row.student_id] = row.skillCount;
-//     });
-
-//     // Map test results to student_id for efficient lookup
-//     const testResultsMap = {};
-//     testResultsResult.forEach((test) => {
-//       if (!testResultsMap[test.student_id]) {
-//         testResultsMap[test.student_id] = [];
-//       }
-//       testResultsMap[test.student_id].push(test);
-//     });
-
-//     // Build response by combining data for each student
-//     const response = {
-//       status: "success",
-//       students: studentsResult.map((student) => ({
-//         student,
-//         testResults: testResultsMap[student.student_id] || [],
-//         skillCount: skillCountMap[student.student_id] || 0,
-//       })),
-//     };
-
-//     return res.status(200).json(response);
-//   } catch (error) {
-//     console.error("Error in getAllStudentsDataAndTest:", error);
-//     return res.status(500).json({
-//       status: "error",
-//       message: "Failed to retrieve data",
-//     });
-//   }
-// };
-
-
-
-
-
 
 const getStudentDataAndTest = async (req, res) => {
   const { id } = req.params;
@@ -1119,3 +1019,35 @@ export {
   getAllStudentsDataAndTest,
   getProjectsByStudentLevel,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

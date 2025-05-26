@@ -22,7 +22,7 @@ function Addskill() {
   // Fetch all skills (inactive only for admin table)
   const fetchSkills = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/quiz/skills');
+      const response = await fetch('http://localhost:5000/api/test/skills');
       const data = await response.json();
       setSkills(data.filter((skill) => skill.skill_status === 0)); // Only inactive skills
     } catch (error) {
@@ -41,7 +41,7 @@ function Addskill() {
   // Fetch active skills (skill_status = 1)
   const fetchActiveSkills = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/quiz/skills/active');
+      const response = await fetch('http://localhost:5000/api/test/skills/active');
       const data = await response.json();
       setActiveSkills(data);
     } catch (error) {
@@ -84,7 +84,7 @@ function Addskill() {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/quiz/skills', {
+      const res = await fetch('http://localhost:5000/api/test/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSkillData),
@@ -148,7 +148,7 @@ function Addskill() {
     const hasChanged = editingSkillName.trim() !== originalSkillName.trim();
 
     try {
-      const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+      const res = await fetch(`http://localhost:5000/api/test/skills/${skillId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ skill_name: editingSkillName.trim() }),
@@ -220,7 +220,7 @@ function Addskill() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/quiz/skills/${skillId}`, {
+      const res = await fetch(`http://localhost:5000/api/test/skills/${skillId}`, {
         method: 'DELETE',
       });
 

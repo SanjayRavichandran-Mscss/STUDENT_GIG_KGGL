@@ -13,7 +13,7 @@ export default function SkillBasedTest() {
     const fetchTests = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/quiz/skill-based-tests/${studentId}`,
+          `http://localhost:5000/api/test/skill-based-tests/${studentId}`,
           { withCredentials: true }
         );
         setTests(response.data);

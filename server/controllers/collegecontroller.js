@@ -85,37 +85,3 @@ export { GetCollegeDetail, Skills, getCourseDetails, getCourseYear };
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

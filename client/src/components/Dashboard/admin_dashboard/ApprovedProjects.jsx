@@ -41,7 +41,7 @@ function ApprovedProjects() {
 
         // Fetch payment status for each project
         const paymentStatusPromises = projects.map((project) =>
-          axios.get(`http://localhost:5000/api/quiz/check-payment/${project.student_id}/${project.project_id}`)
+          axios.get(`http://localhost:5000/api/test/check-payment/${project.student_id}/${project.project_id}`)
         );
         const paymentStatusResponses = await Promise.allSettled(paymentStatusPromises);
         const paymentStatusMap = {};
@@ -249,7 +249,7 @@ function ApprovedProjects() {
           toast.success('Payment details saved successfully');
           try {
             const updatedPayment = await axios.get(
-              `http://localhost:5000/api/quiz/check-payment/${studentId}/${projectId}`
+              `http://localhost:5000/api/test/check-payment/${studentId}/${projectId}`
             );
             setPaymentStatus((prev) => ({
               ...prev,

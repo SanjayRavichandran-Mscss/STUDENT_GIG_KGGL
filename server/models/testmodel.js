@@ -34,10 +34,6 @@
 //   });
 // };
 
-
-
-
-
 // const getActiveSkills = () => {
 //   return new Promise((resolve, reject) => {
 //     const sql = "SELECT * FROM skills WHERE skill_status = 1";
@@ -47,7 +43,6 @@
 //     });
 //   });
 // };
-
 
 // // Get skill by ID
 // const getSkillById = (skillId) => {
@@ -72,40 +67,22 @@
 // };
 
 // // Delete skill
-// // const deleteSkill = (skillId) => {
-// //   return new Promise((resolve, reject) => {
-// //     const sql = "DELETE FROM skills WHERE skill_id = ?";
-// //     db.query(sql, [skillId], (err, result) => {
-// //       if (err) reject(err);
-// //       else resolve(result);
-// //     });
-// //   });
-// // };
-
-
 // const deleteSkill = (skillId) => {
 //   return new Promise((resolve, reject) => {
-//     // Begin transaction
 //     db.beginTransaction((err) => {
 //       if (err) {
 //         return reject(err);
 //       }
-
-//       // Delete from student_skills first
 //       const deleteStudentSkillsSql = "DELETE FROM student_skills WHERE skill_id = ?";
 //       db.query(deleteStudentSkillsSql, [skillId], (err, studentSkillsResult) => {
 //         if (err) {
 //           return db.rollback(() => reject(err));
 //         }
-
-//         // Delete from skills
 //         const deleteSkillsSql = "DELETE FROM skills WHERE skill_id = ?";
 //         db.query(deleteSkillsSql, [skillId], (err, skillsResult) => {
 //           if (err) {
 //             return db.rollback(() => reject(err));
 //           }
-
-//           // Commit transaction
 //           db.commit((err) => {
 //             if (err) {
 //               return db.rollback(() => reject(err));
@@ -117,7 +94,6 @@
 //     });
 //   });
 // };
-
 
 // // Create difficulty level
 // const createLevel = (levelData) => {
@@ -187,16 +163,6 @@
 // };
 
 // // Create MCQ
-// // const createMCQ = (mcqData) => {
-// //   return new Promise((resolve, reject) => {
-// //     const sql = "INSERT INTO questions_mcq SET ?";
-// //     db.query(sql, mcqData, (err, result) => {
-// //       if (err) reject(err);
-// //       else resolve(result);
-// //     });
-// //   });
-// // };
-
 // const createMCQ = (mcqData) => {
 //   return new Promise((resolve, reject) => {
 //     const sql = "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
@@ -214,7 +180,6 @@
 //     });
 //   });
 // };
-
 
 // // Get all MCQs
 // const getAllMcqs = () => {
@@ -360,9 +325,7 @@
 //     });
 //   });
 // };
-
 // // Get available questions
-// // Get available question counts by skill and difficulty level
 // const getAvailableQuestions = async () => {
 //   return new Promise((resolve, reject) => {
 //     const sql = `
@@ -423,38 +386,18 @@
 // };
 
 // // Toggle test status for all students
-// // const toggleTestStatusForAll = (testId, activeStatus) => {
-// //   return new Promise((resolve, reject) => {
-// //     const sql = `
-// //       UPDATE testassigned 
-// //       SET active_status = ? 
-// //       WHERE test_id = ?
-// //     `;
-// //     db.query(sql, [activeStatus, testId], (err, result) => {
-// //       if (err) reject(err);
-// //       else resolve(result);
-// //     });
-// //   });
-// // };
-
-
-
 // const toggleTestStatusForAll = (testId, activeStatus) => {
 //   return new Promise((resolve, reject) => {
-//     // Query to update testassigned table
 //     const testAssignedSql = `
 //       UPDATE testassigned 
 //       SET active_status = ? 
 //       WHERE test_id = ?
 //     `;
-//     // Query to update skilltests table
 //     const skillTestsSql = `
 //       UPDATE skilltests 
 //       SET active_status = ? 
 //       WHERE test_id = ?
 //     `;
-
-//     // Execute both queries concurrently
 //     Promise.all([
 //       new Promise((res, rej) => {
 //         db.query(testAssignedSql, [activeStatus, testId], (err, result) => {
@@ -479,10 +422,6 @@
 //   });
 // };
 
-
-
-
-
 // // Get assigned students for a test
 // const getAssignedStudents = (testId) => {
 //   return new Promise((resolve, reject) => {
@@ -500,10 +439,8 @@
 // };
 
 // // Get all available tests with questions for a student (assigned and skill-based)
-// // Get all available tests with questions for a student (assigned and skill-based)
 // const getAllTestsWithQuestions = async (studentId) => {
 //   return new Promise((resolve, reject) => {
-//     // Fetch assigned tests
 //     const sqlAssignedTests = `
 //       SELECT 
 //         t.test_id,
@@ -528,8 +465,6 @@
 //       JOIN testassigned ta ON t.test_id = ta.test_id
 //       WHERE ta.student_id = ? AND ta.active_status = 1
 //     `;
-    
-//     // Fetch skill-based tests based on student skills
 //     const sqlSkillTests = `
 //       SELECT 
 //         t.test_id,
@@ -554,8 +489,6 @@
 //       JOIN student_skills ss ON t.skill_id = ss.skill_id
 //       WHERE ss.student_id = ?
 //     `;
-
-//     // Execute both queries concurrently
 //     Promise.all([
 //       new Promise((res, rej) => {
 //         db.query(sqlAssignedTests, [studentId], (err, results) => {
@@ -568,50 +501,34 @@
 //           if (err) rej(err);
 //           else res(results);
 //         });
-//       })
+//       }),
 //     ])
 //       .then(async ([assignedTests, skillTests]) => {
 //         const allTests = [...assignedTests, ...skillTests];
 //         const testsWithQuestions = [];
-
 //         const fetchQuestionsForLevel = async (difficultyId, count, skillId, excludeIds = []) => {
-//           // Filter out invalid excludeIds (null, undefined, non-numeric)
 //           const validExcludeIds = excludeIds
-//             .filter(id => id != null && !isNaN(id) && Number.isInteger(Number(id)))
+//             .filter((id) => id != null && !isNaN(id) && Number.isInteger(Number(id)))
 //             .map(Number);
-
 //           let sql = `
 //             SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
 //             FROM questions_mcq
 //             WHERE skill_id = ? AND difficulty_level_id = ?
 //           `;
 //           const params = [skillId, difficultyId];
-
-//           // Only add NOT IN clause if validExcludeIds is non-empty
 //           if (validExcludeIds.length > 0) {
 //             sql += ` AND id NOT IN (${validExcludeIds.map(() => "?").join(",")})`;
 //             params.push(...validExcludeIds);
 //           }
-
 //           sql += ` ORDER BY RAND() LIMIT ?`;
 //           params.push(count);
-
-//           // Log the query and parameters for debugging
-//           console.log("Executing query:", sql);
-//           console.log("Parameters:", params);
-
 //           return new Promise((res, rej) => {
 //             db.query(sql, params, (err, rows) => {
-//               if (err) {
-//                 console.error("Query error:", err);
-//                 rej(err);
-//               } else {
-//                 res(rows);
-//               }
+//               if (err) rej(err);
+//               else res(rows);
 //             });
 //           });
 //         };
-
 //         for (const test of allTests) {
 //           const {
 //             skill_id,
@@ -622,44 +539,62 @@
 //             test_id,
 //             test_name,
 //           } = test;
-
 //           try {
 //             const primaryQuestions = { easy: [], medium: [], hard: [] };
 //             let usedQuestionIds = [];
-
 //             if (difficulty_level_id >= 1 && easy_level_question > 0) {
 //               const easyQuestions = await fetchQuestionsForLevel(1, easy_level_question, skill_id, usedQuestionIds);
 //               if (easyQuestions.length < easy_level_question) {
-//                 throw new Error(`Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test_name} (ID: ${test_id}). Only ${easyQuestions.length} available.`);
+//                 throw new Error(
+//                   `Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test_name} (ID: ${test_id}). Only ${easyQuestions.length} available.`
+//                 );
 //               }
 //               primaryQuestions.easy = easyQuestions;
 //               usedQuestionIds = [...usedQuestionIds, ...easyQuestions.map((q) => q.id)];
 //             }
-
 //             if (difficulty_level_id >= 2 && medium_level_question > 0) {
 //               const mediumQuestions = await fetchQuestionsForLevel(2, medium_level_question, skill_id, usedQuestionIds);
 //               if (mediumQuestions.length < medium_level_question) {
-//                 throw new Error(`Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test_name} (ID: ${test_id}). Only ${mediumQuestions.length} available.`);
+//                 throw new Error(
+//                   `Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test_name} (ID: ${test_id}). Only ${mediumQuestions.length} available.`
+//                 );
 //               }
 //               primaryQuestions.medium = mediumQuestions;
 //               usedQuestionIds = [...usedQuestionIds, ...mediumQuestions.map((q) => q.id)];
 //             }
-
 //             if (difficulty_level_id === 3 && hard_level_question > 0) {
 //               const hardQuestions = await fetchQuestionsForLevel(3, hard_level_question, skill_id, usedQuestionIds);
 //               if (hardQuestions.length < hard_level_question) {
-//                 throw new Error(`Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test_name} (ID: ${test_id}). Only ${hardQuestions.length} available.`);
+//                 throw new Error(
+//                   `Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test_name} (ID: ${test_id}). Only ${hardQuestions.length} available.`
+//                 );
 //               }
 //               primaryQuestions.hard = hardQuestions;
 //               usedQuestionIds = [...usedQuestionIds, ...hardQuestions.map((q) => q.id)];
 //             }
-
 //             const parseQuestions = (questions) =>
-//               questions.map((q) => ({
-//                 ...q,
-//                 option: JSON.parse(q.option || '[]'),
-//               }));
-
+//               questions.map((q) => {
+//                 let parsedOption = [];
+//                 try {
+//                   // Check if option is already an object (e.g., auto-parsed by DB driver)
+//                   if (Array.isArray(q.option)) {
+//                     parsedOption = q.option;
+//                   } else if (typeof q.option === "string" && q.option.trim() !== "") {
+//                     // Attempt to parse if it's a string
+//                     parsedOption = JSON.parse(q.option);
+//                     if (!Array.isArray(parsedOption)) {
+//                       throw new Error(`Invalid option format for question ID ${q.id}`);
+//                     }
+//                   }
+//                 } catch (error) {
+//                   console.error(`Error parsing option for question ID ${q.id}:`, error.message);
+//                   parsedOption = []; // Fallback to empty array
+//                 }
+//                 return {
+//                   ...q,
+//                   option: parsedOption,
+//                 };
+//               });
 //             testsWithQuestions.push({
 //               ...test,
 //               primary_questions: {
@@ -674,7 +609,7 @@
 //               },
 //             });
 //           } catch (error) {
-//             console.error(`Error processing questions for test ${test_id}:`, error.message);
+//             console.error(`Error processing test ${test_name} (ID: ${test_id}):`, error.message);
 //             testsWithQuestions.push({
 //               ...test,
 //               primary_questions: { easy: [], medium: [], hard: [] },
@@ -683,13 +618,9 @@
 //             });
 //           }
 //         }
-
 //         resolve(testsWithQuestions);
 //       })
-//       .catch((err) => {
-//         console.error("Error fetching tests:", err);
-//         reject(err);
-//       });
+//       .catch((err) => reject(err));
 //   });
 // };
 
@@ -707,30 +638,44 @@
 //       student_level,
 //       percentage,
 //     } = resultData;
-//     const sql = `
-//       INSERT INTO testresults (
-//         test_id, student_id, easy_score, medium_score, hard_score,
-//         total_score, incorrect_answer_count, student_level, percentage, attend_at
-//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+
+//     // Check for existing result within a short time window to prevent duplicates
+//     const checkSql = `
+//       SELECT id
+//       FROM testresults
+//       WHERE test_id = ? AND student_id = ? AND attend_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE)
 //     `;
-//     db.query(
-//       sql,
-//       [
-//         test_id,
-//         student_id,
-//         easy_score,
-//         medium_score,
-//         hard_score,
-//         total_score,
-//         incorrect_answer_count,
-//         student_level,
-//         percentage,
-//       ],
-//       (err, result) => {
-//         if (err) reject(err);
-//         else resolve(result);
+//     db.query(checkSql, [test_id, student_id], (err, existingResults) => {
+//       if (err) return reject(err);
+//       if (existingResults.length > 0) {
+//         return reject(new Error("Test result already submitted for this test and student."));
 //       }
-//     );
+
+//       const sql = `
+//         INSERT INTO testresults (
+//           test_id, student_id, easy_score, medium_score, hard_score,
+//           total_score, incorrect_answer_count, student_level, percentage, attend_at
+//         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+//       `;
+//       db.query(
+//         sql,
+//         [
+//           test_id,
+//           student_id,
+//           easy_score,
+//           medium_score,
+//           hard_score,
+//           total_score,
+//           incorrect_answer_count,
+//           student_level,
+//           percentage,
+//         ],
+//         (err, result) => {
+//           if (err) return reject(err);
+//           resolve(result);
+//         }
+//       );
+//     });
 //   });
 // };
 
@@ -755,7 +700,6 @@
 //     });
 //   });
 // };
-
 
 // // Save a test schedule for a student
 // const saveTestSchedule = (student_id, test_id, datetime) => {
@@ -787,8 +731,6 @@
 //   });
 // };
 
-
-
 // const getStudentTestResults = (studentId) => {
 //   return new Promise((resolve, reject) => {
 //     const sql = `
@@ -803,14 +745,15 @@
 //   });
 // };
 
-
 // // Start a test attempt
 // const startTest = (studentId, testId, testType) => {
 //   return new Promise((resolve, reject) => {
 //     // Check for existing active attempt
 //     const checkSql = `
-//       SELECT * FROM test_attempts 
-//       WHERE student_id = ? AND test_id = ? AND test_type = ? AND completed = FALSE
+//       SELECT ta.*, tc.duration_minutes
+//       FROM test_attempts ta
+//       JOIN testcreation tc ON ta.test_id = tc.test_id
+//       WHERE ta.student_id = ? AND ta.test_id = ? AND ta.test_type = ? AND ta.completed = FALSE
 //     `;
 //     db.query(checkSql, [studentId, testId, testType], (err, results) => {
 //       if (err) return reject(err);
@@ -819,7 +762,8 @@
 //         // Existing attempt found
 //         const attempt = results[0];
 //         const startTime = new Date(attempt.start_time);
-//         const durationMs = attempt.duration_minutes * 60 * 1000;
+//         const durationMinutes = attempt.duration_minutes || 30; // Fallback to 30 if undefined
+//         const durationMs = durationMinutes * 60 * 1000;
 //         const endTime = new Date(startTime.getTime() + durationMs);
 //         const now = new Date();
 //         const timeLeftMs = endTime - now;
@@ -832,18 +776,46 @@
 //         });
 //       }
 
-//       // Create new attempt
-//       const startTime = new Date();
-//       const insertSql = `
-//         INSERT INTO test_attempts (student_id, test_id, test_type, start_time, duration_minutes)
-//         VALUES (?, ?, ?, ?, ?)
+//       // Check if test has already been completed
+//       const checkResultSql = `
+//         SELECT id
+//         FROM testresults
+//         WHERE test_id = ? AND student_id = ?
 //       `;
-//       db.query(insertSql, [studentId, testId, testType, startTime, 30], (err, result) => {
+//       db.query(checkResultSql, [testId, studentId], (err, resultResults) => {
 //         if (err) return reject(err);
-//         resolve({
-//           attempt_id: result.insertId,
-//           time_left_seconds: 30 * 60, // 30 minutes in seconds
-//           start_time: startTime,
+//         if (resultResults.length > 0) {
+//           return reject(new Error("Test has already been completed by this student."));
+//         }
+
+//         // Create new attempt
+//         const startTime = new Date();
+//         const insertSql = `
+//           INSERT INTO test_attempts (student_id, test_id, test_type, start_time)
+//           VALUES (?, ?, ?, ?)
+//         `;
+//         db.query(insertSql, [studentId, testId, testType, startTime], (err, result) => {
+//           if (err) return reject(err);
+
+//           // Fetch duration_minutes from testcreation
+//           const durationSql = `
+//             SELECT duration_minutes
+//             FROM testcreation
+//             WHERE test_id = ?
+//           `;
+//           db.query(durationSql, [testId], (err, durationResult) => {
+//             if (err) return reject(err);
+//             if (durationResult.length === 0) return reject(new Error("Test not found in testcreation"));
+
+//             const durationMinutes = durationResult[0].duration_minutes || 30; // Fallback to 30 if undefined
+//             const timeLeftSeconds = durationMinutes * 60;
+
+//             resolve({
+//               attempt_id: result.insertId,
+//               time_left_seconds: timeLeftSeconds,
+//               start_time: startTime,
+//             });
+//           });
 //         });
 //       });
 //     });
@@ -854,9 +826,10 @@
 // const getTestTime = (attemptId) => {
 //   return new Promise((resolve, reject) => {
 //     const sql = `
-//       SELECT start_time, duration_minutes, completed 
-//       FROM test_attempts 
-//       WHERE id = ?
+//       SELECT ta.start_time, ta.completed, tc.duration_minutes
+//       FROM test_attempts ta
+//       JOIN testcreation tc ON ta.test_id = tc.test_id
+//       WHERE ta.id = ?
 //     `;
 //     db.query(sql, [attemptId], (err, results) => {
 //       if (err) return reject(err);
@@ -866,7 +839,8 @@
 //       if (attempt.completed) return resolve(0);
 
 //       const startTime = new Date(attempt.start_time);
-//       const durationMs = attempt.duration_minutes * 60 * 1000;
+//       const durationMinutes = attempt.duration_minutes || 30; // Fallback to 30 if undefined
+//       const durationMs = durationMinutes * 60 * 1000;
 //       const endTime = new Date(startTime.getTime() + durationMs);
 //       const now = new Date();
 //       const timeLeftMs = endTime - now;
@@ -892,8 +866,6 @@
 //   });
 // };
 
-
-
 // // Get all transactions with student and project details
 // const getAllTransactions = () => {
 //   return new Promise((resolve, reject) => {
@@ -916,12 +888,11 @@
 //   });
 // };
 
-
 // // Check payment status by student_id and project_id
 // const checkPaymentStatus = (studentId, projectId) => {
 //   return new Promise((resolve, reject) => {
 //     const sql = `
-//       SELECT payment_id, student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot,created_at
+//       SELECT payment_id, student_id, project_id, from_account_number, to_account_number, transaction_id, transaction_screenshot, created_at
 //       FROM payment_details
 //       WHERE student_id = ? AND project_id = ?
 //     `;
@@ -931,8 +902,6 @@
 //     });
 //   });
 // };
-
-
 
 // export default {
 //   createSkill,
@@ -974,11 +943,13 @@
 //   startTest,
 //   getTestTime,
 //   completeTestAttempt,
-//   getAllTransactions, // New export
-
-// checkPaymentStatus, // New export
-
+//   getAllTransactions,
+//   checkPaymentStatus,
 // };
+
+
+
+
 
 
 
@@ -1031,6 +1002,7 @@ const getAllSkills = () => {
   });
 };
 
+// Get active skills
 const getActiveSkills = () => {
   return new Promise((resolve, reject) => {
     const sql = "SELECT * FROM skills WHERE skill_status = 1";
@@ -1066,27 +1038,21 @@ const updateSkill = (skillId, skillData) => {
 // Delete skill
 const deleteSkill = (skillId) => {
   return new Promise((resolve, reject) => {
-    db.beginTransaction((err) => {
+    // First, delete from student_skills
+    const deleteStudentSkillsSql = "DELETE FROM student_skills WHERE skill_id = ?";
+    db.query(deleteStudentSkillsSql, [skillId], (err, studentSkillsResult) => {
       if (err) {
+        console.error("Error deleting from student_skills:", err);
         return reject(err);
       }
-      const deleteStudentSkillsSql = "DELETE FROM student_skills WHERE skill_id = ?";
-      db.query(deleteStudentSkillsSql, [skillId], (err, studentSkillsResult) => {
+      // Then, delete from skills
+      const deleteSkillsSql = "DELETE FROM skills WHERE skill_id = ?";
+      db.query(deleteSkillsSql, [skillId], (err, skillsResult) => {
         if (err) {
-          return db.rollback(() => reject(err));
+          console.error("Error deleting from skills:", err);
+          return reject(err);
         }
-        const deleteSkillsSql = "DELETE FROM skills WHERE skill_id = ?";
-        db.query(deleteSkillsSql, [skillId], (err, skillsResult) => {
-          if (err) {
-            return db.rollback(() => reject(err));
-          }
-          db.commit((err) => {
-            if (err) {
-              return db.rollback(() => reject(err));
-            }
-            resolve(skillsResult);
-          });
-        });
+        resolve(skillsResult);
       });
     });
   });
@@ -1322,6 +1288,7 @@ const createTest = (testData) => {
     });
   });
 };
+
 // Get available questions
 const getAvailableQuestions = async () => {
   return new Promise((resolve, reject) => {
@@ -1498,14 +1465,14 @@ const getAllTestsWithQuestions = async (studentId) => {
           if (err) rej(err);
           else res(results);
         });
-      })
+      }),
     ])
       .then(async ([assignedTests, skillTests]) => {
         const allTests = [...assignedTests, ...skillTests];
         const testsWithQuestions = [];
         const fetchQuestionsForLevel = async (difficultyId, count, skillId, excludeIds = []) => {
           const validExcludeIds = excludeIds
-            .filter(id => id != null && !isNaN(id) && Number.isInteger(Number(id)))
+            .filter((id) => id != null && !isNaN(id) && Number.isInteger(Number(id)))
             .map(Number);
           let sql = `
             SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
@@ -1542,7 +1509,9 @@ const getAllTestsWithQuestions = async (studentId) => {
             if (difficulty_level_id >= 1 && easy_level_question > 0) {
               const easyQuestions = await fetchQuestionsForLevel(1, easy_level_question, skill_id, usedQuestionIds);
               if (easyQuestions.length < easy_level_question) {
-                throw new Error(`Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test_name} (ID: ${test_id}). Only ${easyQuestions.length} available.`);
+                throw new Error(
+                  `Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test_name} (ID: ${test_id}). Only ${easyQuestions.length} available.`
+                );
               }
               primaryQuestions.easy = easyQuestions;
               usedQuestionIds = [...usedQuestionIds, ...easyQuestions.map((q) => q.id)];
@@ -1550,7 +1519,9 @@ const getAllTestsWithQuestions = async (studentId) => {
             if (difficulty_level_id >= 2 && medium_level_question > 0) {
               const mediumQuestions = await fetchQuestionsForLevel(2, medium_level_question, skill_id, usedQuestionIds);
               if (mediumQuestions.length < medium_level_question) {
-                throw new Error(`Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test_name} (ID: ${test_id}). Only ${mediumQuestions.length} available.`);
+                throw new Error(
+                  `Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test_name} (ID: ${test_id}). Only ${mediumQuestions.length} available.`
+                );
               }
               primaryQuestions.medium = mediumQuestions;
               usedQuestionIds = [...usedQuestionIds, ...mediumQuestions.map((q) => q.id)];
@@ -1558,16 +1529,34 @@ const getAllTestsWithQuestions = async (studentId) => {
             if (difficulty_level_id === 3 && hard_level_question > 0) {
               const hardQuestions = await fetchQuestionsForLevel(3, hard_level_question, skill_id, usedQuestionIds);
               if (hardQuestions.length < hard_level_question) {
-                throw new Error(`Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test_name} (ID: ${test_id}). Only ${hardQuestions.length} available.`);
+                throw new Error(
+                  `Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test_name} (ID: ${test_id}). Only ${hardQuestions.length} available.`
+                );
               }
               primaryQuestions.hard = hardQuestions;
               usedQuestionIds = [...usedQuestionIds, ...hardQuestions.map((q) => q.id)];
             }
             const parseQuestions = (questions) =>
-              questions.map((q) => ({
-                ...q,
-                option: JSON.parse(q.option || '[]'),
-              }));
+              questions.map((q) => {
+                let parsedOption = [];
+                try {
+                  if (Array.isArray(q.option)) {
+                    parsedOption = q.option;
+                  } else if (typeof q.option === "string" && q.option.trim() !== "") {
+                    parsedOption = JSON.parse(q.option);
+                    if (!Array.isArray(parsedOption)) {
+                      throw new Error(`Invalid option format for question ID ${q.id}`);
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Error parsing option for question ID ${q.id}:`, error.message);
+                  parsedOption = [];
+                }
+                return {
+                  ...q,
+                  option: parsedOption,
+                };
+              });
             testsWithQuestions.push({
               ...test,
               primary_questions: {
@@ -1582,6 +1571,7 @@ const getAllTestsWithQuestions = async (studentId) => {
               },
             });
           } catch (error) {
+            console.error(`Error processing test ${test_name} (ID: ${test_id}):`, error.message);
             testsWithQuestions.push({
               ...test,
               primary_questions: { easy: [], medium: [], hard: [] },
@@ -1703,6 +1693,7 @@ const getTestSchedules = (student_id) => {
   });
 };
 
+// Get student test results
 const getStudentTestResults = (studentId) => {
   return new Promise((resolve, reject) => {
     const sql = `

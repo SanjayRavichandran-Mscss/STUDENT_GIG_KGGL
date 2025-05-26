@@ -120,4 +120,34 @@ studentRouter.route("/count").get(getRegisteredStudentsCount);
 studentRouter.route("/projects/count").get(getProjectsCount);
 
 studentRouter.route("/projects-by-level/:id").get(getProjectsByStudentLevel);
-export { studentRouter };
+export default studentRouter ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

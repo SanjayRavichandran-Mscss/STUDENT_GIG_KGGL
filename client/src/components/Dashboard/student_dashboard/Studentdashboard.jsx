@@ -58,7 +58,7 @@ export function StudentDashboard() {
                 const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decodedId}`);
                 setData(response.data);
                 const testsResponse = await axios.get(
-                    `http://localhost:5000/api/quiz/all-tests/${decodedId}`,
+                    `http://localhost:5000/api/test/all-tests/${decodedId}`,
                     { withCredentials: true }
                 );
 

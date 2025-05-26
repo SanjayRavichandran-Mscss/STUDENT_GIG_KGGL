@@ -22,7 +22,7 @@
 //         const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decoded}`);
 //         setData(response.data);
 //         const testsResponse = await axios.get(
-//               `http://localhost:5000/api/quiz/all-tests/${decoded}`,
+//               `http://localhost:5000/api/test/all-tests/${decoded}`,
 //               { withCredentials: true }
 //         );
 
@@ -231,7 +231,7 @@ export default function UserScoreDetails() {
         });
 
         const testsResponse = await axios.get(
-          `http://localhost:5000/api/quiz/all-tests/${decoded}`,
+          `http://localhost:5000/api/test/all-tests/${decoded}`,
           { withCredentials: true }
         );
 

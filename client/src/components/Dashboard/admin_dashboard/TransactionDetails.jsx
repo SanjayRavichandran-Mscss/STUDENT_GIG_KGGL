@@ -12,7 +12,7 @@ function TransactionDetails() {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("http://localhost:5000/api/quiz/transactions");
+        const response = await axios.get("http://localhost:5000/api/test/transactions");
         setTransactions(response.data.result);
       } catch (err) {
         console.error("Error fetching transactions:", err);

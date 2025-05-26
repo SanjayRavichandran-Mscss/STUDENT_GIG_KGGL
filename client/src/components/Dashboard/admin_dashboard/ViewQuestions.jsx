@@ -24,15 +24,15 @@ const ViewQuestions = () => {
       setIsLoading(true);
       try {
         // Fetch questions
-        const questionsResponse = await axios.get('http://localhost:5000/api/quiz/mcq');
+        const questionsResponse = await axios.get('http://localhost:5000/api/test/mcq');
         setQuestions(Array.isArray(questionsResponse.data) ? questionsResponse.data : []);
 
         // Fetch skills
-        const skillsResponse = await axios.get('http://localhost:5000/api/quiz/skills');
+        const skillsResponse = await axios.get('http://localhost:5000/api/test/skills');
         setSkills(Array.isArray(skillsResponse.data) ? skillsResponse.data : []);
 
         // Fetch difficulty levels
-        const difficultyResponse = await axios.get('http://localhost:5000/api/quiz/difficulty-levels');
+        const difficultyResponse = await axios.get('http://localhost:5000/api/test/difficulty-levels');
         setDifficultyLevels(Array.isArray(difficultyResponse.data) ? difficultyResponse.data : []);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -63,7 +63,7 @@ const ViewQuestions = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/quiz/mcq/${id}`);
+          await axios.delete(`http://localhost:5000/api/test/mcq/${id}`);
           setQuestions(questions.filter((q) => q.id !== id));
           Swal.fire({
             title: 'Deleted!',
@@ -84,10 +84,26 @@ const ViewQuestions = () => {
     });
   };
 
+  // Strip <p> tags for editing
+  const stripPTags = (html) => {
+    return html.replace(/<\/?p[^>]*>/g, '').trim();
+  };
+
+  // Add <p> tags when saving
+  const wrapInPTags = (text) => {
+    if (!text.startsWith('<p>')) {
+      return `<p>${text}</p>`;
+    }
+    return text;
+  };
+
   // Start editing
   const startEditing = (question) => {
     setEditingId(question.id);
-    setEditData({ ...question });
+    setEditData({ 
+      ...question,
+      questions: stripPTags(question.questions) // Remove <p> tags when editing
+    });
   };
 
   // Cancel editing
@@ -120,16 +136,21 @@ const ViewQuestions = () => {
     }
 
     try {
-      await axios.put(`http://localhost:5000/api/quiz/mcq/${editData.id}`, {
-        skill_id: editData.skill_id,
-        difficulty_level_id: editData.difficulty_level_id,
-        questions: editData.questions,
-        option: editData.option,
-        correct_answer: editData.correct_answer,
-        question_status: editData.question_status,
+      const dataToSave = {
+        ...editData,
+        questions: wrapInPTags(editData.questions) // Add <p> tags back when saving
+      };
+
+      await axios.put(`http://localhost:5000/api/test/mcq/${editData.id}`, {
+        skill_id: dataToSave.skill_id,
+        difficulty_level_id: dataToSave.difficulty_level_id,
+        questions: dataToSave.questions,
+        option: dataToSave.option,
+        correct_answer: dataToSave.correct_answer,
+        question_status: dataToSave.question_status,
       });
       
-      setQuestions(questions.map(q => q.id === editData.id ? editData : q));
+      setQuestions(questions.map(q => q.id === editData.id ? dataToSave : q));
       setEditingId(null);
       setEditData(null);
       

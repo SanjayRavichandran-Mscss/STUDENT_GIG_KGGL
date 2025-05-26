@@ -24,7 +24,7 @@
 //   }, []);
 
 //   useEffect(() => {
-//     axios.get("http://localhost:5000/api/quiz/difficulty-levels")
+//     axios.get("http://localhost:5000/api/test/difficulty-levels")
 //       .then((res) => {
 //         setLevels(res.data); // array of levels
 //       })
@@ -214,7 +214,7 @@ export function Addproject() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/quiz/difficulty-levels")
+      .get("http://localhost:5000/api/test/difficulty-levels")
       .then((res) => {
         setLevels(res.data);
       })

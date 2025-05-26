@@ -13,7 +13,7 @@ export default function AssignedTest() {
     const fetchTests = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/quiz/assigned-tests/${studentId}`,
+          `http://localhost:5000/api/test/assigned-tests/${studentId}`,
           { withCredentials: true }
         );
         setTests(response.data);

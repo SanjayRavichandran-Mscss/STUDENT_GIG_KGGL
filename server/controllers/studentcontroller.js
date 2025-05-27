@@ -80,11 +80,61 @@ const StudentRegistration = async (req, res) => {
   }
 };
 
+// const StudentLogin = async (req, res) => {
+//   const { email, password } = req.body;
+
+//   if (!email || !password) {
+//     return res.status(400).json({ status: "both_are_invalid", message: "Email and password are required" });
+//   }
+
+//   try {
+//     if (!process.env.JWT_SECRET) {
+//       throw new Error("JWT_SECRET is not defined in environment variables");
+//     }
+
+//     const loginSql = "SELECT * FROM students WHERE email = ?";
+//     const result = await dbQuery(loginSql, [email]);
+
+//     if (result.length === 0) {
+//       return res.json({ status: "both_are_invalid", msg: "Please check your username" });
+//     }
+
+//     const user = result[0];
+//     const isMatch = password === user.password;
+
+//     if (!isMatch) {
+//       return res.json({ status: "invalid_user", msg: "Please check your password" });
+//     }
+
+//     const token = jwt.sign({ user: user.student_id }, process.env.JWT_SECRET, {
+//       expiresIn: "1d",
+//     });
+
+//     res.cookie("accessToken", token, {
+//       httpOnly: true,
+//       sameSite: "strict",
+//       secure: process.env.NODE_ENV === "production",
+//       maxAge: 24 * 60 * 60 * 1000,
+//     });
+//     res.json({
+//       status: "user",
+//       id: user.student_id,
+//       role: user.role_id,
+//       name: user.name,
+//     });
+//   } catch (error) {
+//     console.error("Error in StudentLogin:", error);
+//     res.status(500).json({ status: "error", message: "student_catch_error" });
+//   }
+// };
+
+
+
 const StudentLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ status: "both_are_invalid", message: "Email and password are required" });
+    return res.status(400).json({ status: "error", message: "Email and password are required" });
   }
 
   try {
@@ -96,37 +146,44 @@ const StudentLogin = async (req, res) => {
     const result = await dbQuery(loginSql, [email]);
 
     if (result.length === 0) {
-      return res.json({ status: "both_are_invalid", msg: "Please check your username" });
+      return res.status(401).json({ status: "both_are_invalid", message: "Invalid email" });
     }
 
     const user = result[0];
     const isMatch = password === user.password;
 
     if (!isMatch) {
-      return res.json({ status: "invalid_user", msg: "Please check your password" });
+      return res.status(401).json({ status: "invalid_user", message: "Invalid password" });
     }
 
     const token = jwt.sign({ user: user.student_id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
+    // Set cookie (optional, keep for compatibility)
     res.cookie("accessToken", token, {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
-    res.json({
+
+    // Include accessToken in JSON response
+    res.status(200).json({
       status: "user",
       id: user.student_id,
       role: user.role_id,
       name: user.name,
+      accessToken: token,
     });
   } catch (error) {
     console.error("Error in StudentLogin:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
+    res.status(500).json({ status: "error", message: "Server error during login" });
   }
 };
+
+
+
 
 const restrictTo = (roles) => {
   return async (req, res, next) => {

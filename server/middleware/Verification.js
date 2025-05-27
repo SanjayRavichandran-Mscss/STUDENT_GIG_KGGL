@@ -33,9 +33,8 @@
 
 
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
-dotenv.config();
+const JWT_SECRET = "your_secret_key_here";
 
 const Verification = async (req, res, next) => {
   const { accessToken } = req.cookies;
@@ -45,8 +44,14 @@ const Verification = async (req, res, next) => {
       return res.status(401).json({ status: false, msg: "token_expired" });
     }
 
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-    req.user = decoded; // Store decoded token data (contains user.student_id)
+    const decoded = jwt.verify(accessToken, JWT_SECRET);
+
+    // Check if the role is either 'student' or 'admin'
+    if (!decoded.role || !["student", "admin"].includes(decoded.role)) {
+      return res.status(403).json({ status: false, msg: "invalid_role" });
+    }
+
+    req.user = decoded; // Store decoded token data (contains user.student_id, role, etc.)
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {

@@ -234,4 +234,4 @@ export function ViewQuestionsComponent() {
   );
 }
 
-export default Dash;
+export  {Dash};

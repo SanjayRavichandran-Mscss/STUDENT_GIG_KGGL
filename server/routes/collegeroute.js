@@ -1,5 +1,5 @@
 import express from 'express'
-import { GetCollegeDetail, Skills, getCourseDetails, getCourseYear } from '../controllers/collegecontroller.js'
+import { GetCollegeDetail, getCourseDetails,Skills, getCourseYear } from '../controllers/collegecontroller.js'
 const collegeRouter = express.Router()
 
 collegeRouter.route('/getcollege').get(GetCollegeDetail)

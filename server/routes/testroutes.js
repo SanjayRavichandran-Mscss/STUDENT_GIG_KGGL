@@ -53,8 +53,4 @@ testRouter.get("/student-test-attended/:student_id", testcontroller.studentTestA
 testRouter.post("/start-test", testcontroller.startTest);
 testRouter.get("/test-time/:attempt_id", testcontroller.getTestTime);
 
-testRouter.get("/transactions", testcontroller.getTransactions);
-
-testRouter.get("/check-payment/:student_id/:project_id", testcontroller.checkPaymentStatus);
-
 export default testRouter;

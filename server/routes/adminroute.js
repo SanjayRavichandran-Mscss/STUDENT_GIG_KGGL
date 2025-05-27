@@ -4,19 +4,14 @@ import {
   addProjects,
   addQuestion,
   bittedInfo,
-  categories,
-  categoriesAndSub,
   filterCollegeStduents,
   filterStudentSkills,
   getAllProjects,
   getBitInfo,
-  questionCounting,
   skillBasedProjects,
   studentBitInfo,
   studentsCount,
-  studentsData,
   studentDetails,
-  testAssign,
   checkBidStatus,
   declineBitting,
   getAllStudentAndTestData,
@@ -26,6 +21,8 @@ import {
   getBitStatuses,
   updateBitStatus,
   savePaymentDetails,
+  getTransactions,
+  checkPaymentStatus
 } from "../controllers/admincontroller.js";
 import { body, validationResult } from "express-validator"; // Added validationResult import
 import multer from "multer"; // Added multer for file uploads
@@ -62,7 +59,6 @@ const adminRouter = express.Router();
 adminRouter.route("/college").get(filterCollegeStduents);
 adminRouter.route("/skill").get(filterStudentSkills);
 adminRouter.route("/stucount").get(studentsCount);
-adminRouter.route("/studata").get(studentsData);
 adminRouter.route("/student-details").get(studentDetails);
 adminRouter.route("/addproject").post(addProjects);
 adminRouter.route("/basproject/:id").get(skillBasedProjects);
@@ -75,6 +71,7 @@ adminRouter.route("/decline/:stuid/:proid").post(declineBitting);
 adminRouter.route("/studentDataAndTest").get(getAllStudentAndTestData);
 adminRouter.route("/accepted-bits").get(getAcceptedBits);
 adminRouter.route("/bit-statuses").get(getBitStatuses);
+
 adminRouter.route("/update-bit-status").post(
   [
     body("bit_id").isInt(),
@@ -98,10 +95,7 @@ adminRouter.post(
   ],
   addQuestion
 );
-adminRouter.route("/categories-and-subcategories").get(categoriesAndSub);
-adminRouter.route("/categories").get(categories);
-adminRouter.route("/questions/count").get(questionCounting);
-adminRouter.route("/assign-test").post(testAssign);
+
 adminRouter.route("/checkBid/:stuid/:proid").get(checkBidStatus);
 adminRouter.route("/tests-by-skills/:student_id").get(testsByStudentSkillsCount);
 adminRouter.route("/all-students-tests-by-skills").get(allStudentsTestsBySkillsCount);
@@ -129,5 +123,14 @@ adminRouter.post(
   },
   savePaymentDetails
 );
+
+
+
+adminRouter.route("/transactions").get(getTransactions);
+
+adminRouter.route("/check-payment/:student_id/:project_id").get(checkPaymentStatus);
+
+
+
 
 export default adminRouter;

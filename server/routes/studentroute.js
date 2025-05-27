@@ -3,21 +3,14 @@ import multer from "multer";
 import {
   ForgotPassword,
   GetSingleStudentData,
-  Logout,
-  QuizzResults,
   ResetPassword,
   StudentLogin,
   StudentProjectDetails,
   StudentRegistration,
-  Verify,
   getSingleProfile,
   getStudentSkills,
   profileUpdation,
-  studentDifficulty,
-  studentOptionClick,
   updateUserData,
-  restrictTo,
-  adminDashboard,
   getStudentDataAndTest,
   getBidCredits,
   updateBidCredits,
@@ -92,20 +85,6 @@ studentRouter.route("/getSkill/:id").get(getStudentSkills);
 
 // Get Single Profile
 studentRouter.route("/getall/:id").get(getSingleProfile);
-
-// Authentication
-studentRouter.route("/auth").get(Verify);
-studentRouter.route("/logout").get(Logout);
-
-// Quiz
-studentRouter.route("/questions").get(studentDifficulty);
-studentRouter.route("/compare-and-submit").post(QuizzResults);
-
-// Difficulty-based questions
-studentRouter.route("/option-click").post(studentOptionClick);
-
-// Admin Dashboard (Protected Route)
-studentRouter.route("/admin/dashboard").get(restrictTo([1]), adminDashboard);
 
 studentRouter.route("/student-test-data/:id").get(getStudentDataAndTest);
 

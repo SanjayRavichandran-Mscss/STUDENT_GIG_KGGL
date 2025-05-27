@@ -14,7 +14,9 @@ const createSkill = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Skill created successfully", skill_id: result.insertId });
+    return res
+      .status(201)
+      .json({ msg: "Skill created successfully", skill_id: result.insertId });
   } catch (error) {
     console.error("Error in createSkill:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -36,7 +38,12 @@ const createMultipleSkills = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Skills created successfully", affectedRows: result.affectedRows });
+    return res
+      .status(201)
+      .json({
+        msg: "Skills created successfully",
+        affectedRows: result.affectedRows,
+      });
   } catch (error) {
     console.error("Error in createMultipleSkills:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -121,7 +128,8 @@ const updateSkill = async (req, res) => {
 const deleteSkill = async (req, res) => {
   try {
     const skillId = req.params.skill_id;
-    const deleteStudentSkillsSql = "DELETE FROM student_skills WHERE skill_id = ?";
+    const deleteStudentSkillsSql =
+      "DELETE FROM student_skills WHERE skill_id = ?";
     await new Promise((resolve, reject) => {
       db.query(deleteStudentSkillsSql, [skillId], (err, result) => {
         if (err) reject(err);
@@ -159,7 +167,9 @@ const createLevel = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Level created successfully", level_id: result.insertId });
+    return res
+      .status(201)
+      .json({ msg: "Level created successfully", level_id: result.insertId });
   } catch (error) {
     console.error("Error in createLevel:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -181,7 +191,12 @@ const createMultipleLevels = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Levels created successfully", affectedRows: result.affectedRows });
+    return res
+      .status(201)
+      .json({
+        msg: "Levels created successfully",
+        affectedRows: result.affectedRows,
+      });
   } catch (error) {
     console.error("Error in createMultipleLevels:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -277,10 +292,13 @@ const createMCQ = async (req, res) => {
       !mcqData.difficulty_level_id ||
       !mcqData.question_status
     ) {
-      return res.status(400).json({ msg: "All fields are required, including question_status" });
+      return res
+        .status(400)
+        .json({ msg: "All fields are required, including question_status" });
     }
     mcqData.option = JSON.stringify(mcqData.option);
-    const sql = "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
+    const sql =
+      "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
     const values = [
       mcqData.skill_id,
       mcqData.difficulty_level_id,
@@ -295,7 +313,9 @@ const createMCQ = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "MCQ created successfully", id: result.insertId });
+    return res
+      .status(201)
+      .json({ msg: "MCQ created successfully", id: result.insertId });
   } catch (error) {
     console.error("Error in createMCQ:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -329,7 +349,10 @@ const getAllMcqs = async (req, res) => {
           }
         }
       } catch (error) {
-        console.error(`Error parsing option for MCQ ID ${mcq.id}:`, error.message);
+        console.error(
+          `Error parsing option for MCQ ID ${mcq.id}:`,
+          error.message
+        );
         parsedOption = [];
       }
       return {
@@ -374,7 +397,10 @@ const getMcqById = async (req, res) => {
         }
       }
     } catch (error) {
-      console.error(`Error parsing option for MCQ ID ${mcq.id}:`, error.message);
+      console.error(
+        `Error parsing option for MCQ ID ${mcq.id}:`,
+        error.message
+      );
       parsedOption = [];
     }
     return res.status(200).json({ ...mcq, option: parsedOption });
@@ -448,7 +474,9 @@ const getMcqsByStudentSkills = async (req, res) => {
       });
     });
     if (mcqs.length === 0) {
-      return res.status(404).json({ msg: "No MCQs found for this student's skills" });
+      return res
+        .status(404)
+        .json({ msg: "No MCQs found for this student's skills" });
     }
     const parsedMcqs = mcqs.map((mcq) => {
       let parsedOption = [];
@@ -462,7 +490,10 @@ const getMcqsByStudentSkills = async (req, res) => {
           }
         }
       } catch (error) {
-        console.error(`Error parsing option for MCQ ID ${mcq.id}:`, error.message);
+        console.error(
+          `Error parsing option for MCQ ID ${mcq.id}:`,
+          error.message
+        );
         parsedOption = [];
       }
       return {
@@ -473,125 +504,6 @@ const getMcqsByStudentSkills = async (req, res) => {
     return res.status(200).json(parsedMcqs);
   } catch (error) {
     console.error("Error in getMcqsByStudentSkills:", error);
-    return res.status(500).json({ msg: "Server error" });
-  }
-};
-
-// Get entry test questions
-const getEntryTestQuestions = async (req, res) => {
-  try {
-    const { student_id } = req.params;
-    const sql = `
-      SELECT q.*, s.skill_name, d.level_name
-      FROM questions_mcq q
-      JOIN skills s ON q.skill_id = s.skill_id
-      JOIN difficultylevels d ON q.difficulty_level_id = d.level_id
-      JOIN student_skills ss ON q.skill_id = ss.skill_id
-      WHERE ss.student_id = ?
-      ORDER BY RAND()
-      LIMIT 10
-    `;
-    const questions = await new Promise((resolve, reject) => {
-      db.query(sql, [student_id], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    });
-    if (questions.length === 0) {
-      return res.status(404).json({ msg: "No questions found for this student's skills" });
-    }
-    const parsedQuestions = questions.map((q) => {
-      let parsedOption = [];
-      try {
-        if (Array.isArray(q.option)) {
-          parsedOption = q.option;
-        } else if (typeof q.option === "string" && q.option.trim() !== "") {
-          parsedOption = JSON.parse(q.option);
-          if (!Array.isArray(parsedOption)) {
-            throw new Error(`Invalid option format for question ID ${q.id}`);
-          }
-        }
-      } catch (error) {
-        console.error(`Error parsing option for question ID ${q.id}:`, error.message);
-        parsedOption = [];
-      }
-      return {
-        ...q,
-        option: parsedOption,
-      };
-    });
-    return res.status(200).json(parsedQuestions);
-  } catch (error) {
-    console.error("Error in getEntryTestQuestions:", error);
-    return res.status(500).json({ msg: "Server error" });
-  }
-};
-
-// Submit entry test
-const submitEntryTest = async (req, res) => {
-  try {
-    const { student_id, answers } = req.body;
-    if (!student_id || !answers || typeof answers !== "object") {
-      return res.status(400).json({ msg: "Student ID and answers are required" });
-    }
-    const sql = `
-      SELECT q.*, s.skill_name, d.level_name
-      FROM questions_mcq q
-      JOIN skills s ON q.skill_id = s.skill_id
-      JOIN difficultylevels d ON q.difficulty_level_id = d.level_id
-      JOIN student_skills ss ON q.skill_id = ss.skill_id
-      WHERE ss.student_id = ?
-      ORDER BY RAND()
-      LIMIT 10
-    `;
-    const questions = await new Promise((resolve, reject) => {
-      db.query(sql, [student_id], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    });
-    if (questions.length === 0) {
-      return res.status(404).json({ msg: "No questions found for this student" });
-    }
-    let correctCount = 0;
-    const totalQuestions = questions.length;
-    const answerDetails = {};
-    questions.forEach((q) => {
-      const submittedAnswer = answers[q.id];
-      const isCorrect = submittedAnswer === q.correct_answer;
-      if (isCorrect) correctCount += 1;
-      answerDetails[q.id] = {
-        question: q.questions,
-        submitted_answer: submittedAnswer,
-        correct_answer: q.correct_answer,
-        is_correct: isCorrect,
-      };
-    });
-    const percentage = (correctCount / totalQuestions) * 100;
-    const resultData = {
-      student_id,
-      total_questions: totalQuestions,
-      correct_answers: correctCount,
-      incorrect_answers: totalQuestions - correctCount,
-      percentage,
-      answer_details: JSON.stringify(answerDetails),
-    };
-    const insertSql = "INSERT INTO entry_test_results SET ?";
-    const result = await new Promise((resolve, reject) => {
-      db.query(insertSql, resultData, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
-    });
-    return res.status(201).json({
-      msg: "Entry test submitted successfully",
-      result_id: result.insertId,
-      percentage,
-      correctCount,
-      totalQuestions,
-    });
-  } catch (error) {
-    console.error("Error in submitEntryTest:", error);
     return res.status(500).json({ msg: "Server error" });
   }
 };
@@ -620,7 +532,12 @@ const saveQuizAttempt = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Quiz attempt saved successfully", attempt_id: result.insertId });
+    return res
+      .status(201)
+      .json({
+        msg: "Quiz attempt saved successfully",
+        attempt_id: result.insertId,
+      });
   } catch (error) {
     console.error("Error in saveQuizAttempt:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -645,18 +562,23 @@ const getQuizAttempts = async (req, res) => {
       });
     });
     if (attempts.length === 0) {
-      return res.status(404).json({ msg: "No quiz attempts found for this student" });
+      return res
+        .status(404)
+        .json({ msg: "No quiz attempts found for this student" });
     }
     const parsedAttempts = attempts.map((attempt) => {
       let parsedQuestions = [];
       let parsedCorrectAnswer = [];
       let parsedSelectedOption = [];
       try {
-        parsedQuestions = JSON.parse(attempt.questions || '[]');
-        parsedCorrectAnswer = JSON.parse(attempt.correct_answer || '[]');
-        parsedSelectedOption = JSON.parse(attempt.selected_option || '[]');
+        parsedQuestions = JSON.parse(attempt.questions || "[]");
+        parsedCorrectAnswer = JSON.parse(attempt.correct_answer || "[]");
+        parsedSelectedOption = JSON.parse(attempt.selected_option || "[]");
       } catch (error) {
-        console.error(`Error parsing quiz attempt ID ${attempt.id}:`, error.message);
+        console.error(
+          `Error parsing quiz attempt ID ${attempt.id}:`,
+          error.message
+        );
       }
       return {
         ...attempt,
@@ -691,8 +613,19 @@ const createTest = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!test_name || !test_description || !skill_id || !difficulty_level_id || !total_no_of_questions || !duration_minutes) {
-      return res.status(400).json({ msg: "All required fields must be provided, including test duration" });
+    if (
+      !test_name ||
+      !test_description ||
+      !skill_id ||
+      !difficulty_level_id ||
+      !total_no_of_questions ||
+      !duration_minutes
+    ) {
+      return res
+        .status(400)
+        .json({
+          msg: "All required fields must be provided, including test duration",
+        });
     }
 
     // Validate pass marks
@@ -701,7 +634,9 @@ const createTest = async (req, res) => {
       medium_pass_mark > medium_level_question ||
       hard_pass_mark > hard_level_question
     ) {
-      return res.status(400).json({ msg: "Pass marks cannot exceed the number of questions" });
+      return res
+        .status(400)
+        .json({ msg: "Pass marks cannot exceed the number of questions" });
     }
 
     // Check available questions
@@ -722,9 +657,13 @@ const createTest = async (req, res) => {
         else resolve(rows);
       });
     });
-    const skillQuestions = availableQuestions.find((q) => q.skill_id === Number(skill_id));
+    const skillQuestions = availableQuestions.find(
+      (q) => q.skill_id === Number(skill_id)
+    );
     if (!skillQuestions) {
-      return res.status(400).json({ msg: "No questions available for the selected skill" });
+      return res
+        .status(400)
+        .json({ msg: "No questions available for the selected skill" });
     }
 
     const easyShortage = easy_level_question - skillQuestions.easy_count;
@@ -733,13 +672,19 @@ const createTest = async (req, res) => {
     if (easyShortage > 0 || mediumShortage > 0 || hardShortage > 0) {
       const errors = [];
       if (easyShortage > 0) {
-        errors.push(`Please add ${easyShortage} more Easy questions. Only ${skillQuestions.easy_count} available.`);
+        errors.push(
+          `Please add ${easyShortage} more Easy questions. Only ${skillQuestions.easy_count} available.`
+        );
       }
       if (mediumShortage > 0) {
-        errors.push(`Please add ${mediumShortage} more Medium questions. Only ${skillQuestions.medium_count} available.`);
+        errors.push(
+          `Please add ${mediumShortage} more Medium questions. Only ${skillQuestions.medium_count} available.`
+        );
       }
       if (hardShortage > 0) {
-        errors.push(`Please add ${hardShortage} more Hard questions. Only ${skillQuestions.hard_count} available.`);
+        errors.push(
+          `Please add ${hardShortage} more Hard questions. Only ${skillQuestions.hard_count} available.`
+        );
       }
       return res.status(400).json({
         msg: "Requested question counts exceed available questions",
@@ -775,7 +720,9 @@ const createTest = async (req, res) => {
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Test created successfully", test_id: result.insertId });
+    return res
+      .status(201)
+      .json({ msg: "Test created successfully", test_id: result.insertId });
   } catch (error) {
     console.error("Error in createTest:", error);
     return res.status(500).json({ msg: "Server error", error: error.message });
@@ -852,18 +799,35 @@ const getAllStudents = async (req, res) => {
 const assignTest = async (req, res) => {
   try {
     const { test_id, student_ids, active_status = 0 } = req.body;
-    if (!test_id || !student_ids || !Array.isArray(student_ids) || student_ids.length === 0) {
-      return res.status(400).json({ msg: "Test ID and student IDs are required" });
+    if (
+      !test_id ||
+      !student_ids ||
+      !Array.isArray(student_ids) ||
+      student_ids.length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ msg: "Test ID and student IDs are required" });
     }
-    const sql = "INSERT INTO testassigned (test_id, student_id, active_status) VALUES ?";
-    const values = student_ids.map((student_id) => [test_id, student_id, active_status]);
+    const sql =
+      "INSERT INTO testassigned (test_id, student_id, active_status) VALUES ?";
+    const values = student_ids.map((student_id) => [
+      test_id,
+      student_id,
+      active_status,
+    ]);
     const result = await new Promise((resolve, reject) => {
       db.query(sql, [values], (err, result) => {
         if (err) reject(err);
         else resolve(result);
       });
     });
-    return res.status(201).json({ msg: "Test assigned successfully", affectedRows: result.affectedRows });
+    return res
+      .status(201)
+      .json({
+        msg: "Test assigned successfully",
+        affectedRows: result.affectedRows,
+      });
   } catch (error) {
     console.error("Error in assignTest:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -875,7 +839,9 @@ const toggleTestStatusForAll = async (req, res) => {
   try {
     const { test_id, active_status } = req.body;
     if (!test_id || active_status === undefined) {
-      return res.status(400).json({ msg: "Test ID and active status are required" });
+      return res
+        .status(400)
+        .json({ msg: "Test ID and active status are required" });
     }
     const status = active_status ? 1 : 0;
     const testAssignedSql = `
@@ -902,11 +868,14 @@ const toggleTestStatusForAll = async (req, res) => {
         });
       }),
     ]);
-    if (testAssignedResult.affectedRows === 0 && skillTestsResult.affectedRows === 0) {
+    if (
+      testAssignedResult.affectedRows === 0 &&
+      skillTestsResult.affectedRows === 0
+    ) {
       return res.status(404).json({ msg: "No tests found with this test ID" });
     }
     return res.status(200).json({
-      msg: `Test status updated to ${status ? 'active' : 'inactive'}`,
+      msg: `Test status updated to ${status ? "active" : "inactive"}`,
       testAssignedAffected: testAssignedResult.affectedRows,
       skillTestsAffected: skillTestsResult.affectedRows,
     });
@@ -1006,9 +975,16 @@ const getAllTestsWithQuestions = async (req, res) => {
     ]);
     const allTests = [...assignedTests, ...skillTests];
     const testsWithQuestions = [];
-    const fetchQuestionsForLevel = async (difficultyId, count, skillId, excludeIds = []) => {
+    const fetchQuestionsForLevel = async (
+      difficultyId,
+      count,
+      skillId,
+      excludeIds = []
+    ) => {
       const validExcludeIds = excludeIds
-        .filter((id) => id != null && !isNaN(id) && Number.isInteger(Number(id)))
+        .filter(
+          (id) => id != null && !isNaN(id) && Number.isInteger(Number(id))
+        )
         .map(Number);
       let sql = `
         SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
@@ -1043,34 +1019,70 @@ const getAllTestsWithQuestions = async (req, res) => {
         const primaryQuestions = { easy: [], medium: [], hard: [] };
         let usedQuestionIds = [];
         if (difficulty_level_id >= 1 && easy_level_question > 0) {
-          const easyQuestions = await fetchQuestionsForLevel(1, easy_level_question, skill_id, usedQuestionIds);
+          const easyQuestions = await fetchQuestionsForLevel(
+            1,
+            easy_level_question,
+            skill_id,
+            usedQuestionIds
+          );
           if (easyQuestions.length < easy_level_question) {
             throw new Error(
-              `Please add ${easy_level_question - easyQuestions.length} more Easy questions for test ${test_name} (ID: ${test_id}). Only ${easyQuestions.length} available.`
+              `Please add ${
+                easy_level_question - easyQuestions.length
+              } more Easy questions for test ${test_name} (ID: ${test_id}). Only ${
+                easyQuestions.length
+              } available.`
             );
           }
           primaryQuestions.easy = easyQuestions;
-          usedQuestionIds = [...usedQuestionIds, ...easyQuestions.map((q) => q.id)];
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...easyQuestions.map((q) => q.id),
+          ];
         }
         if (difficulty_level_id >= 2 && medium_level_question > 0) {
-          const mediumQuestions = await fetchQuestionsForLevel(2, medium_level_question, skill_id, usedQuestionIds);
+          const mediumQuestions = await fetchQuestionsForLevel(
+            2,
+            medium_level_question,
+            skill_id,
+            usedQuestionIds
+          );
           if (mediumQuestions.length < medium_level_question) {
             throw new Error(
-              `Please add ${medium_level_question - mediumQuestions.length} more Medium questions for test ${test_name} (ID: ${test_id}). Only ${mediumQuestions.length} available.`
+              `Please add ${
+                medium_level_question - mediumQuestions.length
+              } more Medium questions for test ${test_name} (ID: ${test_id}). Only ${
+                mediumQuestions.length
+              } available.`
             );
           }
           primaryQuestions.medium = mediumQuestions;
-          usedQuestionIds = [...usedQuestionIds, ...mediumQuestions.map((q) => q.id)];
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...mediumQuestions.map((q) => q.id),
+          ];
         }
         if (difficulty_level_id === 3 && hard_level_question > 0) {
-          const hardQuestions = await fetchQuestionsForLevel(3, hard_level_question, skill_id, usedQuestionIds);
+          const hardQuestions = await fetchQuestionsForLevel(
+            3,
+            hard_level_question,
+            skill_id,
+            usedQuestionIds
+          );
           if (hardQuestions.length < hard_level_question) {
             throw new Error(
-              `Please add ${hard_level_question - hardQuestions.length} more Hard questions for test ${test_name} (ID: ${test_id}). Only ${hardQuestions.length} available.`
+              `Please add ${
+                hard_level_question - hardQuestions.length
+              } more Hard questions for test ${test_name} (ID: ${test_id}). Only ${
+                hardQuestions.length
+              } available.`
             );
           }
           primaryQuestions.hard = hardQuestions;
-          usedQuestionIds = [...usedQuestionIds, ...hardQuestions.map((q) => q.id)];
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...hardQuestions.map((q) => q.id),
+          ];
         }
         const parseQuestions = (questions) =>
           questions.map((q) => {
@@ -1078,14 +1090,22 @@ const getAllTestsWithQuestions = async (req, res) => {
             try {
               if (Array.isArray(q.option)) {
                 parsedOption = q.option;
-              } else if (typeof q.option === "string" && q.option.trim() !== "") {
+              } else if (
+                typeof q.option === "string" &&
+                q.option.trim() !== ""
+              ) {
                 parsedOption = JSON.parse(q.option);
                 if (!Array.isArray(parsedOption)) {
-                  throw new Error(`Invalid option format for question ID ${q.id}`);
+                  throw new Error(
+                    `Invalid option format for question ID ${q.id}`
+                  );
                 }
               }
             } catch (error) {
-              console.error(`Error parsing option for question ID ${q.id}:`, error.message);
+              console.error(
+                `Error parsing option for question ID ${q.id}:`,
+                error.message
+              );
               parsedOption = [];
             }
             return {
@@ -1107,7 +1127,10 @@ const getAllTestsWithQuestions = async (req, res) => {
           },
         });
       } catch (error) {
-        console.error(`Error processing test ${test_name} (ID: ${test_id}):`, error.message);
+        console.error(
+          `Error processing test ${test_name} (ID: ${test_id}):`,
+          error.message
+        );
         testsWithQuestions.push({
           ...test,
           primary_questions: { easy: [], medium: [], hard: [] },
@@ -1119,7 +1142,9 @@ const getAllTestsWithQuestions = async (req, res) => {
     return res.status(200).json(testsWithQuestions);
   } catch (error) {
     console.error("Error in getAllTestsWithQuestions:", error);
-    return res.status(400).json({ msg: error.message || "Failed to fetch tests" });
+    return res
+      .status(400)
+      .json({ msg: error.message || "Failed to fetch tests" });
   }
 };
 
@@ -1148,7 +1173,11 @@ const submitTest = async (req, res) => {
       percentage === undefined ||
       !attempt_id
     ) {
-      return res.status(400).json({ msg: "Test ID, student ID, answers, student level, percentage, and attempt ID are required" });
+      return res
+        .status(400)
+        .json({
+          msg: "Test ID, student ID, answers, student level, percentage, and attempt ID are required",
+        });
     }
     const completeSql = `UPDATE test_attempts SET completed = TRUE WHERE id = ?`;
     await new Promise((resolve, reject) => {
@@ -1222,7 +1251,9 @@ const submitTest = async (req, res) => {
     const tests = [...assignedTests, ...skillTests];
     const test = tests.find((t) => t.test_id === Number(test_id));
     if (!test) {
-      return res.status(404).json({ msg: "Test not found or not available for this student" });
+      return res
+        .status(404)
+        .json({ msg: "Test not found or not available for this student" });
     }
     const maxEasyScore = test.easy_level_question;
     const maxMediumScore = test.medium_level_question;
@@ -1234,28 +1265,41 @@ const submitTest = async (req, res) => {
       hard_score > maxHardScore ||
       total_score > maxTotalScore
     ) {
-      return res.status(400).json({ msg: "Submitted scores exceed maximum possible values" });
+      return res
+        .status(400)
+        .json({ msg: "Submitted scores exceed maximum possible values" });
     }
     const totalQuestions = test.total_no_of_questions;
     const correctEasy = easy_score;
     const correctMedium = medium_score;
     const correctHard = hard_score;
     const correctCount = correctEasy + correctMedium + correctHard;
-    if (incorrect_answer_count > totalQuestions - correctCount || incorrect_answer_count < 0) {
+    if (
+      incorrect_answer_count > totalQuestions - correctCount ||
+      incorrect_answer_count < 0
+    ) {
       return res.status(400).json({ msg: "Incorrect answer count is invalid" });
     }
     let expectedLevel = "Failed";
     if (easy_score >= test.easy_pass_mark) {
       expectedLevel = "Easy";
-      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
+      if (
+        test.difficulty_level_id >= 2 &&
+        medium_score >= test.medium_pass_mark
+      ) {
         expectedLevel = "Medium";
-        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark) {
+        if (
+          test.difficulty_level_id === 3 &&
+          hard_score >= test.hard_pass_mark
+        ) {
           expectedLevel = "Hard";
         }
       }
     }
     if (student_level !== expectedLevel) {
-      return res.status(400).json({ msg: "Invalid student level based on scores" });
+      return res
+        .status(400)
+        .json({ msg: "Invalid student level based on scores" });
     }
     const checkSql = `
       SELECT id
@@ -1269,7 +1313,11 @@ const submitTest = async (req, res) => {
       });
     });
     if (existingResults.length > 0) {
-      return res.status(400).json({ msg: "Test result already submitted for this test and student." });
+      return res
+        .status(400)
+        .json({
+          msg: "Test result already submitted for this test and student.",
+        });
     }
     const resultData = {
       test_id,
@@ -1289,22 +1337,31 @@ const submitTest = async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `;
     const result = await new Promise((resolve, reject) => {
-      db.query(insertSql, [
-        test_id,
-        student_id,
-        easy_score,
-        medium_score,
-        hard_score,
-        total_score,
-        incorrect_answer_count,
-        student_level,
-        percentage,
-      ], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
+      db.query(
+        insertSql,
+        [
+          test_id,
+          student_id,
+          easy_score,
+          medium_score,
+          hard_score,
+          total_score,
+          incorrect_answer_count,
+          student_level,
+          percentage,
+        ],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
     });
-    return res.status(201).json({ msg: "Test results saved successfully", result_id: result.insertId });
+    return res
+      .status(201)
+      .json({
+        msg: "Test results saved successfully",
+        result_id: result.insertId,
+      });
   } catch (error) {
     console.error("Error in submitTest:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -1347,7 +1404,10 @@ const getQuestionsBySkillAndLevel = async (req, res) => {
           }
         }
       } catch (error) {
-        console.error(`Error parsing option for question ID ${q.id}:`, error.message);
+        console.error(
+          `Error parsing option for question ID ${q.id}:`,
+          error.message
+        );
         parsedOption = [];
       }
       return {
@@ -1367,7 +1427,9 @@ const saveTestSchedule = async (req, res) => {
   try {
     const { student_id, test_id, datetime } = req.body;
     if (!student_id || !test_id || !datetime) {
-      return res.status(400).json({ msg: "Student ID, test ID, and datetime are required" });
+      return res
+        .status(400)
+        .json({ msg: "Student ID, test ID, and datetime are required" });
     }
     const sql = `
       INSERT INTO test_schedules (student_id, test_id, datetime)
@@ -1375,12 +1437,21 @@ const saveTestSchedule = async (req, res) => {
       ON DUPLICATE KEY UPDATE datetime = ?, created_at = CURRENT_TIMESTAMP
     `;
     const result = await new Promise((resolve, reject) => {
-      db.query(sql, [student_id, test_id, datetime, datetime], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
+      db.query(
+        sql,
+        [student_id, test_id, datetime, datetime],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
     });
-    return res.status(200).json({ msg: "Test schedule saved successfully", schedule_id: result.insertId });
+    return res
+      .status(200)
+      .json({
+        msg: "Test schedule saved successfully",
+        schedule_id: result.insertId,
+      });
   } catch (error) {
     console.error("Error in saveTestSchedule:", error);
     return res.status(500).json({ msg: "Server error" });
@@ -1428,27 +1499,32 @@ const createBulkMcq = async (req, res) => {
         !mcq.difficulty_level_id ||
         !mcq.question_status
       ) {
-        return res.status(400).json({ 
-          msg: `Invalid MCQ: ${JSON.stringify(mcq)}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id, question_status) are required.` 
+        return res.status(400).json({
+          msg: `Invalid MCQ: ${JSON.stringify(
+            mcq
+          )}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id, question_status) are required.`,
         });
       }
       for (const opt of mcq.option) {
         if (!opt.option || !opt.feedback) {
-          return res.status(400).json({ 
-            msg: `Invalid option in MCQ: ${JSON.stringify(mcq)}. Each option must have option text and feedback.` 
+          return res.status(400).json({
+            msg: `Invalid option in MCQ: ${JSON.stringify(
+              mcq
+            )}. Each option must have option text and feedback.`,
           });
         }
       }
       if (!mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
-        return res.status(400).json({ 
-          msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.` 
+        return res.status(400).json({
+          msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.`,
         });
       }
       const mcqData = {
         ...mcq,
         option: JSON.stringify(mcq.option),
       };
-      const sql = "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
+      const sql =
+        "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
       const values = [
         mcqData.skill_id,
         mcqData.difficulty_level_id,
@@ -1509,7 +1585,9 @@ const startTest = async (req, res) => {
   try {
     const { student_id, test_id, test_type } = req.body;
     if (!student_id || !test_id || !test_type) {
-      return res.status(400).json({ msg: "Student ID, test ID, and test type are required" });
+      return res
+        .status(400)
+        .json({ msg: "Student ID, test ID, and test type are required" });
     }
     const checkSql = `
       SELECT ta.*, tc.duration_minutes
@@ -1550,7 +1628,9 @@ const startTest = async (req, res) => {
       });
     });
     if (resultExists.length > 0) {
-      return res.status(400).json({ msg: "Test has already been completed by this student." });
+      return res
+        .status(400)
+        .json({ msg: "Test has already been completed by this student." });
     }
     const startTime = new Date();
     const insertSql = `
@@ -1558,10 +1638,14 @@ const startTest = async (req, res) => {
       VALUES (?, ?, ?, ?)
     `;
     const insertResult = await new Promise((resolve, reject) => {
-      db.query(insertSql, [student_id, test_id, test_type, startTime], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
+      db.query(
+        insertSql,
+        [student_id, test_id, test_type, startTime],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
     });
     const durationSql = `
       SELECT duration_minutes
@@ -1630,75 +1714,6 @@ const getTestTime = async (req, res) => {
   }
 };
 
-// Get transactions
-const getTransactions = async (req, res) => {
-  try {
-    const sql = `
-      SELECT 
-        pd.from_account_number,
-        pd.to_account_number,
-        pd.transaction_id,
-        pd.transaction_screenshot,
-        s.name AS student_name,
-        p.project_name
-      FROM payment_details pd
-      JOIN students s ON pd.student_id = s.student_id
-      JOIN projects p ON pd.project_id = p.project_id
-    `;
-    const transactions = await new Promise((resolve, reject) => {
-      db.query(sql, (err, results) => {
-        if (err) reject(err);
-        else reject(results);
-      });
-    });
-    return res.status(200).json({
-      status: true,
-      message: "Transaction fetched successfully",
-      result: transactions,
-    });
-  } catch (error) {
-    console.error("Error in getTransactions:", error);
-    return res.status(500).json({
-      status: false,
-      message: "Failed to fetch transactions",
-      error: error.message,
-    });
-  }
-};
-
-// Check payment status for a student's project
-const checkPaymentStatus = async (req, res) => {
-  try {
-    const { student_id, project_id } = req.params;
-    if (!student_id || !project_id) {
-      return res.status(400).json({ msg: "Student ID and Project ID are required" });
-    }
-    const sql = `
-      SELECT payment_id, student_id, project_id, from_account_number, to_account_number,
-      transaction_id, transaction_screenshot, created_at
-      FROM payment_details
-      WHERE student_id = ? AND project_id = ?
-    `;
-    const payment = await new Promise((resolve, reject) => {
-      db.query(sql, [student_id, project_id], (err, result) => {
-        if (err) reject(err);
-        else resolve(result[0]);
-      });
-    });
-    if (!payment) {
-      return res.status(200).json({ status: false, payment: null, msg: "No payment details found" });
-    }
-    return res.status(200).json({
-      status: true,
-      payment,
-      msg: "Payment details found",
-    });
-  } catch (error) {
-    console.error("Error in checkPaymentStatus:", error);
-    return res.status(500).json({ msg: "Server error" });
-  }
-};
-
 export default {
   createSkill,
   createMultipleSkills,
@@ -1719,8 +1734,6 @@ export default {
   updateMcq,
   deleteMcq,
   getMcqsByStudentSkills,
-  getEntryTestQuestions,
-  submitEntryTest,
   saveQuizAttempt,
   getQuizAttempts,
   createTest,
@@ -1739,6 +1752,4 @@ export default {
   studentTestAttended,
   startTest,
   getTestTime,
-  getTransactions,
-  checkPaymentStatus,
 };

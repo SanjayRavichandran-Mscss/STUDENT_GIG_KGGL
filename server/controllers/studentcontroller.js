@@ -133,46 +133,6 @@ const StudentLogin = async (req, res) => {
   }
 };
 
-
-
-
-const restrictTo = (roles) => {
-  return async (req, res, next) => {
-    try {
-      const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(401).json({ status: "error", message: "No token provided" });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const userId = decoded.user;
-
-      const userQuery = "SELECT role_id FROM students WHERE student_id = ?";
-      const userResult = await dbQuery(userQuery, [userId]);
-
-      if (!userResult.length) {
-        return res.status(404).json({ status: "error", message: "User not found" });
-      }
-
-      const userRole = userResult[0].role_id;
-
-      if (!roles.includes(userRole)) {
-        return res.status(403).json({ status: "error", message: "Access denied" });
-      }
-
-      req.user = { id: userId, role_id: userRole };
-      next();
-    } catch (error) {
-      console.error("Auth Error:", error);
-      res.status(401).json({ status: "error", message: "Invalid token" });
-    }
-  };
-};
-
-const adminDashboard = async (req, res) => {
-  res.json({ message: "Welcome to Admin Dashboard", user: req.user });
-};
-
 const GetSingleStudentData = async (req, res) => {
   const { student_id } = req.params;
 
@@ -613,108 +573,6 @@ const StudentProjectDetails = async (req, res) => {
   }
 };
 
-const QuizzResults = async (req, res) => {
-  try {
-    const { student_name, totalScore, quiz_attempts, questions, student_id } = req.body;
-
-    await dbQuery(
-      `UPDATE students SET quiz_attempts = quiz_attempts + ? WHERE student_id = ?`,
-      [quiz_attempts, student_id]
-    );
-
-    let easyScore = 0;
-    let mediumScore = 0;
-    let hardScore = 0;
-
-    questions.forEach((q) => {
-      if (q.difficulty_level_id === 1 && q.is_correct) easyScore++;
-      else if (q.difficulty_level_id === 2 && q.is_correct) mediumScore++;
-      else if (q.difficulty_level_id === 3 && q.is_correct) hardScore++;
-    });
-
-    const quizResult = await dbQuery(
-      `INSERT INTO quizattempts (student_id, quiz_score) VALUES (?, ?)`,
-      [student_id, totalScore]
-    );
-
-    const attempt_id = quizResult.insertId;
-    const questionAttempts = questions.map((q) => [
-      student_id,
-      q.question_id,
-      q.chosen_option,
-      q.is_correct,
-      1,
-      attempt_id,
-    ]);
-
-    await dbQuery(
-      `INSERT INTO studentquestionattempts (student_id, question_id, chosen_option, is_correct, encounter_count, attempt_id) VALUES ?`,
-      [questionAttempts]
-    );
-
-    res.json({ message: "Quiz data submitted successfully", totalScore });
-  } catch (error) {
-    console.error("Error in QuizzResults:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
-  }
-};
-
-const studentDifficulty = async (req, res) => {
-  const level = req.query.level;
-
-  try {
-    const result = await dbQuery(
-      "SELECT question_id, question_text, difficulty_level_id, options, correct_answer FROM questions WHERE difficulty_level_id = ? LIMIT 10",
-      [level]
-    );
-    res.json(result);
-  } catch (error) {
-    console.error("Error in studentDifficulty:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
-  }
-};
-
-const studentOptionClick = async (req, res) => {
-  try {
-    const { questionId, selectedOption } = req.body;
-
-    const query = "SELECT correct_answer, difficulty_level_id FROM questions WHERE question_id = ?";
-    const result = await dbQuery(query, [questionId]);
-
-    if (result.length === 0) {
-      return res.status(404).json({ status: "error", message: "Question not found" });
-    }
-
-    const { correct_answer, difficulty_level_id } = result[0];
-    const isCorrect = selectedOption === correct_answer;
-    const difficultyLevel = difficulty_level_id;
-
-    res.json({ isCorrect, difficultyLevel });
-  } catch (error) {
-    console.error("Error in studentOptionClick:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
-  }
-};
-
-const Verify = async (req, res) => {
-  res.json({ status: true, msg: "authorized" });
-};
-
-const Logout = async (req, res) => {
-  try {
-    res.cookie("accessToken", "", {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      expires: new Date(0),
-    });
-    res.json({ status: true, msg: "logout" });
-  } catch (error) {
-    console.error("Error in Logout:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
-  }
-};
-
 
 const getStudentDataAndTest = async (req, res) => {
   const { id } = req.params;
@@ -993,14 +851,8 @@ const getProjectsByStudentLevel = async (req, res) => {
   }
 };
 
-
-
-
-
-
 export {
-  Logout,
-  Verify,
+
   getSingleProfile,
   updateUserData,
   StudentRegistration,
@@ -1011,11 +863,6 @@ export {
   ForgotPassword,
   ResetPassword,
   StudentProjectDetails,
-  QuizzResults,
-  studentDifficulty,
-  studentOptionClick,
-  restrictTo,
-  adminDashboard,
   getStudentDataAndTest,
   getBidCredits,
   updateBidCredits,

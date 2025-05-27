@@ -5,28 +5,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const studentsData = async (req, res) => {
-  try {
-    const sql = `SELECT * FROM students WHERE role_id=1`;
-
-    db.query(sql, (err, result) => {
-      if (err) {
-        res.json({ msg: "db_error" });
-      } else {
-        res.json({ result });
-      }
-    });
-  } catch (err) {
-    res.json({ msg: "admin_error" });
-  }
-};
-
-
-
-
 const studentDetails = async (req, res) => {
   try {
-    // First get all student basic info
     const studentsSql = `
       SELECT 
         s.student_id,
@@ -69,12 +49,12 @@ const studentDetails = async (req, res) => {
           if (err) reject(err);
           else resolve(result);
         });
-      })
+      }),
     ]);
 
     // Group skills by student_id
     const skillsByStudent = {};
-    skills.forEach(skill => {
+    skills.forEach((skill) => {
       if (!skillsByStudent[skill.student_id]) {
         skillsByStudent[skill.student_id] = [];
       }
@@ -82,14 +62,14 @@ const studentDetails = async (req, res) => {
         skill_id: skill.skill_id,
         skill_name: skill.skill_name,
         skill_url: skill.skill_url,
-        skill_description: skill.skill_description
+        skill_description: skill.skill_description,
       });
     });
 
     // Combine the data
-    const result = students.map(student => ({
+    const result = students.map((student) => ({
       ...student,
-      skills: skillsByStudent[student.student_id] || []
+      skills: skillsByStudent[student.student_id] || [],
     }));
 
     res.json({ status: true, result });
@@ -98,9 +78,6 @@ const studentDetails = async (req, res) => {
     res.status(500).json({ status: false, msg: "admin_error" });
   }
 };
-
-
-
 
 const studentsCount = async (req, res) => {
   try {
@@ -156,10 +133,6 @@ const filterStudentSkills = async (req, res) => {
   }
 };
 
-
-
-
-
 const addProjects = async (req, res) => {
   const { pname, pdes, skill, date, level_id } = req.body;
 
@@ -170,7 +143,7 @@ const addProjects = async (req, res) => {
     }
 
     const sql =
-      "INSERT INTO projects (project_name, description, stack, expiry_date, status_id, level_id) VALUES (?, ?, ?, ?, 1, ?)";
+      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id) VALUES (?, ?, ?, ?, ?)";
 
     db.query(sql, [pname, pdes, skill, date, level_id], (err, result) => {
       if (err) {
@@ -184,8 +157,6 @@ const addProjects = async (req, res) => {
     res.status(500).json({ msg: "server_error" });
   }
 };
-
-
 
 const skillBasedProjects = async (req, res) => {
   const { id } = req.params;
@@ -467,7 +438,7 @@ const getAllStudentAndTestData = async (req, res) => {
       // Optional: Structure the data grouped by student
       const studentsMap = {};
 
-      results.forEach(row => {
+      results.forEach((row) => {
         const studentId = row.student_id;
         if (!studentsMap[studentId]) {
           studentsMap[studentId] = {
@@ -487,7 +458,7 @@ const getAllStudentAndTestData = async (req, res) => {
             semester: row.semester,
             role_id: row.role_id,
             credits: row.credits,
-            test_results: []
+            test_results: [],
           };
         }
 
@@ -506,7 +477,7 @@ const getAllStudentAndTestData = async (req, res) => {
             percentage: row.percentage,
             easy_attend_question: row.easy_attend_question,
             medium_attend_question: row.medium_attend_question,
-            hard_attend_question: row.hard_attend_question
+            hard_attend_question: row.hard_attend_question,
           });
         }
       });
@@ -514,13 +485,11 @@ const getAllStudentAndTestData = async (req, res) => {
       const finalData = Object.values(studentsMap);
       res.status(200).json(finalData);
     });
-
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ message: "Internal server error", error: err });
   }
 };
-
 
 const declineBitting = async (req, res) => {
   const { stuid, proid } = req.params;
@@ -638,110 +607,6 @@ const addQuestion = async (req, res) => {
   }
 };
 
-const categoriesAndSub = async (req, res) => {
-  const sql = `
-    SELECT c.category_id, c.category_name, s.sub_category_id, s.sub_category_name
-    FROM categories c
-    LEFT JOIN subcategory s ON c.category_id = s.category_id
-    ORDER BY c.category_name, s.sub_category_name;
-  `;
-
-  db.query(sql, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-
-    const data = results.reduce((acc, row) => {
-      const category = acc.find((c) => c.category_id === row.category_id);
-      if (category) {
-        category.subcategories.push({
-          sub_category_id: row.sub_category_id,
-          sub_category_name: row.sub_category_name,
-        });
-      } else {
-        acc.push({
-          category_id: row.category_id,
-          category_name: row.category_name,
-          subcategories: row.sub_category_id
-            ? [
-                {
-                  sub_category_id: row.sub_category_id,
-                  sub_category_name: row.sub_category_name,
-                },
-              ]
-            : [],
-        });
-      }
-      return acc;
-    }, []);
-
-    res.json(data);
-  });
-};
-
-const categories = async (req, res) => {
-  db.query(
-    "SELECT category_id, category_name FROM categories",
-    (err, results) => {
-      if (err) {
-        console.error("Error fetching categories:", err);
-        res.status(500).send("Error fetching categories");
-      } else {
-        res.json(results);
-      }
-    }
-  );
-};
-
-const questionCounting = async (req, res) => {
-  const category_id = req.query.category_id;
-  db.query(
-    "SELECT COUNT(*) AS count FROM questions WHERE category_id = ?",
-    [category_id],
-    (err, results) => {
-      if (err) {
-        console.error("Error fetching question count:", err);
-        res.status(500).send("Error fetching question count");
-      } else {
-        res.json({ count: results[0].count });
-      }
-    }
-  );
-};
-
-const testAssign = async (req, res) => {
-  const {
-    quiz_name,
-    quiz_des,
-    category_id,
-    total_no_of_question,
-    difficulty_level_id,
-    easy_pass_mark,
-    medium_pass_mark,
-  } = req.body;
-  db.query(
-    "INSERT INTO testassign (quiz_name, quiz_des, category_id, total_no_of_question, difficulty_level_id, easy_pass_mark, medium_pass_mark) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [
-      quiz_name,
-      quiz_des,
-      category_id,
-      total_no_of_question,
-      difficulty_level_id,
-      easy_pass_mark,
-      medium_pass_mark,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error("Error assigning quiz:", err);
-        res.status(500).send("Error assigning quiz");
-      } else {
-        res.send("Quiz assigned successfully");
-      }
-    }
-  );
-};
-
-
 const checkBidStatus = async (req, res) => {
   try {
     const { stuid, proid } = req.params;
@@ -780,9 +645,6 @@ const checkBidStatus = async (req, res) => {
     res.status(500).json({ status: false, msg: "server_error" });
   }
 };
-
-
-
 
 const testsByStudentSkillsCount = async (req, res) => {
   const { student_id } = req.params;
@@ -835,9 +697,6 @@ const allStudentsTestsBySkillsCount = async (req, res) => {
   }
 };
 
-
-
-
 const getAcceptedBits = async (req, res) => {
   try {
     const sql = `
@@ -879,11 +738,7 @@ const getAcceptedBits = async (req, res) => {
     console.error("Server error:", e);
     res.status(500).json({ status: false, msg: "server_error" });
   }
-}
-
-
-
-
+};
 
 const getBitStatuses = async (req, res) => {
   try {
@@ -907,7 +762,9 @@ const updateBitStatus = async (req, res) => {
   try {
     // Validate required fields
     if (!bit_id || !student_id || !project_id || !bit_status_id || !email) {
-      return res.status(400).json({ status: false, msg: "All fields are required" });
+      return res
+        .status(400)
+        .json({ status: false, msg: "All fields are required" });
     }
 
     // Update the existing record
@@ -916,32 +773,37 @@ const updateBitStatus = async (req, res) => {
       SET bit_status_id = ?
       WHERE bit_id = ? AND student_id = ? AND project_id = ?
     `;
-    db.query(sql, [bit_status_id, bit_id, student_id, project_id], (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ status: false, msg: "db_error" });
-      }
-      if (result.affectedRows === 0) {
-        return res.status(400).json({ status: false, msg: "No matching bid found to update" });
-      }
+    db.query(
+      sql,
+      [bit_status_id, bit_id, student_id, project_id],
+      (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ status: false, msg: "db_error" });
+        }
+        if (result.affectedRows === 0) {
+          return res
+            .status(400)
+            .json({ status: false, msg: "No matching bid found to update" });
+        }
 
-      // Send email notification based on bit_status_id
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "sanjayravichandran006@gmail.com",
-          pass: "lpzn amam wlgw kwdl",
-        },
-      });
+        // Send email notification based on bit_status_id
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "sanjayravichandran006@gmail.com",
+            pass: "lpzn amam wlgw kwdl",
+          },
+        });
 
-      let mailOptions;
-      if (bit_status_id === 2) {
-        // Email for declined status
-        mailOptions = {
-          from: "sanjayravichandran006@gmail.com",
-          to: email,
-          subject: "Request Declined",
-          html: `
+        let mailOptions;
+        if (bit_status_id === 2) {
+          // Email for declined status
+          mailOptions = {
+            from: "sanjayravichandran006@gmail.com",
+            to: email,
+            subject: "Request Declined",
+            html: `
             <!DOCTYPE html>
             <html>
             <head>
@@ -973,14 +835,14 @@ const updateBitStatus = async (req, res) => {
             </body>
             </html>
           `,
-        };
-      } else {
-        // Email for other status updates
-        mailOptions = {
-          from: "sanjayravichandran006@gmail.com",
-          to: email,
-          subject: "Bid Status Updated",
-          html: `
+          };
+        } else {
+          // Email for other status updates
+          mailOptions = {
+            from: "sanjayravichandran006@gmail.com",
+            to: email,
+            subject: "Bid Status Updated",
+            html: `
             <!DOCTYPE html>
             <html>
             <head>
@@ -999,7 +861,19 @@ const updateBitStatus = async (req, res) => {
                     </div>
                     <div class="content">
                         <p>Dear User,</p>
-                        <p>Your bid status has been updated to "${bit_status_id === 1 ? 'Accepted' : bit_status_id === 3 ? 'In Progress' : bit_status_id === 4 ? 'Completed' : bit_status_id === 5 ? 'Waiting for Client Approval' : bit_status_id === 6 ? 'Client Approved' : 'Payment Received'}" by the admin.</p>
+                        <p>Your bid status has been updated to "${
+                          bit_status_id === 1
+                            ? "Accepted"
+                            : bit_status_id === 3
+                            ? "In Progress"
+                            : bit_status_id === 4
+                            ? "Completed"
+                            : bit_status_id === 5
+                            ? "Waiting for Client Approval"
+                            : bit_status_id === 6
+                            ? "Client Approved"
+                            : "Payment Received"
+                        }" by the admin.</p>
                         <p>Please contact us if you have any questions or need further assistance.</p>
                         <p>Best regards,</p>
                         <p><strong>Your Company Name</strong></p>
@@ -1012,36 +886,41 @@ const updateBitStatus = async (req, res) => {
             </body>
             </html>
           `,
-        };
-      }
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error("Email error:", error);
-        } else {
-          console.log("Status update email sent: " + info.response);
+          };
         }
-      });
 
-      res.json({ status: true, msg: bit_status_id === 2 ? "declined" : "status_updated" });
-    });
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error("Email error:", error);
+          } else {
+            console.log("Status update email sent: " + info.response);
+          }
+        });
+
+        res.json({
+          status: true,
+          msg: bit_status_id === 2 ? "declined" : "status_updated",
+        });
+      }
+    );
   } catch (e) {
     console.error("Server error:", e);
     res.status(500).json({ status: false, msg: "server_error" });
   }
 };
 
-
-
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(process.cwd(), 'public', 'payment_screenshots');
+    const uploadPath = path.join(
+      process.cwd(),
+      "public",
+      "payment_screenshots"
+    );
     fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
     cb(null, `payment-${uniqueSuffix}${ext}`);
   },
@@ -1050,13 +929,15 @@ const storage = multer.diskStorage({
 // File filter to allow only images and PDFs
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|pdf/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const extname = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
   const mimetype = allowedTypes.test(file.mimetype);
 
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error('Only JPEG, JPG, PNG, and PDF files are allowed'));
+    cb(new Error("Only JPEG, JPG, PNG, and PDF files are allowed"));
   }
 };
 
@@ -1066,68 +947,218 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
-const savePaymentDetails = async (req, res) => {
+const savePaymentDetails = (req, res) => {
   try {
-    const { student_id, project_id, from_account_number, to_account_number, transaction_id } = req.body;
-    const transaction_screenshot = req.file ? `payment_screenshots/${req.file.filename}` : null;
-
-    // Validate all required fields
-    if (!student_id || !project_id || !from_account_number || !to_account_number || !transaction_id || !transaction_screenshot) {
-      return res.status(400).json({ status: false, msg: 'All payment details, including the screenshot, are required' });
-    }
-
-    // Validate student_id exists
-    const studentCheck = await db.query('SELECT student_id FROM students WHERE student_id = ?', [student_id]);
-    if (!studentCheck || studentCheck.length === 0) {
-      return res.status(400).json({ status: false, msg: 'Invalid student_id: Student does not exist' });
-    }
-
-    // Validate project_id exists
-    const projectCheck = await db.query('SELECT project_id FROM projects WHERE project_id = ?', [project_id]);
-    if (!projectCheck || projectCheck.length === 0) {
-      return res.status(400).json({ status: false, msg: 'Invalid project_id: Project does not exist' });
-    }
-
-    // Execute the query
-    const query = `
-      INSERT INTO payment_details (
-        student_id, 
-        project_id, 
-        from_account_number, 
-        to_account_number, 
-        transaction_id, 
-        transaction_screenshot
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
+    const {
       student_id,
       project_id,
       from_account_number,
       to_account_number,
       transaction_id,
-      transaction_screenshot,
-    ];
+    } = req.body;
+    const transaction_screenshot = req.file
+      ? `payment_screenshots/${req.file.filename}`
+      : null;
 
-    const result = await db.query(query, values);
-
-    // Check if the query was successful
-    if (result && result.affectedRows > 0) {
-      return res.json({ status: true, msg: 'Payment details saved successfully' });
-    } else {
-      return res.status(500).json({ status: false, msg: 'Failed to save payment details' });
+    // Validate all required fields
+    if (
+      !student_id ||
+      !project_id ||
+      !from_account_number ||
+      !to_account_number ||
+      !transaction_id ||
+      !transaction_screenshot
+    ) {
+      return res
+        .status(400)
+        .json({
+          status: false,
+          msg: "All payment details, including the screenshot, are required",
+        });
     }
+
+    // Validate student_id exists
+    db.query(
+      "SELECT student_id FROM students WHERE student_id = ?",
+      [student_id],
+      (err, studentResult) => {
+        if (err) {
+          console.error("Database error (student check):", err);
+          return res.status(500).json({ status: false, msg: "Server error" });
+        }
+        if (!studentResult || studentResult.length === 0) {
+          return res
+            .status(400)
+            .json({
+              status: false,
+              msg: "Invalid student_id: Student does not exist",
+            });
+        }
+
+        // Validate project_id exists
+        db.query(
+          "SELECT project_id FROM projects WHERE project_id = ?",
+          [project_id],
+          (err, projectResult) => {
+            if (err) {
+              console.error("Database error (project check):", err);
+              return res
+                .status(500)
+                .json({ status: false, msg: "Server error" });
+            }
+            if (!projectResult || projectResult.length === 0) {
+              return res
+                .status(400)
+                .json({
+                  status: false,
+                  msg: "Invalid project_id: Project does not exist",
+                });
+            }
+
+            // Execute the insert query
+            const query = `
+          INSERT INTO payment_details (
+            student_id, 
+            project_id, 
+            from_account_number, 
+            to_account_number, 
+            transaction_id, 
+            transaction_screenshot
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        `;
+            const values = [
+              student_id,
+              project_id,
+              from_account_number,
+              to_account_number,
+              transaction_id,
+              transaction_screenshot,
+            ];
+
+            db.query(query, values, (err, result) => {
+              if (err) {
+                console.error("Database error (insert):", err);
+                // Handle specific foreign key errors
+                if (
+                  err.code === "ER_NO_REFERENCED_ROW_2" ||
+                  err.code === "ER_ROW_IS_REFERENCED_2"
+                ) {
+                  return res
+                    .status(400)
+                    .json({
+                      status: false,
+                      msg: "Foreign key constraint failed: Invalid student_id or project_id",
+                    });
+                }
+                return res
+                  .status(500)
+                  .json({ status: false, msg: `Server error: ${err.message}` });
+              }
+
+              // Check if the query was successful
+              if (result && result.affectedRows > 0) {
+                return res.json({
+                  status: true,
+                  msg: "Payment details saved successfully",
+                });
+              } else {
+                return res
+                  .status(500)
+                  .json({
+                    status: false,
+                    msg: "Failed to save payment details",
+                  });
+              }
+            });
+          }
+        );
+      }
+    );
   } catch (err) {
-    console.error('Error saving payment details:', err);
-    // Handle specific foreign key errors
-    if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_ROW_IS_REFERENCED_2') {
-      return res.status(400).json({ status: false, msg: 'Foreign key constraint failed: Invalid student_id or project_id' });
+    console.error("Error saving payment details:", err);
+    return res.status(500).json({ status: false, msg: "Server error" });
+  }
+};
+
+// Get transactions
+const getTransactions = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        pd.from_account_number,
+        pd.to_account_number,
+        pd.transaction_id,
+        pd.transaction_screenshot,
+        s.name AS student_name,
+        p.project_name
+      FROM payment_details pd
+      JOIN students s ON pd.student_id = s.student_id
+      JOIN projects p ON pd.project_id = p.project_id
+    `;
+    const transactions = await new Promise((resolve, reject) => {
+      db.query(sql, (err, results) => {
+        if (err) reject(err);
+        else reject(results);
+      });
+    });
+    return res.status(200).json({
+      status: true,
+      message: "Transaction fetched successfully",
+      result: transactions,
+    });
+  } catch (error) {
+    console.error("Error in getTransactions:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch transactions",
+      error: error.message,
+    });
+  }
+};
+
+// Check payment status for a student's project
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const { student_id, project_id } = req.params;
+    if (!student_id || !project_id) {
+      return res
+        .status(400)
+        .json({ msg: "Student ID and Project ID are required" });
     }
-    return res.status(500).json({ status: false, msg: `Server error: ${err.message}` });
+    const sql = `
+      SELECT payment_id, student_id, project_id, from_account_number, to_account_number,
+      transaction_id, transaction_screenshot, created_at
+      FROM payment_details
+      WHERE student_id = ? AND project_id = ?
+    `;
+    const payment = await new Promise((resolve, reject) => {
+      db.query(sql, [student_id, project_id], (err, result) => {
+        if (err) reject(err);
+        else resolve(result[0]);
+      });
+    });
+    if (!payment) {
+      return res
+        .status(200)
+        .json({
+          status: false,
+          payment: null,
+          msg: "No payment details found",
+        });
+    }
+    return res.status(200).json({
+      status: true,
+      payment,
+      msg: "Payment details found",
+    });
+  } catch (error) {
+    console.error("Error in checkPaymentStatus:", error);
+    return res.status(500).json({ msg: "Server error" });
   }
 };
 
 export {
-  studentsData,
+  // studentsData,
   studentDetails,
   studentsCount,
   filterCollegeStduents,
@@ -1140,23 +1171,15 @@ export {
   bittedInfo,
   acceptBitting,
   addQuestion,
-  categoriesAndSub,
-  categories,
-  questionCounting,
-  testAssign,
-  declineBitting, // Add to exports
-  checkBidStatus, // Add to exports,
+  declineBitting,
+  checkBidStatus,
   getAllStudentAndTestData,
   testsByStudentSkillsCount,
-  
   allStudentsTestsBySkillsCount,
-  getAcceptedBits, // Add new function to exports
-  getBitStatuses, // New function
-  updateBitStatus, // New function
-
-  savePaymentDetails, // New function
-
-
+  getAcceptedBits,
+  getBitStatuses,
+  updateBitStatus,
+  savePaymentDetails,
+  getTransactions,
+  checkPaymentStatus,
 };
-
-

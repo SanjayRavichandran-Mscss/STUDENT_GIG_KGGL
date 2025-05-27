@@ -12,7 +12,6 @@ import {
 } from './components/Dashboard/student_dashboard/Studentdashboard';
 import ProfileUpdate from './components/Dashboard/student_dashboard/ProfileUpdate';
 import Dash, {
-  Dashprofile,
   Dashstudent,
   Dashproject,
   DashAllProjects,
@@ -26,13 +25,10 @@ import Dash, {
   Scorearea,
   AddBulkQuestionsComponent,
   ApprovedProjectsComponent,
-  TransactionDetailsComponent, // Add new import
   ViewQuestionsComponent
-} from './components/Dashboard/admin_dashboard/Dash';
+} from './components/Dashboard/admin_dashboard/AdminDashboard';
 import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
-import ResetPassword from './components/Dashboard/Password/ResetPassword';
 import HomePage from './components/LandingPage/HomePage';
-import BitConfirm from './components/Dashboard/admin_dashboard/BitConfirm';
 
 function App() {
   return (
@@ -66,12 +62,10 @@ function App() {
         <Route path="/assign-test/:id" element={<AssignTestComponent />} />
         <Route path="/bulk-questions/:id" element={<AddBulkQuestionsComponent />} />
         <Route path="/approved-projects/:id" element={<ApprovedProjectsComponent />} />
-        <Route path="/transactions/:id" element={<TransactionDetailsComponent />} /> {/* New route */}
         {/* BitConfirm Route */}
         <Route path="/bitconfirm/:id" element={<DashBit />} />
         {/* Forgot Password */}
         <Route path="/forgot" element={<ForgotPassword />} />
-        <Route path="/reset/:token" element={<ResetPassword />} />
         <Route path="/addskill" element={<Addskillpage />} />
         {/* Score Area */}
         <Route path="/studentscore" element={<Scorearea />} />

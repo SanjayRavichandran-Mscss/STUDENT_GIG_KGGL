@@ -14,9 +14,11 @@ const PieChartComponent = () => {
   }, []);
 
   // Custom Legend formatter
-  const renderLegendText = (value, entry) => {
+  const renderLegendText = (value) => {
     const found = clg.find((item) => item.name === value);
     return `${value}: ${found ? found.value : 0}`;
+   
+    
   };
 
   return (

@@ -1,22 +1,19 @@
 import React from "react";
-import DoughnutPieChart from "./Barchart.jsx";
+import DoughnutPieChart from "./PieChart.jsx";
 import { AdminMenu } from "./AdminMenu.jsx";
-import MainContent from "./MainContent.jsx";
 import StudentsData from "./StudentData.jsx";
 import { Addproject } from "./Addproject.jsx";
 import Projects from "./Projects.jsx";
 import BitConfirm from "./BitConfirm.jsx";
 import AddQuestion from "./AddQuestion.jsx";
-import QuizzAssign from "./QuizzAssign.jsx";
 import Kgcas from "./Progress.jsx";
-import GeminiQuizGenerator from "../../AIquiz/GeminiQuizGenerator.jsx";
+import GeminiQuizGenerator from "./GeminiQuizGenerator.jsx";
 import TestCreation from "./TestCreation.jsx";
 import AssignTest from "./AssignTest.jsx";
 import Addskill from "./Addskill.jsx";
 import Score from "./Score.jsx";
 import AddBulkQuestions from "./AddBulkQuestions.jsx";
 import ApprovedProjects from "./ApprovedProjects.jsx";
-import TransactionDetails from "./TransactionDetails.jsx"; // Add new import
 import ViewQuestions from "./ViewQuestions.jsx";
 
 // Main layout container styles
@@ -50,18 +47,6 @@ function Dash() {
   );
 }
 
-export function Dashprofile() {
-  return (
-    <div className={layoutContainerClass}>
-      <div className={sidebarClass}>
-        <AdminMenu />
-      </div>
-      <div className={contentClass}>
-        <MainContent />
-      </div>
-    </div>
-  );
-}
 
 export function Dashstudent() {
   return (
@@ -161,7 +146,6 @@ export function AssigningQuizz() {
         <AdminMenu />
       </div>
       <div className={contentClass}>
-        <QuizzAssign />
       </div>
     </div>
   );
@@ -234,18 +218,7 @@ export function ApprovedProjectsComponent() {
   );
 }
 
-export function TransactionDetailsComponent() {
-  return (
-    <div className={layoutContainerClass}>
-      <div className={sidebarClass}>
-        <AdminMenu />
-      </div>
-      <div className={contentClass}>
-        <TransactionDetails />
-      </div>
-    </div>
-  );
-}
+
 
 
 export function ViewQuestionsComponent() {

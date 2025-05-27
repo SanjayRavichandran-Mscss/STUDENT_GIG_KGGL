@@ -336,7 +336,7 @@ export default function AssignTest() {
 
 
               <div className="mt-4">
-                <label className="block text-gray-700 font-medium mb-1">Select Students</label>
+                {/* <label className="block text-gray-700 font-medium mb-1">Select Students</label> */}
                 <div className="flex items-center gap-2">
                   {/* <select
                     value={currentStudent[test.test_id] || ""}

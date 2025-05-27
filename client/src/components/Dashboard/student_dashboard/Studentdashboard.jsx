@@ -1,13 +1,12 @@
 import { useParams } from "react-router-dom";
 import StudentMenu from "./StudentMenu";
 import StudentProject from "./StudentProject";
-import AttendTest from "./Quiz/AttendTest";
+import AttendTest from "./StudentTest/AttendTest";
 import Profile from "./Profile";
 import ProjectDetails from "./ProjectDetails";
-import MyTest from "./Quiz/MyTest";
-import EntryTest from "./Quiz/EntryTest";
+import MyTest from "./StudentTest/MyTest";
 import { useEffect, useState } from "react";
-import UserScoreDetails from "./Quiz/StudentScore";
+import UserScoreDetails from "./StudentTest/StudentScore";
 import axios from "axios";
 
 export function StudentDashboard() {
@@ -247,7 +246,7 @@ export function StudentEntryTest() {
 
         {/* Main Content Area */}
         <div className="flex-1 p-6">
-          <EntryTest />
+          {/* <EntryTest /> */}
         </div>
       </div>
     </div>

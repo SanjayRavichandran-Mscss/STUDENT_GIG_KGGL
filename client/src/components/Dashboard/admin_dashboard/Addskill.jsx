@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { Pencil, Trash2, Search, Check, Plus, X } from 'lucide-react';
 import Modal from 'react-modal';
@@ -26,13 +24,17 @@ function Addskill() {
       const data = await response.json();
       setSkills(data.filter((skill) => skill.skill_status === 0)); // Only inactive skills
     } catch (error) {
-      toast.error('Failed to fetch skills. Please try again.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to fetch skills. Please try again.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       console.error('Error fetching skills:', error);
     }
@@ -45,13 +47,17 @@ function Addskill() {
       const data = await response.json();
       setActiveSkills(data);
     } catch (error) {
-      toast.error('Failed to fetch active skills. Please try again.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to fetch active skills. Please try again.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       console.error('Error fetching active skills:', error);
     }
@@ -67,13 +73,17 @@ function Addskill() {
     e.preventDefault();
 
     if (!newSkill.trim()) {
-      toast.warning('Please enter a valid skill name.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'warning',
+        title: 'Warning',
+        text: 'Please enter a valid skill name.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       return;
     }
@@ -91,35 +101,47 @@ function Addskill() {
       });
 
       if (res.ok) {
-        toast.success('Skill added successfully!', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Skill added successfully!',
+          confirmButtonColor: '#dc2626',
+          customClass: {
+            popup: 'rounded-md shadow-lg',
+            title: 'text-lg font-semibold text-gray-800',
+            content: 'text-gray-600',
+            confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+          },
         });
         setNewSkill('');
         setIsModalOpen(false);
         fetchSkills();
       } else {
-        toast.error('Failed to add skill. Please try again.', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to add skill. Please try again.',
+          confirmButtonColor: '#dc2626',
+          customClass: {
+            popup: 'rounded-md shadow-lg',
+            title: 'text-lg font-semibold text-gray-800',
+            content: 'text-gray-600',
+            confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+          },
         });
       }
     } catch (error) {
-      toast.error('An error occurred while adding the skill. Please try again.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while adding the skill. Please try again.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       console.error('Error adding skill:', error);
     }
@@ -134,13 +156,17 @@ function Addskill() {
 
   const handleUpdate = async (skillId) => {
     if (!editingSkillName.trim()) {
-      toast.warning('Skill name cannot be empty.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'warning',
+        title: 'Warning',
+        text: 'Skill name cannot be empty.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       return;
     }
@@ -156,13 +182,17 @@ function Addskill() {
 
       if (res.ok) {
         if (hasChanged) {
-          toast.success('Skill updated successfully!', {
-            position: 'top-right',
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Skill updated successfully!',
+            confirmButtonColor: '#dc2626',
+            customClass: {
+              popup: 'rounded-md shadow-lg',
+              title: 'text-lg font-semibold text-gray-800',
+              content: 'text-gray-600',
+              confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+            },
           });
         }
         setEditingSkill(null);
@@ -172,25 +202,33 @@ function Addskill() {
         fetchActiveSkills();
       } else {
         if (hasChanged) {
-          toast.error('Failed to update skill. Please try again.', {
-            position: 'top-right',
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to update skill. Please try again.',
+            confirmButtonColor: '#dc2626',
+            customClass: {
+              popup: 'rounded-md shadow-lg',
+              title: 'text-lg font-semibold text-gray-800',
+              content: 'text-gray-600',
+              confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+            },
           });
         }
       }
     } catch (error) {
       if (hasChanged) {
-        toast.error('An error occurred while updating the skill. Please try again.', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred while updating the skill. Please try again.',
+          confirmButtonColor: '#dc2626',
+          customClass: {
+            popup: 'rounded-md shadow-lg',
+            title: 'text-lg font-semibold text-gray-800',
+            content: 'text-gray-600',
+            confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+          },
         });
       }
       console.error('Error updating skill:', error);
@@ -225,34 +263,46 @@ function Addskill() {
       });
 
       if (res.ok) {
-        toast.success('Skill deleted successfully!', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Skill deleted successfully!',
+          confirmButtonColor: '#dc2626',
+          customClass: {
+            popup: 'rounded-md shadow-lg',
+            title: 'text-lg font-semibold text-gray-800',
+            content: 'text-gray-600',
+            confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+          },
         });
         fetchSkills();
         fetchActiveSkills();
       } else {
-        toast.error('Cannot delete skill. Tests have been created for this skill.', {
-          position: 'top-right',
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Cannot delete skill. Tests have been created for this skill.',
+          confirmButtonColor: '#dc2626',
+          customClass: {
+            popup: 'rounded-md shadow-lg',
+            title: 'text-lg font-semibold text-gray-800',
+            content: 'text-gray-600',
+            confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+          },
         });
       }
     } catch (error) {
-      toast.error('An error occurred while deleting the skill. Please try again.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while deleting the skill. Please try again.',
+        confirmButtonColor: '#dc2626',
+        customClass: {
+          popup: 'rounded-md shadow-lg',
+          title: 'text-lg font-semibold text-gray-800',
+          content: 'text-gray-600',
+          confirmButton: 'px-3 py-1.5 text-white font-medium rounded-md',
+        },
       });
       console.error('Error deleting skill:', error);
     }
@@ -268,19 +318,6 @@ function Addskill() {
 
   return (
     <div className="min-h-screen bg-blue-50 py-6 px-4 sm:px-6 lg:px-8">
-      <ToastContainer 
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold text-blue-800 text-center mb-6">Skills</h1>
 

@@ -360,25 +360,8 @@ const acceptBitting = async (req, res) => {
         }
       });
 
-      const updateProjectSql = `
-        UPDATE projects
-        SET status_id = 2
-        WHERE project_id = ?
-        AND EXISTS (
-          SELECT 1
-          FROM bit
-          WHERE project_id = ?
-          AND bit_status_id = 1
-        )
-      `;
-
-      db.query(updateProjectSql, [proid, proid], (err, result) => {
-        if (err) {
-          console.error("Project update error:", err);
-          return res.send("project_update_error");
-        }
-        res.send("updated");
-      });
+      // No UPDATE projects query, as status_id is removed
+      res.send("updated");
     });
   } catch (e) {
     console.error("Server error:", e);

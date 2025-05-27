@@ -554,7 +554,7 @@ const StudentProjectDetails = async (req, res) => {
         p.project_id, 
         p.project_name, 
         p.description AS project_description, 
-        p.status_id, 
+      
         p.created_at, 
         p.expiry_date,
         s.skill_id, 
@@ -720,29 +720,33 @@ const getRegisteredStudentsCount = async (req, res) => {
 };
 
 
-
 const getProjectsCount = async (req, res) => {
   try {
     // Query for total projects
     const totalProjectsQuery = "SELECT COUNT(*) AS totalProjects FROM projects";
-    // Query for live projects (status_id = 2)
-    const liveProjectsQuery = "SELECT COUNT(*) AS liveProjects FROM projects WHERE status_id = 2";
+    // Query for live projects (bit_status_id = 1 OR 11)
+    const liveProjectsQuery = "SELECT COUNT(*) AS liveProjects FROM bit WHERE bit_status_id = 1 OR bit_status_id = 8 OR bit_status_id = 9 OR bit_status_id = 10 OR bit_status_id = 11";
+    // Query for completed projects (bit_status_id = 12)
+    const completedProjectsQuery = "SELECT COUNT(*) AS completedProjects FROM bit WHERE bit_status_id = 12";
 
-    // Execute both queries concurrently
-    const [totalResult, liveResult] = await Promise.all([
+    // Execute all queries concurrently
+    const [totalResult, liveResult, completedResult] = await Promise.all([
       dbQuery(totalProjectsQuery),
       dbQuery(liveProjectsQuery),
+      dbQuery(completedProjectsQuery),
     ]);
 
     // Log results for debugging
     console.log("Total Projects Query Result:", totalResult);
     console.log("Live Projects Query Result:", liveResult);
+    console.log("Completed Projects Query Result:", completedResult);
 
-    // Send response with both counts
+    // Send response with all counts
     res.json({
       status: "success",
       totalProjects: totalResult[0].totalProjects,
       liveProjects: liveResult[0].liveProjects,
+      completedProjects: completedResult[0].completedProjects,
     });
   } catch (error) {
     console.error("Error in getProjectsCount:", error);

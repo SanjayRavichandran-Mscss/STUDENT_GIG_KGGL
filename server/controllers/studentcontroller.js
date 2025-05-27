@@ -80,55 +80,6 @@ const StudentRegistration = async (req, res) => {
   }
 };
 
-// const StudentLogin = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   if (!email || !password) {
-//     return res.status(400).json({ status: "both_are_invalid", message: "Email and password are required" });
-//   }
-
-//   try {
-//     if (!process.env.JWT_SECRET) {
-//       throw new Error("JWT_SECRET is not defined in environment variables");
-//     }
-
-//     const loginSql = "SELECT * FROM students WHERE email = ?";
-//     const result = await dbQuery(loginSql, [email]);
-
-//     if (result.length === 0) {
-//       return res.json({ status: "both_are_invalid", msg: "Please check your username" });
-//     }
-
-//     const user = result[0];
-//     const isMatch = password === user.password;
-
-//     if (!isMatch) {
-//       return res.json({ status: "invalid_user", msg: "Please check your password" });
-//     }
-
-//     const token = jwt.sign({ user: user.student_id }, process.env.JWT_SECRET, {
-//       expiresIn: "1d",
-//     });
-
-//     res.cookie("accessToken", token, {
-//       httpOnly: true,
-//       sameSite: "strict",
-//       secure: process.env.NODE_ENV === "production",
-//       maxAge: 24 * 60 * 60 * 1000,
-//     });
-//     res.json({
-//       status: "user",
-//       id: user.student_id,
-//       role: user.role_id,
-//       name: user.name,
-//     });
-//   } catch (error) {
-//     console.error("Error in StudentLogin:", error);
-//     res.status(500).json({ status: "error", message: "student_catch_error" });
-//   }
-// };
-
-
 
 const StudentLogin = async (req, res) => {
   const { email, password } = req.body;

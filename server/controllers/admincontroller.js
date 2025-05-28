@@ -317,9 +317,9 @@ const acceptBitting = async (req, res) => {
       const mailOptions = {
         from: "sanjayravichandran006@gmail.com",
         to: email,
-        subject: "Confirmation msg",
+        subject: "Confirmation message",
         html: `
-          <!DOCTYPE html>
+             <!DOCTYPE html>
           <html>
           <head>
               <style>
@@ -337,16 +337,13 @@ const acceptBitting = async (req, res) => {
                   </div>
                   <div class="content">
                       <p>Dear User,</p>
-                      <p>We are pleased to inform you that your request has been accepted by the admin.</p>
+                      <p>We are pleased to inform you that your request has been <strong>accepted</strong> by the admin.</p>
                       <p>You can now proceed with the next steps as outlined in the instructions provided.</p>
                       <p>If you have any questions or need further assistance, feel free to contact us.</p>
                       <p>Best regards,</p>
-                      <p><strong>Your Company Name</strong></p>
+                      <p><strong>KG Genius Labs</strong></p>
                   </div>
-                  <div class="footer">
-                      <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
-                      <p>1234 Street Name, City, State, 12345</p>
-                  </div>
+               
               </div>
           </body>
           </html>
@@ -523,15 +520,12 @@ const declineBitting = async (req, res) => {
                   </div>
                   <div class="content">
                       <p>Dear User,</p>
-                      <p>We regret to inform you that your request has been declined by the admin.</p>
+                      <p>We regret to inform you that your request has been <strong>declined</strong> by the admin.</p>
                       <p>Please contact us if you have any questions or need further assistance.</p>
                       <p>Best regards,</p>
-                      <p><strong>Your Company Name</strong></p>
+                      <p><strong>KG Genius Labs</strong></p>
                   </div>
-                  <div class="footer">
-                      <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
-                      <p>1234 Street Name, City, State, 12345</p>
-                  </div>
+                
               </div>
           </body>
           </html>
@@ -788,7 +782,7 @@ const updateBitStatus = async (req, res) => {
             to: email,
             subject: "Request Declined",
             html: `
-            <!DOCTYPE html>
+  <!DOCTYPE html>
             <html>
             <head>
                 <style>
@@ -806,15 +800,13 @@ const updateBitStatus = async (req, res) => {
                     </div>
                     <div class="content">
                         <p>Dear User,</p>
-                        <p>We regret to inform you that your request has been declined by the admin.</p>
+                        <p>We regret to inform you that your request has been <strong>declined</strong> by the admin.</p>
                         <p>Please contact us if you have any questions or need further assistance.</p>
                         <p>Best regards,</p>
-                        <p><strong>Your Company Name</strong></p>
+                        <p><strong>KG Genius Labs</strong></p>
+                        
                     </div>
-                    <div class="footer">
-                        <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
-                        <p>1234 Street Name, City, State, 12345</p>
-                    </div>
+                   
                 </div>
             </body>
             </html>
@@ -845,27 +837,11 @@ const updateBitStatus = async (req, res) => {
                     </div>
                     <div class="content">
                         <p>Dear User,</p>
-                        <p>Your bid status has been updated to "${
-                          bit_status_id === 1
-                            ? "Accepted"
-                            : bit_status_id === 3
-                            ? "In Progress"
-                            : bit_status_id === 4
-                            ? "Completed"
-                            : bit_status_id === 5
-                            ? "Waiting for Client Approval"
-                            : bit_status_id === 6
-                            ? "Client Approved"
-                            : "Payment Received"
-                        }" by the admin.</p>
-                        <p>Please contact us if you have any questions or need further assistance.</p>
+<p>Your bid status has been updated by the administration team. Please visit the KGGL Gig portal to review the details.</p>                        <p>Please contact us if you have any questions or need further assistance.</p>
                         <p>Best regards,</p>
-                        <p><strong>Your Company Name</strong></p>
+                        <p><strong>KG Genius Labs</strong></p>
                     </div>
-                    <div class="footer">
-                        <p>© ${new Date().getFullYear()} Your Company Name. All rights reserved.</p>
-                        <p>1234 Street Name, City, State, 12345</p>
-                    </div>
+                  
                 </div>
             </body>
             </html>

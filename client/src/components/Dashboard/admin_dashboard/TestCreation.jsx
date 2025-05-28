@@ -268,7 +268,9 @@ export default function TestCreation() {
     try {
       const dataToSubmit = {
         ...formData,
-        ...questionDistribution,
+        easy_level_question: Number(formData.easy_pass_mark),
+        medium_level_question: Number(formData.medium_pass_mark),
+        hard_level_question: Number(formData.hard_pass_mark),
         skill_id: Number(formData.skill_id),
         difficulty_level_id: Number(formData.difficulty_level_id),
         total_no_of_questions: Number(formData.total_no_of_questions),

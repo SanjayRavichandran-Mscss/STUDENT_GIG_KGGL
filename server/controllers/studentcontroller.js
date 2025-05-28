@@ -467,9 +467,6 @@ const ForgotPassword = async (req, res) => {
                 <p style="color: #555; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">
                   If you did not request a password reset, please ignore this email or contact our support team.
                 </p>
-                <a href="http://103.118.158.24/api:3000/forgot" style="display: inline-block; padding: 12px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">
-                  Reset Password
-                </a>
                 <p style="color: #999; margin: 20px 0 0; font-size: 12px;">
                   © ${new Date().getFullYear()} KGGL Gig. All rights reserved.
                 </p>

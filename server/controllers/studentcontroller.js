@@ -704,7 +704,7 @@ const updateBidCredits = async (req, res) => {
 
 const getRegisteredStudentsCount = async (req, res) => {
   try {
-    const sql = "SELECT COUNT(*) AS totalStudents FROM students";
+    const sql = "SELECT COUNT(*) AS totalStudents FROM students WHERE role_id = 2";
     const result = await dbQuery(sql);
     res.json({
       status: "success",

@@ -364,6 +364,9 @@ function StudentsData() {
                   <strong className="text-gray-700">Department:</strong> {selectedStudent.department || "N/A"}
                 </p>
                 <p className="text-sm">
+                  <strong className="text-gray-700">Mobile Number:</strong> {selectedStudent.mobile_number || "N/A"}
+                </p>
+                <p className="text-sm">
                   <strong className="text-gray-700">Github Link:</strong>{" "}
                   {selectedStudent.github_link ? (
                     <a

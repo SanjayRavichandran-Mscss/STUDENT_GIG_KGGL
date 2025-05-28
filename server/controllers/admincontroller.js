@@ -13,6 +13,7 @@ const studentDetails = async (req, res) => {
         s.roll_no,
         s.name,
         s.email,
+        s.mobile_number,
         s.profile_photo,
         s.year,
         s.resume_file,

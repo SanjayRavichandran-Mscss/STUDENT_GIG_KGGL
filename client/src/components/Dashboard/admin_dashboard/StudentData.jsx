@@ -163,7 +163,7 @@ function StudentsData() {
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto"> {/* Removed extra nesting */}
+      <div className="max-w-7xl mx-auto">
         {error && (
           <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6 shadow-md">
             {error}
@@ -251,7 +251,7 @@ function StudentsData() {
                           <img
                             src={
                               student.profile_photo
-                                ? `http://localhost:5000/images/${student.profile_photo}`
+                                ? `http://localhost:5000/resumes/${student.profile_photo}`
                                 : defaultProfile
                             }
                             alt="Profile"
@@ -329,7 +329,7 @@ function StudentsData() {
                   <img
                     src={
                       selectedStudent.profile_photo
-                        ? `http://localhost:5000/images/${selectedStudent.profile_photo}`
+                        ? `http://localhost:5000/resumes/${selectedStudent.profile_photo}`
                         : defaultProfile
                     }
                     alt="Profile"
@@ -527,7 +527,7 @@ function StudentsData() {
                 <img
                   src={
                     zoomedProfile.profile_photo
-                      ? `http://localhost:5000/images/${zoomedProfile.profile_photo}`
+                      ? `http://localhost:5000/resumes/${zoomedProfile.profile_photo}`
                       : defaultProfile
                   }
                   alt="Profile Photo"
@@ -537,7 +537,7 @@ function StudentsData() {
                 <a
                   href={
                     zoomedProfile.profile_photo
-                      ? `http://localhost:5000/images/${zoomedProfile.profile_photo}`
+                      ? `http://localhost:5000/resumes/${zoomedProfile.profile_photo}`
                       : defaultProfile
                   }
                   target="_blank"

@@ -329,34 +329,111 @@ const profileUpdation = async (req, res) => {
   }
 };
 
+
+
 const updateUserData = async (req, res) => {
-  const { Name, Email, Password, Degree, Year, coll, id } = req.body;
-  let Filename = null;
+  const {
+    roll_no,
+    name,
+    email,
+    password,
+    mobile_number,
+    selectedCategory,
+    selectedCollege,
+    year,
+    semester,
+    id,
+  } = req.body;
+  let profile_photo = null;
 
   try {
-    if (req.file) {
-      Filename = req.file.filename;
+    // Validate required fields
+    if (!roll_no || !name || !email || !password || !mobile_number || !selectedCategory || !selectedCollege || !year || !semester) {
+      return res.status(400).json({ status: "error", message: "All fields are required." });
     }
 
-    let sql =
-      "UPDATE students SET name = ?, email = ?, password = ?, degree = ?, year = ?, college_id = ?";
-    let values = [Name, Email, Password, Degree, Year, coll];
+    // Validate password length
+    if (password.length < 8) {
+      return res.status(400).json({
+        status: "error",
+        message: "Password must be at least 8 characters long.",
+      });
+    }
 
-    if (Filename) {
+    // Validate email format
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({ status: "error", message: "Invalid email format." });
+    }
+
+    // Validate mobile number
+    if (!/^\d{10}$/.test(mobile_number)) {
+      return res.status(400).json({ status: "error", message: "Mobile number must be 10 digits." });
+    }
+
+    // Check for duplicate email (excluding current user)
+    const checkEmailQuery = "SELECT COUNT(*) AS count FROM students WHERE email = ? AND student_id != ?";
+    const emailResult = await dbQuery(checkEmailQuery, [email, id]);
+    if (emailResult[0].count > 0) {
+      return res.status(400).json({ status: "error", message: "Email already exists." });
+    }
+
+    // Check for duplicate roll_no (excluding current user)
+    const checkRollNoQuery = "SELECT COUNT(*) AS count FROM students WHERE roll_no = ? AND student_id != ?";
+    const rollNoResult = await dbQuery(checkRollNoQuery, [roll_no, id]);
+    if (rollNoResult[0].count > 0) {
+      return res.status(400).json({ status: "error", message: "Roll number already exists." });
+    }
+
+    // Check for duplicate mobile_number (excluding current user)
+    const checkMobileQuery = "SELECT COUNT(*) AS count FROM students WHERE mobile_number = ? AND student_id != ?";
+    const mobileResult = await dbQuery(checkMobileQuery, [mobile_number, id]);
+    if (mobileResult[0].count > 0) {
+      return res.status(400).json({ status: "error", message: "Mobile number already exists." });
+    }
+
+    // Handle profile photo
+    if (req.file) {
+      profile_photo = req.file.filename;
+    }
+
+    // Convert semester to integer (e.g., "1st Semester" -> 1)
+    const semesterInt = parseInt(semester.match(/\d+/)[0]);
+
+    // Update student in the database
+    let sql =
+      "UPDATE students SET roll_no = ?, name = ?, email = ?, password = ?, mobile_number = ?, degree = ?, year = ?, semester = ?, college_id = ?";
+    let values = [
+      roll_no,
+      name,
+      email,
+      password,
+      mobile_number,
+      selectedCollege,
+      year,
+      semesterInt,
+      selectedCategory,
+    ];
+
+    if (profile_photo) {
       sql += ", profile_photo = ?";
-      values.push(Filename);
+      values.push(profile_photo);
     }
 
     sql += " WHERE student_id = ?";
     values.push(id);
 
     await dbQuery(sql, values);
-    res.json({ status: true, msg: "updated" });
+
+    res.json({ status: "updated", message: "Profile updated successfully." });
   } catch (error) {
     console.error("Error in updateUserData:", error);
-    res.status(500).json({ status: "error", message: "student_catch_error" });
+    res.status(500).json({ status: "error", message: "Failed to update profile." });
   }
 };
+
+
+
+
 
 const getSingleProfile = async (req, res) => {
   const { id } = req.params;
@@ -890,6 +967,8 @@ const GetTechnicalStatusByEmail = async (req, res) => {
     });
   }
 };
+
+
 
 export {
 

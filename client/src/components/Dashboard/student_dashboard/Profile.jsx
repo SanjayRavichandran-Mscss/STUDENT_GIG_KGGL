@@ -6,7 +6,7 @@
 // import "react-toastify/dist/ReactToastify.css";
 // import gifimg from "../../Assets/Animation - 1715065850571.gif";
 // import dragim from "../../Assets/Group 1.png";
-// import backgroundimg from "../../Assets/upper.png";
+// import backgroundimg from "../../Assets/default_profile4.jpg";
 
 // export default function Profile() {
 //   const { id } = useParams();
@@ -43,6 +43,7 @@
 //   const [isLoading, setIsLoading] = useState(false);
 //   const [expandedSkills, setExpandedSkills] = useState({});
 //   const [customSkillName, setCustomSkillName] = useState("");
+//   const [showImageModal, setShowImageModal] = useState(false);
 
 //   // API calls
 //   useEffect(() => {
@@ -82,6 +83,11 @@
 //     fetchData();
 //   }, [decoded]);
 
+//   // Image Modal
+//   const toggleImageModal = () => {
+//     setShowImageModal(!showImageModal);
+//   };
+
 //   // Validation functions
 //   const validateGithubUrl = (url) => {
 //     const githubRegex = /^(https?:\/\/)?(www\.)?github\.com\/[A-Za-z0-9._%+-]+(\/[A-Za-z0-9._%+-]+)*\/?$/;
@@ -97,6 +103,11 @@
 //     const netlifyRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.netlify\.app(\/.*)?$|^https?:\/\/(www\.)?app\.netlify\.com(\/[A-Za-z0-9._%+-]+)*\/?$/;
 //     return netlifyRegex.test(url);
 //   };
+
+//   const validateInstaUrl = (url) => {
+//     const instaRegex = /^https?:\/\/(www\.)?(instagram\.com|instagr\.am)\/([A-Za-z0-9_-]+)(\/.*)?$/;
+//     return instaRegex.test(url);
+// };
 
 //   const validateLinkedInUrl = (url) => {
 //     const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9._%+-]+\/?$/;
@@ -242,7 +253,6 @@
 //     const customSkillError = await validateCustomSkill(value);
 //     setErrors((prev) => ({ ...prev, customSkill: customSkillError }));
 
-//     // Update skill details for custom skill
 //     const customSkillId = `custom_${decoded}`;
 //     if (value.trim()) {
 //       setSkillDetails((prev) => ({
@@ -316,27 +326,29 @@
 //     if (!newErrors[skillId]) newErrors[skillId] = { url: "", description: "", skillName: "", general: "" };
 
 //     if (name === "description") {
-//       newErrors[skillId].description =
-//         value.length < 100
-//           ? "Description must be at least 100 characters."
-//           : value.length > 200
-//           ? "Description cannot exceed 200 characters."
-//           : "";
+//       newErrors[skillId].description = !value
+//         ? "Project description is required."
+//         : value.length < 100
+//         ? "Description must be at least 100 characters."
+//         : value.length > 200
+//         ? "Description cannot exceed 200 characters."
+//         : "";
 //     }
 
 //     if (name === "skillUrl") {
 //       const isValidGithub = validateGithubUrl(value);
 //       const isValidVercel = validateVercelUrl(value);
 //       const isValidNetlify = validateNetlifyUrl(value);
+//       const isValidInsta = validateInstaUrl(value);
 //       newErrors[skillId].url = !value
 //         ? "Project link is required."
-//         : !(isValidGithub || isValidVercel || isValidNetlify)
-//         ? "Please enter a valid GitHub (github.com), Vercel (vercel.com or *.vercel.app), or Netlify (app.netlify.com or *.netlify.app) URL."
+//         : !(isValidGithub || isValidVercel || isValidNetlify || isValidInsta)
+//         ? "Please enter a valid GitHub, Vercel, or Netlify URL."
 //         : fileData.github === value
 //         ? "Project URL cannot be the same as GitHub profile URL."
 //         : "";
 
-//       if ((isValidGithub || isValidVercel || isValidNetlify) && value) {
+//       if ((isValidGithub || isValidVercel || isValidNetlify || isValidInsta) && value) {
 //         const otherSkills = selectedSkills.filter((id) => id !== skillId);
 //         const isDuplicate = otherSkills.some(
 //           (otherId) => skillDetails[otherId]?.skillUrl === value
@@ -364,6 +376,12 @@
 //     return skill ? skill.skill_name : "";
 //   };
 
+//   // Check if skill accordion should blink
+//   const shouldAccordionBlink = (skillId) => {
+//     const skillErrors = errors.skills[skillId] || {};
+//     return skillErrors.url || skillErrors.description;
+//   };
+
 //   // Form submission
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
@@ -371,18 +389,10 @@
 
 //     // Validate all fields
 //     const newErrors = {
-//       github: !fileData.github
-//         ? "GitHub URL is required."
-//         : !validateGithubUrl(fileData.github)
-//         ? "Please enter a valid GitHub URL."
-//         : "",
-//       linkedIn: !fileData.linkedIn
-//         ? "LinkedIn URL is required."
-//         : !validateLinkedInUrl(fileData.linkedIn)
-//         ? "Please enter a valid LinkedIn URL."
-//         : "",
+//       github: !fileData.github ? "GitHub URL is required." : !validateGithubUrl(fileData.github) ? "Please enter a valid GitHub URL." : "",
+//       linkedIn: !fileData.linkedIn ? "LinkedIn URL is required." : !validateLinkedInUrl(fileData.linkedIn) ? "Please enter a valid LinkedIn URL." : "",
 //       resume: !fileData.selectedFile ? "Resume is required." : "",
-//       general: selectedSkills.length === 0 ? "Please select at least one skill." : "",
+//       general: selectedSkills.length === 0 ? "At least one skill is required." : "",
 //       skills: {},
 //       customSkill: customSkillName.trim() ? await validateCustomSkill(customSkillName) : "",
 //     };
@@ -391,9 +401,11 @@
 //     const duplicates = await checkDuplicateLinks(fileData.github, fileData.linkedIn);
 //     if (duplicates.github) {
 //       newErrors.github = "GitHub URL already exists.";
+//       toast.error("GitHub URL already exists.", { position: "top-right", autoClose: 3000 });
 //     }
 //     if (duplicates.linkedin) {
 //       newErrors.linkedIn = "LinkedIn URL already exists.";
+//       toast.error("LinkedIn URL already exists.", { position: "top-right", autoClose: 3000 });
 //     }
 
 //     let hasSkillErrors = false;
@@ -408,12 +420,17 @@
 
 //       if (!details.skillUrl) {
 //         skillErrors.url = "Project link is required.";
+//         toast.error(`Project link is required for ${skillId === `custom_${decoded}` ? customSkillName || "Custom Skill" : getSkillNameById(skillId)}`, {
+//           position: "top-right",
+//           autoClose: 3000,
+//         });
 //       } else if (
 //         !validateGithubUrl(details.skillUrl) &&
 //         !validateVercelUrl(details.skillUrl) &&
-//         !validateNetlifyUrl(details.skillUrl)
+//         !validateNetlifyUrl(details.skillUrl) &&
+//         !validateInstaUrl(details.skillUrl)
 //       ) {
-//         skillErrors.url = "Please enter a valid GitHub (github.com), Vercel (vercel.com or *.vercel.app), or Netlify (app.netlify.com or *.netlify.app) URL.";
+//         skillErrors.url = "Please enter a valid GitHub, Vercel, or Netlify URL.";
 //       } else if (fileData.github === details.skillUrl) {
 //         skillErrors.url = "Project URL cannot be the same as GitHub profile URL.";
 //       } else {
@@ -426,22 +443,20 @@
 //         }
 //       }
 
-//       skillErrors.description =
-//         !details.description
-//           ? "Description is required."
-//           : details.description.length < 100
-//           ? "Description must be at least 100 characters."
-//           : details.description.length > 200
-//           ? "Description cannot exceed 200 characters."
-//           : "";
+//       skillErrors.description = !details.description
+//         ? "Project description is required."
+//         : details.description.length < 100
+//         ? "Description must be at least 100 characters."
+//         : details.description.length > 200
+//         ? "Description cannot exceed 200 characters."
+//         : "";
 
 //       if (skillId === `custom_${decoded}`) {
-//         skillErrors.skillName =
-//           !details.skillName
-//             ? "Skill name is required."
-//             : details.skillName.length > 50
-//             ? "Skill name cannot exceed 50 characters."
-//             : "";
+//         skillErrors.skillName = !details.skillName
+//           ? "Skill name is required."
+//           : details.skillName.length > 50
+//           ? "Skill name cannot exceed 50 characters."
+//           : "";
 //       }
 
 //       newErrors.skills[skillId] = skillErrors;
@@ -461,7 +476,6 @@
 //       newErrors.customSkill
 //     ) {
 //       setIsLoading(false);
-//       toast.error("Please fix the errors before submitting.", { position: "top-right", autoClose: 3000 });
 //       return;
 //     }
 
@@ -577,26 +591,82 @@
 //   }));
 
 //   return (
-//     <div className="min-h-screen bg-gray-50">
-//       <ToastContainer position="top-right" autoClose={3000} />
+//     <div className="min-h-screen bg-gray-50 relative">
+//       <style>
+//         {`
+//           @keyframes borderBlink {
+//             0% { border-color: #8b5cf6; } /* Violet-500 */
+//             50% { border-color: #3b82f6; } /* Blue-500 */
+//             100% { border-color: #8b5cf6; }
+//           }
+//           .blink-border {
+//             animation: borderBlink 1.5s infinite;
+//           }
+//         `}
+//       </style>
+//       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+      
+//       {/* Image Modal */}
+//       {showImageModal && (
+//         <div 
+//           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+//           onClick={toggleImageModal}
+//         >
+//           <div 
+//             className="relative bg-white p-2 rounded-lg shadow-xl max-w-md w-full mx-4"
+//             onClick={(e) => e.stopPropagation()}
+//           >
+//             <button 
+//               onClick={toggleImageModal}
+//               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+//             >
+//               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+//               </svg>
+//             </button>
+//             <div className="p-4">
+//               {profile.image ? (
+//                 <img 
+//                   src={`http://localhost:5000/resumes/${profile.image}`} 
+//                   alt="Profile" 
+//                   className="w-full h-auto rounded-lg border-2 border-white shadow-lg"
+//                 />
+//               ) : (
+//                 <img 
+//                   src={backgroundimg} 
+//                   alt="Default Profile" 
+//                   className="w-full h-auto rounded-lg border-2 border-white shadow-lg"
+//                 />
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
 //       {/* Header */}
-//       <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white text-center">
-//         <h1 className="text-3xl font-bold">KGGL Gig</h1>
+//       <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 text-white text-center">
+//         <h1 className="text-2xl sm:text-3xl font-bold">KGGL Gig</h1>
 //       </div>
 
 //       {/* Profile Section */}
-//       <div className="max-w-6xl mx-auto p-6">
-//         <div className="flex items-center mb-6">
-//           <img
-//             src={profile.image ? `http://localhost:5000/images/${profile.image}` : backgroundimg}
-//             className="w-24 h-24 rounded-full border-4 border-white shadow-lg mr-4"
-//             alt="Profile"
-//           />
-//           <div>
-//             <h2 className="text-2xl font-semibold text-gray-800 capitalize">{profile.name}</h2>
+//       <div className="max-w-7xl mx-auto p-4 sm:p-6">
+//         <div className="flex flex-col sm:flex-row items-center mb-6">
+//           <div className="relative group">
+//             <img
+//               src={profile.image ? `http://localhost:5000/resumes/${profile.image}` : backgroundimg}
+//               className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg mb-4 sm:mb-0 sm:mr-4 cursor-pointer hover:opacity-90 transition-opacity"
+//               alt="Profile"
+//               onClick={toggleImageModal}
+//             />
+//             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+             
+//             </div>
+//           </div>
+//           <div className="text-center sm:text-left">
+//             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 capitalize">{profile.name}</h2>
 //             <Link
 //               to={`/update/${id}`}
-//               className="inline-block mt-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors"
+//               className="inline-block mt-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors text-sm sm:text-base"
 //             >
 //               Edit Profile
 //             </Link>
@@ -604,11 +674,11 @@
 //         </div>
 
 //         {/* Main Content */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 //           {/* Left Column */}
-//           <div className="space-y-6">
+//           <div className="space-y-4 sm:space-y-6">
 //             {/* Skills Section */}
-//             <div className="bg-white rounded-lg shadow-md p-6">
+//             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
 //               <h3 className="text-lg font-semibold text-gray-800 mb-4">Skills</h3>
 //               <div className="flex flex-wrap gap-2">
 //                 {profile.skillNames.length > 0 ? (
@@ -627,7 +697,7 @@
 //             </div>
 
 //             {/* Add Skills Section */}
-//             <div className="bg-white rounded-lg shadow-md p-6">
+//             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
 //               <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Skills</h3>
 //               <div className="mb-4">
 //                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -666,7 +736,10 @@
 //               {selectedSkills.length > 0 && (
 //                 <div className="space-y-2">
 //                   {selectedSkills.map((skillId) => (
-//                     <div key={skillId} className="border border-gray-200 rounded-lg">
+//                     <div
+//                       key={skillId}
+//                       className={`border rounded-lg ${shouldAccordionBlink(skillId) ? 'blink-border border-2' : 'border-gray-200'}`}
+//                     >
 //                       <button
 //                         type="button"
 //                         onClick={() => toggleSkillAccordion(skillId)}
@@ -712,9 +785,7 @@
 //                               required
 //                             />
 //                             {errors.skills[skillId]?.url && (
-//                               <p className="mt-1 text-sm text-red-600">
-//                                 {errors.skills[skillId].url}
-//                               </p>
+//                               <p className="mt-1 text-sm text-red-600">{errors.skills[skillId].url}</p>
 //                             )}
 //                           </div>
 //                           <div>
@@ -736,15 +807,11 @@
 //                               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 //                             />
 //                             {errors.skills[skillId]?.description && (
-//                               <p className="mt-1 text-sm text-red-600">
-//                                 {errors.skills[skillId].description}
-//                               </p>
+//                               <p className="mt-1 text-sm text-red-600">{errors.skills[skillId].description}</p>
 //                             )}
 //                           </div>
 //                           {errors.skills[skillId]?.general && (
-//                             <p className="mt-1 text-sm text-red-600">
-//                               {errors.skills[skillId].general}
-//                             </p>
+//                             <p className="mt-1 text-sm text-red-600">{errors.skills[skillId].general}</p>
 //                           )}
 //                         </div>
 //                       )}
@@ -756,9 +823,9 @@
 //           </div>
 
 //           {/* Right Column */}
-//           <div className="space-y-6">
+//           <div className="space-y-4 sm:space-y-6">
 //             {/* Social Links Section */}
-//             <div className="bg-white rounded-lg shadow-md p-6">
+//             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
 //               <h3 className="text-lg font-semibold text-gray-800 mb-4">Social Links</h3>
 //               <div>
 //                 <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-1">
@@ -799,7 +866,7 @@
 //             </div>
 
 //             {/* Resume Section */}
-//             <div className="bg-white rounded-lg shadow-md p-6">
+//             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
 //               <h3 className="text-lg font-semibold text-gray-800 mb-4">Resume</h3>
 //               <div
 //                 className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center"
@@ -807,9 +874,9 @@
 //                 onDragOver={(e) => e.preventDefault()}
 //               >
 //                 <div className="flex flex-col items-center">
-//                   <img src={dragim} alt="Drop files here" className="mb-3 w-16" />
-//                   <p className="text-gray-600 mb-2">Drag and Drop PDF to Upload (5MB Max)</p>
-//                   <p className="text-gray-500 mb-3">OR</p>
+//                   <img src={dragim} alt="Drop files here" className="mb-3 w-12 sm:w-16" />
+//                   <p className="text-gray-600 mb-2 text-sm sm:text-base">Drag and Drop PDF to Upload (5MB Max)</p>
+//                   <p className="text-gray-500 mb-3 text-xs sm:text-sm">OR</p>
 //                   <input
 //                     id="resume-upload"
 //                     type="file"
@@ -820,7 +887,7 @@
 //                   />
 //                   <label
 //                     htmlFor="resume-upload"
-//                     className="inline-block bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 cursor-pointer transition-colors"
+//                     className="inline-block bg-yellow-500 text-white px-4 py-2 rounded-full hover:bg-yellow-600 cursor-pointer transition-colors text-sm sm:text-base"
 //                   >
 //                     Browse Files
 //                   </label>
@@ -832,7 +899,7 @@
 //                   )}
 //                 </div>
 //                 <div className="mt-4">
-//                   <img src={gifimg} className="w-32 mx-auto" alt="Upload animation" />
+//                   <img src={gifimg} className="w-24 sm:w-32 mx-auto" alt="Upload animation" />
 //                 </div>
 //               </div>
 //             </div>
@@ -842,14 +909,14 @@
 //               <button
 //                 onClick={handleSubmit}
 //                 disabled={isLoading}
-//                 className={`inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors ${
+//                 className={`inline-flex items-center px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors text-sm sm:text-base ${
 //                   isLoading ? "opacity-50 cursor-not-allowed" : ""
 //                 }`}
 //               >
 //                 {isLoading ? (
 //                   <>
 //                     <svg
-//                       className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+//                       className="animate-spin -ml-1 mr-2 h-4 sm:h-5 w-4 sm:w-5 text-white"
 //                       xmlns="http://www.w3.org/2000/svg"
 //                       fill="none"
 //                       viewBox="0 0 24 24"
@@ -891,21 +958,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -914,7 +966,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import gifimg from "../../Assets/Animation - 1715065850571.gif";
 import dragim from "../../Assets/Group 1.png";
-import backgroundimg from "../../Assets/upper.png";
+import backgroundimg from "../../Assets/default_profile4.jpg";
 
 export default function Profile() {
   const { id } = useParams();
@@ -951,6 +1003,8 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSkills, setExpandedSkills] = useState({});
   const [customSkillName, setCustomSkillName] = useState("");
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [isResumeRequired, setIsResumeRequired] = useState(true);
 
   // API calls
   useEffect(() => {
@@ -977,6 +1031,16 @@ export default function Profile() {
         }));
 
         setAvailableSkills(skillsRes.data.msg || []);
+
+        // Check if resume, github, and linkedin are null to set requirement
+        const studentData = imageRes.data.result[0];
+        setIsResumeRequired(studentData?.resume_file === null);
+        if (studentData?.github_link === null) {
+          setErrors((prev) => ({ ...prev, github: "GitHub URL is required." }));
+        }
+        if (studentData?.linkedin_link === null) {
+          setErrors((prev) => ({ ...prev, linkedIn: "LinkedIn URL is required." }));
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         setErrors((prev) => ({ ...prev, general: "Failed to load profile data. Please try again." }));
@@ -989,6 +1053,11 @@ export default function Profile() {
 
     fetchData();
   }, [decoded]);
+
+  // Image Modal
+  const toggleImageModal = () => {
+    setShowImageModal(!showImageModal);
+  };
 
   // Validation functions
   const validateGithubUrl = (url) => {
@@ -1004,6 +1073,11 @@ export default function Profile() {
   const validateNetlifyUrl = (url) => {
     const netlifyRegex = /^https?:\/\/([a-zA-Z0-9-]+)\.netlify\.app(\/.*)?$|^https?:\/\/(www\.)?app\.netlify\.com(\/[A-Za-z0-9._%+-]+)*\/?$/;
     return netlifyRegex.test(url);
+  };
+
+  const validateInstaUrl = (url) => {
+    const instaRegex = /^https?:\/\/(www\.)?(instagram\.com|instagr\.am)\/([A-Za-z0-9_-]+)(\/.*)?$/;
+    return instaRegex.test(url);
   };
 
   const validateLinkedInUrl = (url) => {
@@ -1052,28 +1126,30 @@ export default function Profile() {
     const file = event.dataTransfer.files[0];
     const maxSizeInBytes = 5 * 1024 * 1024;
 
-    if (!file) {
+    if (!file && isResumeRequired) {
       setErrors((prev) => ({ ...prev, resume: "Resume is required." }));
       toast.error("Resume is required.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
-    if (file.size > maxSizeInBytes) {
-      setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
-      toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
-      return;
-    }
+    if (file) {
+      if (file.size > maxSizeInBytes) {
+        setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
+        toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
+        return;
+      }
 
-    if (file.type === "application/pdf") {
-      setFileData((prev) => ({
-        ...prev,
-        selectedFile: file,
-        fileName: file.name,
-      }));
-      setErrors((prev) => ({ ...prev, resume: "" }));
-    } else {
-      setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
-      toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
+      if (file.type === "application/pdf") {
+        setFileData((prev) => ({
+          ...prev,
+          selectedFile: file,
+          fileName: file.name,
+        }));
+        setErrors((prev) => ({ ...prev, resume: "" }));
+      } else {
+        setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
+        toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
+      }
     }
   };
 
@@ -1081,30 +1157,32 @@ export default function Profile() {
     const file = event.target.files[0];
     const maxSizeInBytes = 5 * 1024 * 1024;
 
-    if (!file) {
+    if (!file && isResumeRequired) {
       setErrors((prev) => ({ ...prev, resume: "Resume is required." }));
       toast.error("Resume is required.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
-    if (file.size > maxSizeInBytes) {
-      setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
-      event.target.value = "";
-      toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
-      return;
-    }
+    if (file) {
+      if (file.size > maxSizeInBytes) {
+        setErrors((prev) => ({ ...prev, resume: "File size exceeds 5MB limit." }));
+        event.target.value = "";
+        toast.error("File size exceeds 5MB limit.", { position: "top-right", autoClose: 3000 });
+        return;
+      }
 
-    if (file.type === "application/pdf") {
-      setFileData((prev) => ({
-        ...prev,
-        selectedFile: file,
-        fileName: file.name,
-      }));
-      setErrors((prev) => ({ ...prev, resume: "" }));
-    } else {
-      setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
-      event.target.value = "";
-      toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
+      if (file.type === "application/pdf") {
+        setFileData((prev) => ({
+          ...prev,
+          selectedFile: file,
+          fileName: file.name,
+        }));
+        setErrors((prev) => ({ ...prev, resume: "" }));
+      } else {
+        setErrors((prev) => ({ ...prev, resume: "Please upload a PDF file." }));
+        event.target.value = "";
+        toast.error("Please upload a PDF file.", { position: "top-right", autoClose: 3000 });
+      }
     }
   };
 
@@ -1116,24 +1194,24 @@ export default function Profile() {
     let newErrors = { ...errors };
 
     if (name === "github") {
-      newErrors.github = !value
+      newErrors.github = !value && isResumeRequired
         ? "GitHub URL is required."
-        : !validateGithubUrl(value)
+        : value && !validateGithubUrl(value)
         ? "Please enter a valid GitHub URL."
         : "";
 
-      if (!newErrors.github) {
+      if (!newErrors.github && value) {
         const duplicates = await checkDuplicateLinks(value, fileData.linkedIn);
         newErrors.github = duplicates.github ? "GitHub URL already exists." : newErrors.github;
       }
     } else if (name === "linkedIn") {
-      newErrors.linkedIn = !value
+      newErrors.linkedIn = !value && isResumeRequired
         ? "LinkedIn URL is required."
-        : !validateLinkedInUrl(value)
+        : value && !validateLinkedInUrl(value)
         ? "Please enter a valid LinkedIn URL."
         : "";
 
-      if (!newErrors.linkedIn) {
+      if (!newErrors.linkedIn && value) {
         const duplicates = await checkDuplicateLinks(fileData.github, value);
         newErrors.linkedIn = duplicates.linkedin ? "LinkedIn URL already exists." : newErrors.linkedIn;
       }
@@ -1236,15 +1314,16 @@ export default function Profile() {
       const isValidGithub = validateGithubUrl(value);
       const isValidVercel = validateVercelUrl(value);
       const isValidNetlify = validateNetlifyUrl(value);
+      const isValidInsta = validateInstaUrl(value);
       newErrors[skillId].url = !value
         ? "Project link is required."
-        : !(isValidGithub || isValidVercel || isValidNetlify)
-        ? "Please enter a valid GitHub, Vercel, or Netlify URL."
+        : !(isValidGithub || isValidVercel || isValidNetlify || isValidInsta)
+        ? "Please enter a valid GitHub, Vercel, Netlify, or Instagram URL."
         : fileData.github === value
         ? "Project URL cannot be the same as GitHub profile URL."
         : "";
 
-      if ((isValidGithub || isValidVercel || isValidNetlify) && value) {
+      if ((isValidGithub || isValidVercel || isValidNetlify || isValidInsta) && value) {
         const otherSkills = selectedSkills.filter((id) => id !== skillId);
         const isDuplicate = otherSkills.some(
           (otherId) => skillDetails[otherId]?.skillUrl === value
@@ -1272,6 +1351,12 @@ export default function Profile() {
     return skill ? skill.skill_name : "";
   };
 
+  // Check if skill accordion should blink
+  const shouldAccordionBlink = (skillId) => {
+    const skillErrors = errors.skills[skillId] || {};
+    return skillErrors.url || skillErrors.description;
+  };
+
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1279,9 +1364,9 @@ export default function Profile() {
 
     // Validate all fields
     const newErrors = {
-      github: !fileData.github ? "GitHub URL is required." : !validateGithubUrl(fileData.github) ? "Please enter a valid GitHub URL." : "",
-      linkedIn: !fileData.linkedIn ? "LinkedIn URL is required." : !validateLinkedInUrl(fileData.linkedIn) ? "Please enter a valid LinkedIn URL." : "",
-      resume: !fileData.selectedFile ? "Resume is required." : "",
+      github: !fileData.github && isResumeRequired ? "GitHub URL is required." : fileData.github && !validateGithubUrl(fileData.github) ? "Please enter a valid GitHub URL." : "",
+      linkedIn: !fileData.linkedIn && isResumeRequired ? "LinkedIn URL is required." : fileData.linkedIn && !validateLinkedInUrl(fileData.linkedIn) ? "Please enter a valid LinkedIn URL." : "",
+      resume: isResumeRequired && !fileData.selectedFile ? "Resume is required." : "",
       general: selectedSkills.length === 0 ? "At least one skill is required." : "",
       skills: {},
       customSkill: customSkillName.trim() ? await validateCustomSkill(customSkillName) : "",
@@ -1317,9 +1402,10 @@ export default function Profile() {
       } else if (
         !validateGithubUrl(details.skillUrl) &&
         !validateVercelUrl(details.skillUrl) &&
-        !validateNetlifyUrl(details.skillUrl)
+        !validateNetlifyUrl(details.skillUrl) &&
+        !validateInstaUrl(details.skillUrl)
       ) {
-        skillErrors.url = "Please enter a valid GitHub, Vercel, or Netlify URL.";
+        skillErrors.url = "Please enter a valid GitHub, Vercel, Netlify, or Instagram URL.";
       } else if (fileData.github === details.skillUrl) {
         skillErrors.url = "Project URL cannot be the same as GitHub profile URL.";
       } else {
@@ -1359,7 +1445,7 @@ export default function Profile() {
     if (
       newErrors.github ||
       newErrors.linkedIn ||
-      newErrors.resume ||
+      (isResumeRequired && newErrors.resume) ||
       hasSkillErrors ||
       selectedSkills.length === 0 ||
       newErrors.customSkill
@@ -1370,7 +1456,9 @@ export default function Profile() {
 
     try {
       const formData = new FormData();
-      formData.append("file", fileData.selectedFile);
+      if (fileData.selectedFile) {
+        formData.append("file", fileData.selectedFile);
+      }
       formData.append("id", decoded);
       formData.append("name", profile.name);
       formData.append("git", fileData.github);
@@ -1480,8 +1568,58 @@ export default function Profile() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      <style>
+        {`
+          @keyframes borderBlink {
+            0% { border-color: #8b5cf6; } /* Violet-500 */
+            50% { border-color: #3b82f6; } /* Blue-500 */
+            100% { border-color: #8b5cf6; }
+          }
+          .blink-border {
+            animation: borderBlink 1.5s infinite;
+          }
+        `}
+      </style>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+      
+      {/* Image Modal */}
+      {showImageModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+          onClick={toggleImageModal}
+        >
+          <div 
+            className="relative bg-white p-2 sm:p-4 rounded-lg shadow-2xl max-w-[90vw] max-h-[90vh] w-full sm:w-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={toggleImageModal}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-600 hover:bg-red-700 rounded-full p-1 sm:p-2 transition-colors z-10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="p-2 sm:p-4">
+              {profile.image ? (
+                <img 
+                  src={`http://localhost:5000/resumes/${profile.image}`} 
+                  alt="Profile" 
+                  className="w-full max-w-[80vw] sm:max-w-[500px] h-auto max-h-[80vh] rounded-lg border-4 border-white shadow-lg object-contain"
+                />
+              ) : (
+                <img 
+                  src={backgroundimg} 
+                  alt="Default Profile" 
+                  className="w-full max-w-[80vw] sm:max-w-[500px] h-auto max-h-[80vh] rounded-lg border-4 border-white shadow-lg object-contain"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 text-white text-center">
         <h1 className="text-2xl sm:text-3xl font-bold">KGGL Gig</h1>
@@ -1490,11 +1628,16 @@ export default function Profile() {
       {/* Profile Section */}
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-center mb-6">
-          <img
-            src={profile.image ? `http://localhost:5000/images/${profile.image}` : backgroundimg}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg mb-4 sm:mb-0 sm:mr-4"
-            alt="Profile"
-          />
+          <div className="relative group">
+            <img
+              src={profile.image ? `http://localhost:5000/resumes/${profile.image}` : backgroundimg}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg mb-4 sm:mb-0 sm:mr-4 cursor-pointer hover:opacity-90 transition-opacity"
+              alt="Profile"
+              onClick={toggleImageModal}
+            />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            </div>
+          </div>
           <div className="text-center sm:text-left">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 capitalize">{profile.name}</h2>
             <Link
@@ -1569,7 +1712,10 @@ export default function Profile() {
               {selectedSkills.length > 0 && (
                 <div className="space-y-2">
                   {selectedSkills.map((skillId) => (
-                    <div key={skillId} className="border border-gray-200 rounded-lg">
+                    <div
+                      key={skillId}
+                      className={`border rounded-lg ${shouldAccordionBlink(skillId) ? 'blink-border border-2' : 'border-gray-200'}`}
+                    >
                       <button
                         type="button"
                         onClick={() => toggleSkillAccordion(skillId)}
@@ -1610,7 +1756,7 @@ export default function Profile() {
                               name="skillUrl"
                               value={skillDetails[skillId]?.skillUrl || ""}
                               onChange={(e) => handleSkillDetailChange(skillId, e)}
-                              placeholder="Paste GitHub, Vercel, or Netlify URL"
+                              placeholder="Paste GitHub, Vercel, Netlify, or Instagram URL"
                               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               required
                             />
@@ -1659,7 +1805,7 @@ export default function Profile() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Social Links</h3>
               <div>
                 <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-1">
-                  Paste GitHub Profile URL <span className="text-red-500">*</span>
+                  Paste GitHub Profile URL {isResumeRequired && <span className="text-red-500">*</span>}
                 </label>
                 <input
                   id="github"
@@ -1669,7 +1815,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   placeholder="https://github.com/username"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
+                  required={isResumeRequired}
                 />
                 {errors.github && (
                   <p className="mt-1 text-sm text-red-600">{errors.github}</p>
@@ -1677,7 +1823,7 @@ export default function Profile() {
               </div>
               <div className="mt-4">
                 <label htmlFor="linkedIn" className="block text-sm font-medium text-gray-700 mb-1">
-                  Paste LinkedIn Profile URL <span className="text-red-500">*</span>
+                  Paste LinkedIn Profile URL {isResumeRequired && <span className="text-red-500">*</span>}
                 </label>
                 <input
                   id="linkedIn"
@@ -1687,7 +1833,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   placeholder="https://linkedin.com/in/username"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
+                  required={isResumeRequired}
                 />
                 {errors.linkedIn && (
                   <p className="mt-1 text-sm text-red-600">{errors.linkedIn}</p>
@@ -1705,7 +1851,10 @@ export default function Profile() {
               >
                 <div className="flex flex-col items-center">
                   <img src={dragim} alt="Drop files here" className="mb-3 w-12 sm:w-16" />
-                  <p className="text-gray-600 mb-2 text-sm sm:text-base">Drag and Drop PDF to Upload (5MB Max)</p>
+                  <p className="text-gray-600 mb-2 text-sm sm:text-base">
+                    Drag and Drop PDF to Upload (5MB Max)
+                    {isResumeRequired && <span className="text-red-500">*</span>}
+                  </p>
                   <p className="text-gray-500 mb-3 text-xs sm:text-sm">OR</p>
                   <input
                     id="resume-upload"
@@ -1713,7 +1862,7 @@ export default function Profile() {
                     accept=".pdf"
                     onChange={handleFileChange}
                     className="hidden"
-                    required
+                    required={isResumeRequired}
                   />
                   <label
                     htmlFor="resume-upload"

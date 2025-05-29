@@ -22,7 +22,10 @@ import {
   updateBitStatus,
   savePaymentDetails,
   getTransactions,
-  checkPaymentStatus
+  checkPaymentStatus,
+    getExpiredProjects,
+    updateProjectExpiry
+
 } from "../controllers/admincontroller.js";
 import { body, validationResult } from "express-validator"; // Added validationResult import
 import multer from "multer"; // Added multer for file uploads
@@ -130,6 +133,8 @@ adminRouter.route("/transactions").get(getTransactions);
 
 adminRouter.route("/check-payment/:student_id/:project_id").get(checkPaymentStatus);
 
+adminRouter.route("/getexpiredprojects").get(getExpiredProjects);
+adminRouter.route("/updateprojectexpiry").post(updateProjectExpiry);
 
 
 

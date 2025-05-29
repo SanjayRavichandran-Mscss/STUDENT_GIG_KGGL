@@ -5,6 +5,7 @@ import { X, ExternalLink, Maximize2 } from "lucide-react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import PerfectScrollbar from "react-perfect-scrollbar";
+import Select from "react-select";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -134,7 +135,7 @@ function StudentsData() {
   }, [selectedCollege, selectedDepartment, selectedSkill, searchQuery, studentData]);
 
   const openModal = (student) => {
-    setSelectedStudent(student);
+    setSelectedStudent({ ...student, selectedSkills: [] });
   };
 
   const closeModal = () => {
@@ -162,7 +163,7 @@ function StudentsData() {
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto"> {/* Removed extra nesting */}
         {error && (
           <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6 shadow-md">
             {error}
@@ -202,7 +203,7 @@ function StudentsData() {
             {[...new Set(studentData
               .filter((s) => (selectedCollege ? s.college_name === selectedCollege : true))
               .map((s) => s.department)
-            )].map((dept, index) => (
+            )].filter(Boolean).map((dept, index) => (
               <option key={index} value={dept}>
                 {dept}
               </option>
@@ -364,6 +365,9 @@ function StudentsData() {
                   <strong className="text-gray-700">Department:</strong> {selectedStudent.department || "N/A"}
                 </p>
                 <p className="text-sm">
+                  <strong className="text-gray-700">Semester:</strong> {selectedStudent.semester || "N/A"}
+                </p>
+                <p className="text-sm">
                   <strong className="text-gray-700">Mobile Number:</strong> {selectedStudent.mobile_number || "N/A"}
                 </p>
                 <p className="text-sm">
@@ -381,24 +385,94 @@ function StudentsData() {
                     "N/A"
                   )}
                 </p>
+                <p className="text-sm">
+                  <strong className="text-gray-700">Linkedin Link:</strong>{" "}
+                  {selectedStudent.linkedin_link ? (
+                    <a
+                      href={selectedStudent.linkedin_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {selectedStudent.linkedin_link}
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </p>
               </div>
 
               <div className="mb-6">
                 <strong className="text-gray-700">Skills:</strong>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedStudent.skills && selectedStudent.skills.length > 0 ? (
-                    selectedStudent.skills.map((s, i) => (
-                      <span
-                        key={i}
-                        className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
-                      >
-                        {s.skill_name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-500 text-sm">No skills listed</span>
-                  )}
-                </div>
+                {selectedStudent.skills && selectedStudent.skills.length > 0 ? (
+                  <div className="mt-2">
+                    <Select
+                      isMulti
+                      options={selectedStudent.skills.map((skill) => ({
+                        value: skill.skill_name,
+                        label: skill.skill_name,
+                      }))}
+                      value={selectedStudent.selectedSkills.map((skillName) => ({
+                        value: skillName,
+                        label: skillName,
+                      }))}
+                      onChange={(selectedOptions) => {
+                        setSelectedStudent((prev) => ({
+                          ...prev,
+                          selectedSkills: selectedOptions.map((option) => option.value),
+                        }));
+                      }}
+                      className="basic-multi-select"
+                      classNamePrefix="select"
+                      placeholder="Select skills..."
+                    />
+                    {selectedStudent.selectedSkills.length > 0 ? (
+                      <div className="mt-3 space-y-4">
+                        {selectedStudent.selectedSkills.map((skillName) => {
+                          const skill = selectedStudent.skills.find((s) => s.skill_name === skillName);
+                          return (
+                            <div
+                              key={skillName}
+                              className="relative border border-gray-200 rounded-lg p-4 bg-gray-50"
+                            >
+                              <button
+                                onClick={() =>
+                                  setSelectedStudent((prev) => ({
+                                    ...prev,
+                                    selectedSkills: prev.selectedSkills.filter((s) => s !== skillName),
+                                  }))
+                                }
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 transition duration-200"
+                              >
+                                <X size={16} />
+                              </button>
+                              <h4 className="text-sm font-semibold text-gray-800 mb-2">{skill.skill_name}</h4>
+                              <p className="text-sm">
+                                <strong className="text-gray-700">Project Link: </strong>
+                                <a
+                                  href={skill.skill_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline break-all"
+                                >
+                                  {skill.skill_url}
+                                </a>
+                              </p>
+                              <p className="text-sm mt-2">
+                                <strong className="text-gray-700">Project Description: </strong>
+                                {skill.skill_description || "No description available"}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-gray-500 text-sm">Select skills to view details</p>
+                    )}
+                  </div>
+                ) : (
+                  <span className="mt-2 text-gray-500 text-sm">No skills listed</span>
+                )}
               </div>
 
               <div className="mt-6">
@@ -446,7 +520,7 @@ function StudentsData() {
               onClick={closeZoomedProfile}
               className="absolute top-4 right-4 text-white hover:text-gray-300 transition duration-200"
             >
-              <X size={24} />
+              <X size={24}/>
             </button>
             <div className="flex justify-center items-center h-full">
               <div className="relative">
@@ -456,7 +530,7 @@ function StudentsData() {
                       ? `http://localhost:5000/images/${zoomedProfile.profile_photo}`
                       : defaultProfile
                   }
-                  alt="Profile"
+                  alt="Profile Photo"
                   className="max-w-[80vw] max-h-[80vh] rounded-lg object-contain"
                   onError={handleImageError}
                 />

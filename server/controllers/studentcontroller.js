@@ -852,6 +852,45 @@ const getProjectsByStudentLevel = async (req, res) => {
   }
 };
 
+
+
+
+
+
+const GetTechnicalStatusByEmail = async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    // Query to join students and course tables using email
+    const query = `
+      SELECT c.technical_status 
+      FROM students s
+      JOIN course c ON s.degree = c.course_id
+      WHERE s.email = ?`;
+    
+    const result = await dbQuery(query, [email]);
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Student or course not found"
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      technical_status: result[0].technical_status
+    });
+  } catch (error) {
+    console.error("Error in GetTechnicalStatusByEmail:", error);
+    res.status(500).json({
+      status: "error",
+      message: "server_error",
+      error: error.message
+    });
+  }
+};
+
 export {
 
   getSingleProfile,
@@ -874,36 +913,5 @@ export {
   getProjectsCount,
   getAllStudentsDataAndTest,
   getProjectsByStudentLevel,
+  GetTechnicalStatusByEmail
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

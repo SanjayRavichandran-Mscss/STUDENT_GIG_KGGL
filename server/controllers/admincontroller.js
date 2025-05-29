@@ -16,8 +16,10 @@ const studentDetails = async (req, res) => {
         s.mobile_number,
         s.profile_photo,
         s.year,
+        s.semester,
         s.resume_file,
         s.github_link,
+        s.linkedin_link,
         c.college_name,
         co.course_name AS department
       FROM students s
@@ -1117,6 +1119,69 @@ const checkPaymentStatus = async (req, res) => {
   }
 };
 
+
+const getExpiredProjects = async (req, res) => {
+  try {
+    const sql = `SELECT 
+  p.project_id,
+  p.project_name,
+  p.description,
+  p.stack,
+  p.created_at,
+  p.expiry_date,
+  COUNT(b.bit_id) AS bit_count
+FROM 
+  projects p
+LEFT JOIN 
+  bit b ON p.project_id = b.project_id
+WHERE 
+  p.expiry_date <= NOW()
+GROUP BY 
+  p.project_id, p.project_name;`;
+
+    db.query(sql, (err, result) => {
+      if (err) {
+        res.send("db_error");
+      } else {
+        res.send(result);
+      }
+    });
+  } catch (e) {
+    res.send("admin_error");
+  }
+};
+
+const updateProjectExpiry = async (req, res) => {
+  try {
+    const { project_id, new_expiry_date } = req.body;
+
+    // Validate input
+    if (!project_id || !new_expiry_date) {
+      return res.status(400).send("project_id and new_expiry_date are required");
+    }
+
+    // Validate that new_expiry_date is in the future
+    const now = new Date();
+    const newExpiry = new Date(new_expiry_date);
+    if (newExpiry <= now) {
+      return res.status(400).send("new_expiry_date must be in the future");
+    }
+
+    const sql = `UPDATE projects SET expiry_date = ? WHERE project_id = ?`;
+    db.query(sql, [new_expiry_date, project_id], (err, result) => {
+      if (err) {
+        return res.status(500).send("db_error");
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).send("project_not_found");
+      }
+      res.send({ message: "Expiry date updated successfully" });
+    });
+  } catch (e) {
+    res.status(500).send("admin_error");
+  }
+};
+
 export {
   // studentsData,
   studentDetails,
@@ -1142,4 +1207,6 @@ export {
   savePaymentDetails,
   getTransactions,
   checkPaymentStatus,
+  getExpiredProjects,
+  updateProjectExpiry
 };

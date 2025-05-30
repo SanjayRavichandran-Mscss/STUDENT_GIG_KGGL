@@ -8,7 +8,7 @@ const PieChartComponent = () => {
   const [clg, setClg] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/admin/college`).then((res) => {
+    axios.get(`http://103.118.158.24/api/api /admin/college`).then((res) => {
       setClg(res.data.msg);
     });
   }, []);

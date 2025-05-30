@@ -218,7 +218,7 @@
 //       console.log("Submitting test with data:", JSON.stringify(submissionData, null, 2));
 
 //       await axios.post(
-//         "http://localhost:5000/api/test/submit-test",
+//         "http://103.118.158.24/api/api /test/submit-test",
 //         submissionData,
 //         {
 //           withCredentials: true,
@@ -278,7 +278,7 @@
 //       setAttemptId(storedAttemptId);
 //       try {
 //         const response = await axios.get(
-//           `http://localhost:5000/api/test/test-time/${storedAttemptId}`,
+//           `http://103.118.158.24/api/api /test/test-time/${storedAttemptId}`,
 //           { withCredentials: true }
 //         );
 //         console.log(`[startTestAttempt] Fetched time for attemptId=${storedAttemptId}: ${response.data.time_left_seconds}s`);
@@ -299,7 +299,7 @@
 //     console.log(`[startTestAttempt] Starting new test attempt for studentId=${studentId}, testId=${testId}, type=${type}`);
 //     try {
 //       const response = await axios.post(
-//         "http://localhost:5000/api/test/start-test",
+//         "http://103.118.158.24/api/api /test/start-test",
 //         { student_id: studentId, test_id: testId, test_type: type },
 //         { withCredentials: true }
 //       );
@@ -349,7 +349,7 @@
 //     try {
 //       const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
 //       const response = await axios.get(
-//         `http://localhost:5000/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
+//         `http://103.118.158.24/api/api /test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
 //         { withCredentials: true }
 //       );
 //       const newQuestions = response.data;
@@ -543,7 +543,7 @@
 //   useEffect(() => {
 //     const fetchTestData = async () => {
 //       try {
-//         const response = await axios.get(`http://localhost:5000/api/test/all-tests/${studentId}`, { withCredentials: true });
+//         const response = await axios.get(`http://103.118.158.24/api/api /test/all-tests/${studentId}`, { withCredentials: true });
 //         const tests = response.data;
 //         const selectedTest = tests.find(t => t.test_id === Number(testId) && t.test_type === type);
 //         if (!selectedTest) {
@@ -587,7 +587,7 @@
 //     if (!testStarted || !attemptId || isSubmitted) return;
 
 //     const timer = setInterval(() => {
-//       axios.get(`http://localhost:5000/api/test/test-time/${attemptId}`, { withCredentials: true })
+//       axios.get(`http://103.118.158.24/api/api /test/test-time/${attemptId}`, { withCredentials: true })
 //         .then(response => {
 //           const { time_left_seconds } = response.data;
 //           setTimeLeft(time_left_seconds);
@@ -1102,7 +1102,7 @@ export default function AttendTest() {
         );
 
         await axios.post(
-          "http://localhost:5000/api/test/submit-test",
+          "http://103.118.158.24/api/api /test/submit-test",
           submissionData,
           {
             withCredentials: true,
@@ -1162,7 +1162,7 @@ export default function AttendTest() {
       setAttemptId(storedAttemptId);
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/test/test-time/${storedAttemptId}`,
+          `http://103.118.158.24/api/api /test/test-time/${storedAttemptId}`,
           { withCredentials: true }
         );
         setTimeLeft(response.data.time_left_seconds);
@@ -1180,7 +1180,7 @@ export default function AttendTest() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/test/start-test",
+        "http://103.118.158.24/api/api /test/start-test",
         { student_id: studentId, test_id: testId, test_type: type },
         { withCredentials: true }
       );
@@ -1230,7 +1230,7 @@ export default function AttendTest() {
       try {
         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
         const response = await axios.get(
-          `http://localhost:5000/api/test/questions/${
+          `http://103.118.158.24/api/api /test/questions/${
             test.skill_id
           }/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
           { withCredentials: true }
@@ -1425,7 +1425,7 @@ export default function AttendTest() {
     const fetchTestData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/test/all-tests/${studentId}`,
+          `http://103.118.158.24/api/api /test/all-tests/${studentId}`,
           {
             withCredentials: true,
           }
@@ -1484,7 +1484,7 @@ export default function AttendTest() {
 
     const timer = setInterval(() => {
       axios
-        .get(`http://localhost:5000/api/test/test-time/${attemptId}`, {
+        .get(`http://103.118.158.24/api/api /test/test-time/${attemptId}`, {
           withCredentials: true,
         })
         .then((response) => {

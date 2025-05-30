@@ -24,15 +24,15 @@ const ViewQuestions = () => {
       setIsLoading(true);
       try {
         // Fetch questions
-        const questionsResponse = await axios.get('http://localhost:5000/api/test/mcq');
+        const questionsResponse = await axios.get('http://103.118.158.24/api/api /test/mcq');
         setQuestions(Array.isArray(questionsResponse.data) ? questionsResponse.data : []);
 
         // Fetch skills
-        const skillsResponse = await axios.get('http://localhost:5000/api/test/skills');
+        const skillsResponse = await axios.get('http://103.118.158.24/api/api /test/skills');
         setSkills(Array.isArray(skillsResponse.data) ? skillsResponse.data : []);
 
         // Fetch difficulty levels
-        const difficultyResponse = await axios.get('http://localhost:5000/api/test/difficulty-levels');
+        const difficultyResponse = await axios.get('http://103.118.158.24/api/api /test/difficulty-levels');
         setDifficultyLevels(Array.isArray(difficultyResponse.data) ? difficultyResponse.data : []);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -63,7 +63,7 @@ const ViewQuestions = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/test/mcq/${id}`);
+          await axios.delete(`http://103.118.158.24/api/api /test/mcq/${id}`);
           setQuestions(questions.filter((q) => q.id !== id));
           Swal.fire({
             title: 'Deleted!',
@@ -141,7 +141,7 @@ const ViewQuestions = () => {
         questions: wrapInPTags(editData.questions) // Add <p> tags back when saving
       };
 
-      await axios.put(`http://localhost:5000/api/test/mcq/${editData.id}`, {
+      await axios.put(`http://103.118.158.24/api/api /test/mcq/${editData.id}`, {
         skill_id: dataToSave.skill_id,
         difficulty_level_id: dataToSave.difficulty_level_id,
         questions: dataToSave.questions,

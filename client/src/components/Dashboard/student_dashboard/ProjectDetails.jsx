@@ -24,7 +24,7 @@ function ProjectDetails() {
         setIsLoading(true);
         // Fetch project details
         const projectResponse = await axios.get(
-          `http://localhost:5000/api/stu/prodeatil/${decodedProject}`
+          `http://103.118.158.24/api/api /stu/prodeatil/${decodedProject}`
         );
         setProjectDetails(
           projectResponse.data.map((project) => ({
@@ -35,7 +35,7 @@ function ProjectDetails() {
 
         // Check if student has bidded and get latest bid status
         const bidResponse = await axios.get(
-          `http://localhost:5000/api/admin/checkBid/${decoded}/${decodedProject}`
+          `http://103.118.158.24/api/api /admin/checkBid/${decoded}/${decodedProject}`
         );
         setHasBidded(bidResponse.data.hasBidded);
         setBitStatus(bidResponse.data.bitStatus); // Store latest bid status
@@ -67,7 +67,7 @@ function ProjectDetails() {
     try {
       setIsSubmitting(true);
       const response = await axios.post(
-        `http://localhost:5000/api/admin/bitinfo`,
+        `http://103.118.158.24/api/api /admin/bitinfo`,
         {
           stu_id,
           pro_id,
@@ -81,7 +81,7 @@ function ProjectDetails() {
       }
 
       const updateCreditsResponse = await axios.put(
-        `http://localhost:5000/api/stu/updateBidCredits/${decoded}`,
+        `http://103.118.158.24/api/api /stu/updateBidCredits/${decoded}`,
         {
           bid_credits: updatedCredits,
         }

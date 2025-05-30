@@ -39,8 +39,8 @@ useEffect(() => {
     try {
       setIsLoading(true);
       const [profileRes, collegesRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/stu/getdata/${decoded}`),
-        axios.get("http://localhost:5000/api/college/getcollege"),
+        axios.get(`http://103.118.158.24/api/api /stu/getdata/${decoded}`),
+        axios.get("http://103.118.158.24/api/api /college/getcollege"),
       ]);
 
       const profile = profileRes.data.msg[0];
@@ -75,7 +75,7 @@ useEffect(() => {
   useEffect(() => {
     if (formData.selectedCategory) {
       axios
-        .get(`http://localhost:5000/api/college/course/${formData.selectedCategory}`)
+        .get(`http://103.118.158.24/api/api /college/course/${formData.selectedCategory}`)
         .then((res) => {
           setCourses(res.data.result || []);
           if (!res.data.result.some((course) => course.course_id === formData.selectedCollege)) {
@@ -104,7 +104,7 @@ useEffect(() => {
   useEffect(() => {
     if (formData.selectedCollege) {
       axios
-        .get(`http://localhost:5000/api/college/years/${formData.selectedCollege}`)
+        .get(`http://103.118.158.24/api/api /college/years/${formData.selectedCollege}`)
         .then((res) => {
           const yearsCount = res.data.result[0]?.years || 0;
           const yearOptions = [...Array(yearsCount).keys()].map((i) => `${i + 1} Year`);
@@ -220,7 +220,7 @@ const validateForm = () => {
       formDataToSend.append("id", decoded);
       if (file) formDataToSend.append("file", file);
 
-      const response = await axios.put("http://localhost:5000/api/stu/update", formDataToSend, {
+      const response = await axios.put("http://103.118.158.24/api/api /stu/update", formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

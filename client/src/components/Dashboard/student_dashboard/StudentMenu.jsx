@@ -259,7 +259,7 @@ export default function StudentMenu() {
         if (storedStatus !== null) {
           setTechnicalStatus(Number(storedStatus));
         } else {
-          const response = await axios.get(`http://localhost:5000/api/stu/technical-status/${decoded}`);
+          const response = await axios.get(`http://103.118.158.24/api/api /stu/technical-status/${decoded}`);
           const { technical_status } = response.data;
           setTechnicalStatus(technical_status);
           sessionStorage.setItem("technical_status", technical_status);

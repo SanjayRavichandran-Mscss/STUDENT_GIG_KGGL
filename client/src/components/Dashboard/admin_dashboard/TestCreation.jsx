@@ -33,9 +33,9 @@ export default function TestCreation() {
       setIsLoading(true);
       try {
         const [skillsResponse, difficultyResponse, questionsResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/test/skills", { credentials: 'include' }),
-          fetch("http://localhost:5000/api/test/difficulty-levels", { credentials: 'include' }),
-          fetch("http://localhost:5000/api/test/available-questions", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api /test/skills", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api /test/difficulty-levels", { credentials: 'include' }),
+          fetch("http://103.118.158.24/api/api /test/available-questions", { credentials: 'include' }),
         ]);
         
         const skillsData = await skillsResponse.json();
@@ -207,7 +207,7 @@ export default function TestCreation() {
         duration_minutes: Number(formData.duration_minutes),
       };
 
-      const response = await fetch("http://localhost:5000/api/test/create-test", {
+      const response = await fetch("http://103.118.158.24/api/api /test/create-test", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

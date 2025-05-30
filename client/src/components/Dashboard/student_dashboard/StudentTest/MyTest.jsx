@@ -27,7 +27,7 @@ export default function MyTest() {
       try {
         // Fetch tests
         const testsResponse = await axios.get(
-          `http://localhost:5000/api/test/active-tests/${studentId}`,
+          `http://103.118.158.24/api/api /test/active-tests/${studentId}`,
           { withCredentials: true }
         );
 
@@ -58,7 +58,7 @@ export default function MyTest() {
 
         // Fetch schedules
         const schedulesResponse = await axios.get(
-          `http://localhost:5000/api/test/schedules/${studentId}`,
+          `http://103.118.158.24/api/api /test/schedules/${studentId}`,
           { withCredentials: true }
         );
 
@@ -77,7 +77,7 @@ export default function MyTest() {
 
         // Fetch attended tests
         const attendedResponse = await axios.get(
-          `http://localhost:5000/api/test/student-test-attended/${studentId}`,
+          `http://103.118.158.24/api/api /test/student-test-attended/${studentId}`,
           { withCredentials: true }
         );
 
@@ -128,7 +128,7 @@ export default function MyTest() {
     try {
       // Save schedule to backend
       await axios.post(
-        "http://localhost:5000/api/test/schedule",
+        "http://103.118.158.24/api/api /test/schedule",
         {
           student_id: studentId,
           test_id: testId,

@@ -9,7 +9,7 @@
 
 //   useEffect(() => {
 //     // Fetch all projects
-//     axios.get("http://localhost:5000/api/admin/getallprojects").then((res) => {
+//     axios.get("http://103.118.158.24/api/api /admin/getallprojects").then((res) => {
 //       setProjects(
 //         res.data.map((project) => ({
 //           ...project,
@@ -20,7 +20,7 @@
 //     });
 
 //     // Fetch pending bid counts (only bids with bit_status_id IS NULL)
-//     axios.get("http://localhost:5000/api/admin/getbit").then((res) => {
+//     axios.get("http://103.118.158.24/api/api /admin/getbit").then((res) => {
 //       const countMap = {};
 //       res.data.forEach((item) => {
 //         countMap[item.project_id] = item.count;
@@ -106,7 +106,7 @@ function Projects() {
 
   useEffect(() => {
     // Fetch all projects
-    axios.get("http://localhost:5000/api/admin/getallprojects").then((res) => {
+    axios.get("http://103.118.158.24/api/api /admin/getallprojects").then((res) => {
       setProjects(
         res.data.map((project) => ({
           ...project,
@@ -123,7 +123,7 @@ function Projects() {
     });
 
     // Fetch expired projects
-    axios.get("http://localhost:5000/api/admin/getexpiredprojects").then((res) => {
+    axios.get("http://103.118.158.24/api/api /admin/getexpiredprojects").then((res) => {
       setExpiredProjects(
         res.data.map((project) => project.project_id)
       );
@@ -136,7 +136,7 @@ function Projects() {
     });
 
     // Fetch pending bid counts
-    axios.get("http://localhost:5000/api/admin/getbit").then((res) => {
+    axios.get("http://103.118.158.24/api/api /admin/getbit").then((res) => {
       const countMap = {};
       res.data.forEach((item) => {
         countMap[item.project_id] = item.count;
@@ -183,7 +183,7 @@ function Projects() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/admin/updateprojectexpiry", {
+      const response = await axios.post("http://103.118.158.24/api/api /admin/updateprojectexpiry", {
         project_id: projectId,
         new_expiry_date: newExpiryDate,
       });
@@ -193,8 +193,8 @@ function Projects() {
       });
       // Refresh projects and expired projects
       const [allProjectsRes, expiredProjectsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/admin/getallprojects"),
-        axios.get("http://localhost:5000/api/admin/getexpiredprojects"),
+        axios.get("http://103.118.158.24/api/api /admin/getallprojects"),
+        axios.get("http://103.118.158.24/api/api /admin/getexpiredprojects"),
       ]);
       setProjects(
         allProjectsRes.data.map((project) => ({

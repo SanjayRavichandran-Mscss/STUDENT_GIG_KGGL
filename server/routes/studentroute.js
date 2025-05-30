@@ -22,6 +22,7 @@ import {
   getAllStudentsDataAndTest,
   getProjectsByStudentLevel,
   GetTechnicalStatusByEmail,
+  GetNonTechSingleStudentData,
   
 } from "../controllers/studentcontroller.js";
 import upload from "../middleware/multer.js";
@@ -103,4 +104,7 @@ studentRouter.route("/projects/count").get(getProjectsCount);
 studentRouter.route("/projects-by-level/:id").get(getProjectsByStudentLevel);
 
 studentRouter.route("/technical-status/:email").get(GetTechnicalStatusByEmail);
+
+studentRouter.route("/get-non-tech-data/:student_id").get(GetNonTechSingleStudentData);
+
 export default studentRouter ;

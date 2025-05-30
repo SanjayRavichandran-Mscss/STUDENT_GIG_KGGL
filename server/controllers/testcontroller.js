@@ -809,7 +809,7 @@ const assignTest = async (req, res) => {
         .status(400)
         .json({ msg: "Test ID and student IDs are required" });
     }
-    const sql =
+    const sql =x``
       "INSERT INTO testassigned (test_id, student_id, active_status) VALUES ?";
     const values = student_ids.map((student_id) => [
       test_id,
@@ -1768,6 +1768,283 @@ const getTestTime = async (req, res) => {
   }
 };
 
+
+const toggleTestStatusForSkillBased = async (req, res) => {
+  try {
+    const { test_id, active_status } = req.body;
+    if (!test_id || active_status === undefined) {
+      return res
+        .status(400)
+        .json({ msg: "Test ID and active status are required" });
+    }
+    const status = active_status ? 1 : 0;
+    const sql = `
+      UPDATE testcreation 
+      SET active_status = ? 
+      WHERE test_id = ?
+    `;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sql, [status, test_id], (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ msg: "No test found with this test ID" });
+    }
+    return res.status(200).json({
+      msg: `Test status updated to ${status ? "active" : "inactive"}`,
+      affectedRows: result.affectedRows,
+    });
+  } catch (error) {
+    console.error("Error in toggleTestStatusForSkillBased:", error);
+    return res.status(500).json({ msg: "Server error" });
+  }
+};
+
+
+
+const getActiveTestsWithQuestions = async (req, res) => {
+  try {
+    const { student_id } = req.params;
+    const sqlAssignedTests = `
+      SELECT 
+        t.test_id,
+        t.test_name,
+        t.test_description,
+        t.skill_id,
+        t.difficulty_level_id,
+        t.easy_level_question,
+        t.medium_level_question,
+        t.hard_level_question,
+        t.total_no_of_questions,
+        t.easy_pass_mark,
+        t.medium_pass_mark,
+        t.hard_pass_mark,
+        t.created_at,
+        s.skill_name,
+        d.level_name,
+        'assigned' AS test_type
+      FROM testcreation t
+      JOIN skills s ON t.skill_id = s.skill_id
+      JOIN difficultylevels d ON t.difficulty_level_id = d.level_id
+      JOIN testassigned ta ON t.test_id = ta.test_id
+      WHERE ta.student_id = ? AND t.active_status = 1
+    `;
+    const sqlSkillTests = `
+      SELECT 
+        t.test_id,
+        t.test_name,
+        t.test_description,
+        t.skill_id,
+        t.difficulty_level_id,
+        t.easy_level_question,
+        t.medium_level_question,
+        t.hard_level_question,
+        t.total_no_of_questions,
+        t.easy_pass_mark,
+        t.medium_pass_mark,
+        t.hard_pass_mark,
+        t.created_at,
+        s.skill_name,
+        d.level_name,
+        'skill' AS test_type
+      FROM testcreation t
+      JOIN skills s ON t.skill_id = s.skill_id
+      JOIN difficultylevels d ON t.difficulty_level_id = d.level_id
+      JOIN student_skills ss ON t.skill_id = ss.skill_id
+      WHERE ss.student_id = ? AND t.active_status = 1
+    `;
+    const [assignedTests, skillTests] = await Promise.all([
+      new Promise((resolve, reject) => {
+        db.query(sqlAssignedTests, [student_id], (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query(sqlSkillTests, [student_id], (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        });
+      }),
+    ]);
+    const allTests = [...assignedTests, ...skillTests];
+    const testsWithQuestions = [];
+    const fetchQuestionsForLevel = async (
+      difficultyId,
+      count,
+      skillId,
+      excludeIds = []
+    ) => {
+      const validExcludeIds = excludeIds
+        .filter(
+          (id) => id != null && !isNaN(id) && Number.isInteger(Number(id))
+        )
+        .map(Number);
+      let sql = `
+        SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
+        FROM questions_mcq
+        WHERE skill_id = ? AND difficulty_level_id = ?
+      `;
+      const params = [skillId, difficultyId];
+      if (validExcludeIds.length > 0) {
+        sql += ` AND id NOT IN (${validExcludeIds.map(() => "?").join(",")})`;
+        params.push(...validExcludeIds);
+      }
+      sql += ` ORDER BY RAND() LIMIT ?`;
+      params.push(count);
+      return new Promise((resolve, reject) => {
+        db.query(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+    for (const test of allTests) {
+      const {
+        skill_id,
+        easy_level_question,
+        medium_level_question,
+        hard_level_question,
+        difficulty_level_id,
+        test_id,
+        test_name,
+      } = test;
+      try {
+        const primaryQuestions = { easy: [], medium: [], hard: [] };
+        let usedQuestionIds = [];
+        if (difficulty_level_id >= 1 && easy_level_question > 0) {
+          const easyQuestions = await fetchQuestionsForLevel(
+            1,
+            easy_level_question,
+            skill_id,
+            usedQuestionIds
+          );
+          if (easyQuestions.length < easy_level_question) {
+            throw new Error(
+              `Please add ${
+                easy_level_question - easyQuestions.length
+              } more Easy questions for test ${test_name} (ID: ${test_id}). Only ${
+                easyQuestions.length
+              } available.`
+            );
+          }
+          primaryQuestions.easy = easyQuestions;
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...easyQuestions.map((q) => q.id),
+          ];
+        }
+        if (difficulty_level_id >= 2 && medium_level_question > 0) {
+          const mediumQuestions = await fetchQuestionsForLevel(
+            2,
+            medium_level_question,
+            skill_id,
+            usedQuestionIds
+          );
+          if (mediumQuestions.length < medium_level_question) {
+            throw new Error(
+              `Please add ${
+                medium_level_question - mediumQuestions.length
+              } more Medium questions for test ${test_name} (ID: ${test_id}). Only ${
+                mediumQuestions.length
+              } available.`
+            );
+          }
+          primaryQuestions.medium = mediumQuestions;
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...mediumQuestions.map((q) => q.id),
+          ];
+        }
+        if (difficulty_level_id === 3 && hard_level_question > 0) {
+          const hardQuestions = await fetchQuestionsForLevel(
+            3,
+            hard_level_question,
+            skill_id,
+            usedQuestionIds
+          );
+          if (hardQuestions.length < hard_level_question) {
+            throw new Error(
+              `Please add ${
+                hard_level_question - hardQuestions.length
+              } more Hard questions for test ${test_name} (ID: ${test_id}). Only ${
+                hardQuestions.length
+              } available.`
+            );
+          }
+          primaryQuestions.hard = hardQuestions;
+          usedQuestionIds = [
+            ...usedQuestionIds,
+            ...hardQuestions.map((q) => q.id),
+          ];
+        }
+        const parseQuestions = (questions) =>
+          questions.map((q) => {
+            let parsedOption = [];
+            try {
+              if (Array.isArray(q.option)) {
+                parsedOption = q.option;
+              } else if (
+                typeof q.option === "string" &&
+                q.option.trim() !== ""
+              ) {
+                parsedOption = JSON.parse(q.option);
+                if (!Array.isArray(parsedOption)) {
+                  throw new Error(
+                    `Invalid option format for question ID ${q.id}`
+                  );
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Error parsing option for question ID ${q.id}:`,
+                error.message
+              );
+              parsedOption = [];
+            }
+            return {
+              ...q,
+              option: parsedOption,
+            };
+          });
+        testsWithQuestions.push({
+          ...test,
+          primary_questions: {
+            easy: parseQuestions(primaryQuestions.easy),
+            medium: parseQuestions(primaryQuestions.medium),
+            hard: parseQuestions(primaryQuestions.hard),
+          },
+          additional_questions: {
+            easy: [],
+            medium: [],
+            hard: [],
+          },
+        });
+      } catch (error) {
+        console.error(
+          `Error processing test ${test_name} (ID: ${test_id}):`,
+          error.message
+        );
+        testsWithQuestions.push({
+          ...test,
+          primary_questions: { easy: [], medium: [], hard: [] },
+          additional_questions: { easy: [], medium: [], hard: [] },
+          error: error.message,
+        });
+      }
+    }
+    return res.status(200).json(testsWithQuestions);
+  } catch (error) {
+    console.error("Error in getActiveTestsWithQuestions:", error);
+    return res
+      .status(400)
+      .json({ msg: error.message || "Failed to fetch active tests" });
+  }
+};
+
+
 export default {
   createSkill,
   createMultipleSkills,
@@ -1806,4 +2083,6 @@ export default {
   studentTestAttended,
   startTest,
   getTestTime,
+  toggleTestStatusForSkillBased,
+  getActiveTestsWithQuestions
 };

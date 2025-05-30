@@ -1214,8 +1214,170 @@ const updateProjectExpiry = async (req, res) => {
   }
 };
 
+
+const NonTechStudentDetails = async (req, res) => {
+  try {
+    const studentsSql = `
+      SELECT 
+        s.student_id,
+        s.roll_no,
+        s.name,
+        s.email,
+        s.mobile_number,
+        s.profile_photo,
+        s.year,
+        s.semester,
+        s.resume_file,
+        s.github_link,
+        s.linkedin_link,
+        c.college_name,
+        co.course_name AS department
+      FROM students s
+      LEFT JOIN colleges c ON s.college_id = c.college_id
+      LEFT JOIN course co ON s.degree = co.course_id
+      WHERE s.role_id = 2 AND co.technical_status = 0
+    `;
+
+    // Get all skills
+    const skillsSql = `
+      SELECT 
+        ss.student_id,
+        ss.skill_id,
+        sk.skill_name,
+        ss.skill_url,
+        ss.skill_description
+      FROM student_skills ss
+      LEFT JOIN skills sk ON ss.skill_id = sk.skill_id
+      WHERE ss.student_id IN (
+        SELECT s.student_id 
+        FROM students s
+        LEFT JOIN course co ON s.degree = co.course_id
+        WHERE s.role_id = 2 AND co.technical_status = 0
+      )
+    `;
+
+    const [students, skills] = await Promise.all([
+      new Promise((resolve, reject) => {
+        db.query(studentsSql, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query(skillsSql, (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      }),
+    ]);
+
+    // Group skills by student_id
+    const skillsByStudent = {};
+    skills.forEach((skill) => {
+      if (!skillsByStudent[skill.student_id]) {
+        skillsByStudent[skill.student_id] = [];
+      }
+      skillsByStudent[skill.student_id].push({
+        skill_id: skill.skill_id,
+        skill_name: skill.skill_name,
+        skill_url: skill.skill_url,
+        skill_description: skill.skill_description,
+      });
+    });
+
+    // Combine the data
+    const result = students.map((student) => ({
+      ...student,
+      skills: skillsByStudent[student.student_id] || [],
+    }));
+
+    res.json({ status: true, result });
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ status: false, msg: "admin_error" });
+  }
+};
+
+
+const InterviewScheduleMail = async (req, res) => {
+  const { to, bcc, cc, subject, emailBody, name } = req.body;
+
+  try {
+    // Validate required fields
+    if (!to || !subject || !emailBody || !name) {
+      return res.status(400).json({ status: "error", msg: "To, subject, body, and name are required" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER || "sanjayravichandran006@gmail.com",
+        pass: process.env.EMAIL_PASSWORD || "lpzn amam wlgw kwdl",
+      },
+    });
+
+    // Handle single or multiple recipients
+    const recipients = Array.isArray(to) ? to : [to];
+    const names = Array.isArray(name) ? name : [name];
+    const bccRecipients = Array.isArray(bcc) ? bcc : bcc ? [bcc] : [];
+    const ccRecipients = Array.isArray(cc) ? cc : cc ? [cc] : [];
+
+    const emailPromises = recipients.map(async (recipient, index) => {
+      const mailOptions = {
+        from: "sanjayravichandran006@gmail.com",
+        to: recipient,
+        bcc: bccRecipients, // Include BCC recipients
+        cc: ccRecipients, // Include CC recipients
+        subject,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                  .header { text-align: center; padding: 10px 0; background-color: #4f46e5; color: #ffffff; }
+                  .content { padding: 20px; }
+                  .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>KG Genius Labs</h1>
+                  </div>
+                  <div class="content">
+                      <p>Dear ${names[index] || "User"},</p>
+                      <p>${emailBody}</p>
+                      <p>Best regards,</p>
+                      <p><strong>KG Genius Labs</strong></p>
+                  </div>
+              </div>
+          </body>
+          </html>
+        `,
+      };
+
+      console.log(`Sending email to ${recipient} with BCC: ${bccRecipients.join(", ")} and CC: ${ccRecipients.join(", ")}`);
+      await transporter.sendMail(mailOptions);
+      return { status: true };
+    });
+
+    const results = await Promise.all(emailPromises);
+    const allSuccess = results.every((result) => result.status);
+
+    if (allSuccess) {
+      res.json({ status: true, msg: "Emails sent successfully" });
+    } else {
+      res.status(500).json({ status: false, msg: "Some emails failed to send" });
+    }
+  } catch (err) {
+    console.error("Email send error:", err);
+    res.status(500).json({ status: false, msg: "Failed to send email", error: err.message });
+  }
+};
+
 export {
-  // studentsData,
   studentDetails,
   studentsCount,
   filterCollegeStduents,
@@ -1240,5 +1402,7 @@ export {
   getTransactions,
   checkPaymentStatus,
   getExpiredProjects,
-  updateProjectExpiry
+  updateProjectExpiry,
+  NonTechStudentDetails,
+  InterviewScheduleMail
 };

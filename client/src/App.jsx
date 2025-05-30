@@ -31,6 +31,7 @@
 // } from './components/Dashboard/admin_dashboard/AdminDashboard';
 // import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
 // import HomePage from './components/LandingPage/HomePage';
+// import InterviewSchedule from './components/Dashboard/student_dashboard/InterviewSchedule';
 
 // function App() {
 //   return (
@@ -51,6 +52,7 @@
 //           <Route path="/attend-test/:id/:testId/:type" element={<StudentSkillTest />} />
 //           <Route path="/quiz/:id/:testId" element={<StudentSkillTest />} />
 //           <Route path="/skill-test/:id/:testId" element={<StudentSkillTest />} />
+//           <Route path="/interview-details/:id" element={<InterviewSchedule />} />
 //           <Route path="/manager/:id" element={<Dash />} />
 //           <Route path="/dash/:id" element={<Dash />} />
 //           <Route path="/studata/:id" element={<Dashstudent />} />
@@ -76,34 +78,6 @@
 // }
 
 // export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -135,7 +109,8 @@ import {
   Scorearea,
   AddBulkQuestionsComponent,
   ApprovedProjectsComponent,
-  ViewQuestionsComponent
+  ViewQuestionsComponent,
+  NonTechStudents,
 } from './components/Dashboard/admin_dashboard/AdminDashboard';
 import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
 import HomePage from './components/LandingPage/HomePage';
@@ -164,6 +139,7 @@ function App() {
           <Route path="/manager/:id" element={<Dash />} />
           <Route path="/dash/:id" element={<Dash />} />
           <Route path="/studata/:id" element={<Dashstudent />} />
+          <Route path="/non-tech-students/:id" element={<NonTechStudents />} />
           <Route path="/addproject/:id" element={<Dashproject />} />
           <Route path="/getprojects/:id" element={<DashAllProjects />} />
           <Route path="/addquestion/:id" element={<AddQuizzes />} />

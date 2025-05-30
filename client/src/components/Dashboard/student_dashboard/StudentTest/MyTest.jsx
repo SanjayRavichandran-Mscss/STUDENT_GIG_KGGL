@@ -27,7 +27,7 @@ export default function MyTest() {
       try {
         // Fetch tests
         const testsResponse = await axios.get(
-          `http://localhost:5000/api/test/all-tests/${studentId}`,
+          `http://localhost:5000/api/test/active-tests/${studentId}`,
           { withCredentials: true }
         );
 

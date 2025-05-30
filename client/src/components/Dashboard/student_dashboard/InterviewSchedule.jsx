@@ -1,47 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import StudentMenu from "./StudentMenu";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Mail } from "lucide-react";
+import axios from "axios";
 
 const InterviewSchedule = () => {
   const { id } = useParams();
   const decodedId = atob(id);
-  const [formData, setFormData] = useState({
-    specializedIn: "",
-    dateTime: "",
-    preferredMode: "Online",
+  const [studentData, setStudentData] = useState({
+    name: "",
+    roll_no: "",
+    email: "",
+    college_name: "",
+    department: "",
+    semester: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/stu/get-non-tech-data/${decodedId}`,
+          { withCredentials: true }
+        );
+        if (response.data.status) {
+          setStudentData(response.data.msg);
+        } else {
+          setError(response.data.message || "Failed to fetch student details.");
+          setStudentData({
+            name: `Student ${decodedId}`,
+            roll_no: "N/A",
+            email: "N/A",
+            college_name: "N/A",
+            department: "N/A",
+            semester: "N/A",
+          });
+        }
+      } catch (err) {
+        console.error("[fetchStudentData] Error:", err);
+        setError("Failed to fetch student details.");
+        setStudentData({
+          name: `Student ${decodedId}`,
+          roll_no: "N/A",
+          email: "N/A",
+          college_name: "N/A",
+          department: "N/A",
+          semester: "N/A",
+        });
+      }
+    };
+    fetchStudentData();
+  }, [decodedId]);
+
+  const handleGmailRedirect = () => {
+    if (studentData.email && studentData.email !== "N/A") {
+      const gmailUrl = `https://mail.google.com/mail/?authuser=${encodeURIComponent(studentData.email)}`;
+      window.open(gmailUrl, "_blank");
+    }
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // Simulate form submission
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Interview request submitted successfully! Waiting for admin approval.", {
-        position: "top-right",
-        autoClose: 2000,
-      });
-      // Reset form
-      setFormData({
-        specializedIn: "",
-        dateTime: "",
-        preferredMode: "Online",
-      });
-    }, 1000);
-  };
-
-  // Get current date and time for min attribute
-  const now = new Date();
-  const minDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDThh:mm
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -53,113 +72,52 @@ const InterviewSchedule = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 sm:p-6 rounded-lg mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Schedule Your Interview</h1>
-            <p className="text-blue-100 text-sm mt-1">
-              Select your preferred details to request an interview slot
-            </p>
+        <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-200 animate-fade-in">
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <Mail className="w-8 h-8 text-blue-600" />
+            </div>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl shadow-lg p-6 sm:p-8">
-            <div>
-              <label
-                htmlFor="specializedIn"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                You Specialized In
-              </label>
-              <input
-                type="text"
-                id="specializedIn"
-                name="specializedIn"
-                value={formData.specializedIn}
-                onChange={handleChange}
-                placeholder="e.g., Communication, Marketing, Tally, Excel"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                required
-              />
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-3">
+            Interview Schedule Notification
+          </h2>
+          <p className="text-gray-600 text-base sm:text-lg text-center mb-6">
+            Dear <span className="font-medium text-blue-600">{studentData.name}</span>,
+            <br />
+            Please check your registered email. The admin will schedule your interview time.
+          </p>
+          <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Student Details</h3>
+            <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
+              <p><span className="font-medium">Roll Number:</span> {studentData.roll_no}</p>
+              <p><span className="font-medium">Name:</span> {studentData.name}</p>
+              <p><span className="font-medium">Email:</span> {studentData.email}</p>
+              <p><span className="font-medium">College:</span> {studentData.college_name}</p>
+              <p><span className="font-medium">Department:</span> {studentData.department}</p>
+              <p><span className="font-medium">Semester:</span> {studentData.semester}</p>
             </div>
-
-            <div>
-              <label
-                htmlFor="dateTime"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Preferred Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                id="dateTime"
-                name="dateTime"
-                value={formData.dateTime}
-                onChange={handleChange}
-                min={minDateTime}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                required
-              />
+          </div>
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded-lg mb-4 text-sm text-center">
+              {error}
             </div>
-
-            <div>
-              <label
-                htmlFor="preferredMode"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Preferred Mode
-              </label>
-              <select
-                id="preferredMode"
-                name="preferredMode"
-                value={formData.preferredMode}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                required
-              >
-                <option value="Online">Online</option>
-                <option value="In-Person">In-Person</option>
-              </select>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full flex justify-center items-center px-4 py-2 rounded-md text-white font-medium transition-colors ${
-                  loading
-                    ? "bg-blue-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 mr-2 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        className="opacity-25"
-                      ></circle>
-                      <path
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8H4z"
-                        className="opacity-75"
-                      ></path>
-                    </svg>
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Interview Request"
-                )}
-              </button>
-            </div>
-          </form>
+          )}
+          <button
+            onClick={handleGmailRedirect}
+            disabled={!studentData.email || studentData.email === "N/A"}
+            className={`w-full flex justify-center items-center px-4 py-2.5 rounded-lg text-white font-medium transition-colors ${
+              studentData.email && studentData.email !== "N/A"
+                ? "bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+            title={
+              !studentData.email || studentData.email === "N/A"
+                ? "Email not available"
+                : "Open Gmail"
+            }
+          >
+            Go to Gmail
+          </button>
         </div>
       </div>
     </div>

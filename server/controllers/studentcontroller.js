@@ -133,6 +133,8 @@ const StudentLogin = async (req, res) => {
   }
 };
 
+
+
 const GetSingleStudentData = async (req, res) => {
   const { student_id } = req.params;
 
@@ -145,6 +147,16 @@ const GetSingleStudentData = async (req, res) => {
     res.status(500).json({ status: "error", message: "student_catch_error" });
   }
 };
+
+
+
+
+
+
+
+
+
+
 
 const checkDuplicateLinks = async (req, res) => {
   const { github_link, linkedin_link, student_id } = req.body;
@@ -970,6 +982,43 @@ const GetTechnicalStatusByEmail = async (req, res) => {
 
 
 
+const GetNonTechSingleStudentData = async (req, res) => {
+  const { student_id } = req.params;
+
+  try {
+    const getData = `
+      SELECT 
+        s.roll_no,
+        s.name,
+        s.email,
+        c.college_name,
+        co.course_name AS department,
+        s.semester
+      FROM students s
+      LEFT JOIN colleges c ON s.college_id = c.college_id
+      LEFT JOIN course co ON s.degree = co.course_id
+      WHERE s.student_id = ?
+    `;
+    const result = await dbQuery(getData, [student_id]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ status: false, message: "Student not found" });
+    }
+
+    res.json({ status: true, msg: result[0] });
+  } catch (error) {
+    console.error("Error in GetNonTechSingleStudentData:", error);
+    res.status(500).json({ status: "error", message: "non_tech_student_catch_error" });
+  }
+};
+
+
+
+
+
+
+
+
 export {
 
   getSingleProfile,
@@ -992,5 +1041,6 @@ export {
   getProjectsCount,
   getAllStudentsDataAndTest,
   getProjectsByStudentLevel,
-  GetTechnicalStatusByEmail
+  GetTechnicalStatusByEmail,
+  GetNonTechSingleStudentData ,
 };

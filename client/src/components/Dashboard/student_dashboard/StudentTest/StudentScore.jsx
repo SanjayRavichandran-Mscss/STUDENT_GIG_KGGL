@@ -128,7 +128,7 @@ export default function UserScoreDetails() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Test Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Easy Score
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -136,7 +136,7 @@ export default function UserScoreDetails() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hard Score
-                  </th>
+                  </th> */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total Score
                   </th>
@@ -155,9 +155,9 @@ export default function UserScoreDetails() {
                 {testResults.map((result) => (
                   <tr key={result.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.test_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.easy_score}</td>
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.easy_score}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.medium_score}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.hard_score}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{result.hard_score}</td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {result.total_score}
                     </td>

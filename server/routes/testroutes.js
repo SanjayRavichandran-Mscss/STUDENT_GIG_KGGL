@@ -53,4 +53,7 @@ testRouter.get("/student-test-attended/:student_id", testcontroller.studentTestA
 testRouter.post("/start-test", testcontroller.startTest);
 testRouter.get("/test-time/:attempt_id", testcontroller.getTestTime);
 
+testRouter.post("/toggle-test-status-skill-based", testcontroller.toggleTestStatusForSkillBased);
+
+testRouter.get("/active-tests/:student_id", testcontroller.getActiveTestsWithQuestions);
 export default testRouter;

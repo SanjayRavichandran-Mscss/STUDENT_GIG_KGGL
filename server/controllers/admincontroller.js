@@ -136,19 +136,52 @@ const filterStudentSkills = async (req, res) => {
   }
 };
 
+// const addProjects = async (req, res) => {
+//   const { pname, pdes, skill, date, level_id } = req.body;
+
+//   try {
+//     // Validate required fields
+//     if (!pname || !pdes || !skill || !date || !level_id) {
+//       return res.status(400).json({ msg: "All fields are required" });
+//     }
+
+//     const sql =
+//       "INSERT INTO projects (project_name, description, stack, expiry_date, level_id) VALUES (?, ?, ?, ?, ?)";
+
+//     db.query(sql, [pname, pdes, skill, date, level_id], (err, result) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ msg: "db_error" });
+//       }
+//       res.json({ msg: "added" });
+//     });
+//   } catch (e) {
+//     console.error("Server error:", e);
+//     res.status(500).json({ msg: "server_error" });
+//   }
+// };
+
+
+
+
 const addProjects = async (req, res) => {
-  const { pname, pdes, skill, date, level_id } = req.body;
+  const { pname, pdes, skill, date, level_id, number_of_students } = req.body;
 
   try {
     // Validate required fields
-    if (!pname || !pdes || !skill || !date || !level_id) {
+    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
-    const sql =
-      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id) VALUES (?, ?, ?, ?, ?)";
+    // Validate number_of_students is a positive integer
+    if (!Number.isInteger(Number(number_of_students)) || number_of_students <= 0) {
+      return res.status(400).json({ msg: "Number of students must be a positive integer" });
+    }
 
-    db.query(sql, [pname, pdes, skill, date, level_id], (err, result) => {
+    const sql =
+      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students) VALUES (?, ?, ?, ?, ?, ?)";
+
+    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students], (err, result) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ msg: "db_error" });
@@ -160,7 +193,6 @@ const addProjects = async (req, res) => {
     res.status(500).json({ msg: "server_error" });
   }
 };
-
 const skillBasedProjects = async (req, res) => {
   const { id } = req.params;
 

@@ -1572,9 +1572,9 @@ export default function Profile() {
       <style>
         {`
           @keyframes borderBlink {
-            0% { border-color: #8b5cf6; } /* Violet-500 */
-            50% { border-color: #3b82f6; } /* Blue-500 */
-            100% { border-color: #8b5cf6; }
+            0% { border-color: red; } /* Violet-500 */
+            50% { border-color: pink; } /* Blue-500 */
+            100% { border-color: red; }
           }
           .blink-border {
             animation: borderBlink 1.5s infinite;

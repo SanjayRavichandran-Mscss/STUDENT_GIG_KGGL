@@ -1369,6 +1369,60 @@ const submitTest = async (req, res) => {
 };
 
 // Get questions by skill and difficulty level
+// const getQuestionsBySkillAndLevel = async (req, res) => {
+//   try {
+//     const { skill_id, level_id } = req.params;
+//     const { count = 10, exclude } = req.query;
+//     const excludeIds = exclude ? exclude.split(",").map(Number) : [];
+//     let sql = `
+//       SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
+//       FROM questions_mcq
+//       WHERE skill_id = ? AND difficulty_level_id = ?
+//     `;
+//     const params = [skill_id, level_id];
+//     if (excludeIds.length > 0) {
+//       sql += ` AND id NOT IN (${excludeIds.map(() => "?").join(",")})`;
+//       params.push(...excludeIds);
+//     }
+//     sql += ` ORDER BY RAND() LIMIT ?`;
+//     params.push(parseInt(count));
+//     const questions = await new Promise((resolve, reject) => {
+//       db.query(sql, params, (err, results) => {
+//         if (err) reject(err);
+//         else resolve(results);
+//       });
+//     });
+//     const parsedQuestions = questions.map((q) => {
+//       let parsedOption = [];
+//       try {
+//         if (Array.isArray(q.option)) {
+//           parsedOption = q.option;
+//         } else if (typeof q.option === "string" && q.option.trim() !== "") {
+//           parsedOption = JSON.parse(q.option);
+//           if (!Array.isArray(parsedOption)) {
+//             throw new Error(`Invalid option format for question ID ${q.id}`);
+//           }
+//         }
+//       } catch (error) {
+//         console.error(
+//           `Error parsing option for question ID ${q.id}:`,
+//           error.message
+//         );
+//         parsedOption = [];
+//       }
+//       return {
+//         ...q,
+//         option: parsedOption,
+//       };
+//     });
+//     return res.status(200).json(parsedQuestions);
+//   } catch (error) {
+//     console.error("Error in getQuestionsBySkillAndLevel:", error);
+//     return res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+
 const getQuestionsBySkillAndLevel = async (req, res) => {
   try {
     const { skill_id, level_id } = req.params;

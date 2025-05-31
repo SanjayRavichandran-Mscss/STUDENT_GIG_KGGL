@@ -27,7 +27,8 @@
 //   Scorearea,
 //   AddBulkQuestionsComponent,
 //   ApprovedProjectsComponent,
-//   ViewQuestionsComponent
+//   ViewQuestionsComponent,
+//   NonTechStudents,
 // } from './components/Dashboard/admin_dashboard/AdminDashboard';
 // import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
 // import HomePage from './components/LandingPage/HomePage';
@@ -56,6 +57,7 @@
 //           <Route path="/manager/:id" element={<Dash />} />
 //           <Route path="/dash/:id" element={<Dash />} />
 //           <Route path="/studata/:id" element={<Dashstudent />} />
+//           <Route path="/non-tech-students/:id" element={<NonTechStudents />} />
 //           <Route path="/addproject/:id" element={<Dashproject />} />
 //           <Route path="/getprojects/:id" element={<DashAllProjects />} />
 //           <Route path="/addquestion/:id" element={<AddQuizzes />} />
@@ -78,6 +80,13 @@
 // }
 
 // export default App;
+
+
+
+
+
+
+
 
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -111,6 +120,7 @@ import {
   ApprovedProjectsComponent,
   ViewQuestionsComponent,
   NonTechStudents,
+  StudentReferComponent, // Added import
 } from './components/Dashboard/admin_dashboard/AdminDashboard';
 import ForgotPassword from './components/Dashboard/Password/ForgotPassword';
 import HomePage from './components/LandingPage/HomePage';
@@ -120,11 +130,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reg" element={<Registration />} />
         <Route path="/forgot" element={<ForgotPassword />} />
+
+        {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
+          {/* Student Routes */}
           <Route path="/student/:id" element={<StudentDashboard />} />
           <Route path="/profile/:id" element={<StudentProfile />} />
           <Route path="/update/:id" element={<ProfileUpdate />} />
@@ -136,6 +150,8 @@ function App() {
           <Route path="/quiz/:id/:testId" element={<StudentSkillTest />} />
           <Route path="/skill-test/:id/:testId" element={<StudentSkillTest />} />
           <Route path="/interview-details/:id" element={<InterviewSchedule />} />
+
+          {/* Admin Routes */}
           <Route path="/manager/:id" element={<Dash />} />
           <Route path="/dash/:id" element={<Dash />} />
           <Route path="/studata/:id" element={<Dashstudent />} />
@@ -143,7 +159,7 @@ function App() {
           <Route path="/addproject/:id" element={<Dashproject />} />
           <Route path="/getprojects/:id" element={<DashAllProjects />} />
           <Route path="/addquestion/:id" element={<AddQuizzes />} />
-          <Route path="/add-quiz/:id" element={<AddQuizzes />} />
+          <Route path="/add-quizz/:id" element={<AddQuizzes />} />
           <Route path="/aiquiz/:id" element={<AddQuizzesWithAI />} />
           <Route path="/assignquiz/:id" element={<AssigningQuizz />} />
           <Route path="/create-test/:id" element={<TestCreationComponent />} />
@@ -151,10 +167,13 @@ function App() {
           <Route path="/bulk-questions/:id" element={<AddBulkQuestionsComponent />} />
           <Route path="/approved-projects/:id" element={<ApprovedProjectsComponent />} />
           <Route path="/bitconfirm/:id" element={<DashBit />} />
-          <Route path="/addskill" element={<Addskillpage />} />
-          <Route path="/studentscore" element={<Scorearea />} />
+          <Route path="/addskill/:id" element={<Addskillpage />} />
+          <Route path="/studentscore/:id" element={<Scorearea />} />
           <Route path="/view-questions/:id" element={<ViewQuestionsComponent />} />
+          <Route path="/student-refer/:id" element={<StudentReferComponent />} />
         </Route>
+
+        {/* Catch-All Route */}
         <Route path="*" element={<div>404 - Page Not Found</div>} />
       </Routes>
     </BrowserRouter>

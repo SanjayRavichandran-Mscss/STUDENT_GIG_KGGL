@@ -136,40 +136,13 @@ const filterStudentSkills = async (req, res) => {
   }
 };
 
-// const addProjects = async (req, res) => {
-//   const { pname, pdes, skill, date, level_id } = req.body;
-
-//   try {
-//     // Validate required fields
-//     if (!pname || !pdes || !skill || !date || !level_id) {
-//       return res.status(400).json({ msg: "All fields are required" });
-//     }
-
-//     const sql =
-//       "INSERT INTO projects (project_name, description, stack, expiry_date, level_id) VALUES (?, ?, ?, ?, ?)";
-
-//     db.query(sql, [pname, pdes, skill, date, level_id], (err, result) => {
-//       if (err) {
-//         console.error("Database error:", err);
-//         return res.status(500).json({ msg: "db_error" });
-//       }
-//       res.json({ msg: "added" });
-//     });
-//   } catch (e) {
-//     console.error("Server error:", e);
-//     res.status(500).json({ msg: "server_error" });
-//   }
-// };
-
-
-
 
 const addProjects = async (req, res) => {
-  const { pname, pdes, skill, date, level_id, number_of_students } = req.body;
+  const { pname, pdes, skill, date, level_id, number_of_students, created_by } = req.body;
 
   try {
     // Validate required fields
-    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students) {
+    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !created_by) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
@@ -178,10 +151,15 @@ const addProjects = async (req, res) => {
       return res.status(400).json({ msg: "Number of students must be a positive integer" });
     }
 
-    const sql =
-      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students) VALUES (?, ?, ?, ?, ?, ?)";
+    // Validate created_by is a positive integer
+    if (!Number.isInteger(Number(created_by)) || created_by <= 0) {
+      return res.status(400).json({ msg: "Created by must be a positive integer" });
+    }
 
-    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students], (err, result) => {
+    const sql =
+      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, created_by], (err, result) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ msg: "db_error" });
@@ -193,6 +171,7 @@ const addProjects = async (req, res) => {
     res.status(500).json({ msg: "server_error" });
   }
 };
+
 const skillBasedProjects = async (req, res) => {
   const { id } = req.params;
 
@@ -235,28 +214,94 @@ const studentBitInfo = async (req, res) => {
 const getAllProjects = async (req, res) => {
   try {
     const sql = `SELECT 
-  p.project_id,
-  p.project_name,
-  p.description,
-  p.stack,
-  p.created_at,
-  p.expiry_date,
-  COUNT(b.bit_id) AS bit_count
-FROM 
-  projects p
-LEFT JOIN 
-  bit b ON p.project_id = b.project_id
-GROUP BY 
-  p.project_id, p.project_name;`;
+      p.project_id,
+      p.project_name,
+      p.description,
+      p.stack,
+      s.skill_name,
+      p.level_id,
+      d.level_name,
+      p.number_of_students,
+      p.created_at,
+      p.created_by,
+      p.expiry_date,
+      COUNT(b.bit_id) AS bit_count,
+      st.name AS created_by_name,
+      st.email,
+      st.mobile_number
+    FROM 
+      projects p
+    LEFT JOIN 
+      skills s ON p.stack = s.skill_id
+    LEFT JOIN 
+      difficultylevels d ON p.level_id = d.level_id
+    LEFT JOIN 
+      bit b ON p.project_id = b.project_id
+    LEFT JOIN 
+      students st ON p.created_by = st.student_id
+    GROUP BY 
+      p.project_id, p.project_name, p.description, p.stack, s.skill_name, p.level_id, 
+      d.level_name, p.number_of_students, p.created_at, p.created_by, p.expiry_date, 
+      st.name, st.email, st.mobile_number`;
 
     db.query(sql, (err, result) => {
       if (err) {
+        console.error("Database error:", err);
         res.send("db_error");
       } else {
         res.send(result);
       }
     });
   } catch (e) {
+    console.error("Server error:", e);
+    res.send("admin_error");
+  }
+};
+const getAllProjectsForStudentRequired = async (req, res) => {
+  try {
+    const sql = `SELECT 
+      p.project_id,
+      p.project_name,
+      p.description,
+      p.stack,
+      s.skill_name,
+      p.level_id,
+      d.level_name,
+      p.number_of_students,
+      p.created_at,
+      p.created_by,
+      p.expiry_date,
+      COUNT(b.bit_id) AS bit_count,
+      st.name AS created_by_name,
+      st.email,
+      st.mobile_number
+    FROM 
+      projects p
+    LEFT JOIN 
+      skills s ON p.stack = s.skill_id
+    LEFT JOIN 
+      difficultylevels d ON p.level_id = d.level_id
+    LEFT JOIN 
+      bit b ON p.project_id = b.project_id
+    LEFT JOIN 
+      students st ON p.created_by = st.student_id
+       WHERE 
+      b.bit_status_id IS NULL
+    GROUP BY 
+      p.project_id, p.project_name, p.description, p.stack, s.skill_name, p.level_id, 
+      d.level_name, p.number_of_students, p.created_at, p.created_by, p.expiry_date, 
+      st.name, st.email, st.mobile_number`;
+
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        res.send("db_error");
+      } else {
+        res.send(result);
+      }
+    });
+  } catch (e) {
+    console.error("Server error:", e);
     res.send("admin_error");
   }
 };
@@ -1377,6 +1422,105 @@ const InterviewScheduleMail = async (req, res) => {
   }
 };
 
+
+
+const ReferralMail = async (req, res) => {
+  const { to, subject, body } = req.body;
+
+  try {
+    // Validate required fields
+    if (!to || !subject || !body) {
+      return res.status(400).json({ msg: 'All fields (to, subject, body) are required' });
+    }
+
+    // Validate email format (basic regex)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      return res.status(400).json({ msg: 'Invalid email address' });
+    }
+
+    // Fetch recipient name from students table
+    let recipientName = 'User';
+    const sql = 'SELECT name FROM students WHERE email = ?';
+    db.query(sql, [to], (err, result) => {
+      if (err) {
+        console.error('Database error fetching name:', err);
+        // Continue with default 'User' name
+      } else if (result.length > 0) {
+        recipientName = result[0].name || 'User';
+      }
+
+      // Escape body to prevent XSS
+      const escapedBody = body
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+      // HTML template
+      const htmlTemplate = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                .header { text-align: center; padding: 10px 0; background-color: #4f46e5; color: #ffffff; }
+                .content { padding: 20px; }
+                .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>KG Genius Labs</h1>
+                </div>
+                <div class="content">
+                    <p>Dear ${recipientName},</p>
+                    <p>${escapedBody}</p>
+                    <p>Best regards,</p>
+                    <p><strong>KG Genius Labs</strong></p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `;
+
+      // Create Nodemailer transporter
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'sanjayravichandran006@gmail.com',
+          pass: 'lpzn amam wlgw kwdl',
+        },
+      });
+
+      // Email options
+      const mailOptions = {
+        from: '"Referral System" <sanjayravichandran006@gmail.com>',
+        to,
+        subject,
+        html: htmlTemplate,
+      };
+
+      // Send email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Email error:', error);
+          return res.status(500).json({ msg: 'email_error' });
+        }
+        res.json({ msg: 'email_sent' });
+      });
+    });
+  } catch (e) {
+    console.error('Server error:', e);
+    res.status(500).json({ msg: 'email_error' });
+  }
+};
+
+
+
 export {
   studentDetails,
   studentsCount,
@@ -1404,5 +1548,8 @@ export {
   getExpiredProjects,
   updateProjectExpiry,
   NonTechStudentDetails,
-  InterviewScheduleMail
+  InterviewScheduleMail,
+  ReferralMail,
+  getAllProjectsForStudentRequired
+
 };

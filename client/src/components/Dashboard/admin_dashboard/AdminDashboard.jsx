@@ -243,9 +243,6 @@
 
 
 
-
-
-
 import React from "react";
 import DoughnutPieChart from "./PieChart.jsx";
 import { AdminMenu } from "./AdminMenu.jsx";
@@ -264,6 +261,7 @@ import AddBulkQuestions from "./AddBulkQuestions.jsx";
 import ApprovedProjects from "./ApprovedProjects.jsx";
 import ViewQuestions from "./ViewQuestions.jsx";
 import NonTechStudentsData from "./NonTechStudentsData.jsx";
+import StudentRefer from "./StudentRefer.jsx"; // Added import
 
 // Main layout container styles
 const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
@@ -487,6 +485,19 @@ export function ViewQuestionsComponent() {
       </div>
       <div className={contentClass}>
         <ViewQuestions />
+      </div>
+    </div>
+  );
+}
+
+export function StudentReferComponent() {
+  return (
+    <div className={layoutContainerClass}>
+      <div className={sidebarClass}>
+        <AdminMenu />
+      </div>
+      <div className={contentClass}>
+        <StudentRefer />
       </div>
     </div>
   );

@@ -22,7 +22,7 @@
 //     const fetchData = async () => {
 //       try {
 //         setLoading(true);
-//         const response = await axios.get('http://103.118.158.24/api/api /stu/all-students-test-data');
+//         const response = await axios.get('http://localhost:5000/api/stu/all-students-test-data');
 //         if (response.data?.status === 'success' && Array.isArray(response.data.students)) {
 //           setData(response.data);
 //           setError('');
@@ -504,7 +504,7 @@ export default function Score() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://103.118.158.24/api/api /stu/all-students-test-data');
+        const response = await axios.get('http://localhost:5000/api/stu/all-students-test-data');
         if (response.data?.status === 'success' && Array.isArray(response.data.students)) {
           setData(response.data);
           setError('');

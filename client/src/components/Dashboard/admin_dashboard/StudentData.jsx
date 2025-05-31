@@ -71,7 +71,7 @@ function StudentsData() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://103.118.158.24/api/api /admin/student-details");
+        const res = await axios.get("http://localhost:5000/api/admin/student-details");
         if (res.data.status && Array.isArray(res.data.result)) {
           // Clean the resume_file and profile_photo paths
           const cleanedData = res.data.result.map((student) => ({

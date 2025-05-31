@@ -24,8 +24,8 @@ const GeminiQuizGenerator = () => {
     const fetchInitialData = async () => {
       try {
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get('http://103.118.158.24/api/api /test/skills'),
-          axios.get('http://103.118.158.24/api/api /test/difficulty-levels')
+          axios.get('http://localhost:5000/api/test/skills'),
+          axios.get('http://localhost:5000/api/test/difficulty-levels')
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -228,7 +228,7 @@ const GeminiQuizGenerator = () => {
       }));
 
       for (const question of questionsToSave) {
-        await axios.post('http://103.118.158.24/api/api /test/mcq', question);
+        await axios.post('http://localhost:5000/api/test/mcq', question);
       }
 
       Swal.fire({

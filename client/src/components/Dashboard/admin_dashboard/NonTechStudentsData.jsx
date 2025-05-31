@@ -78,7 +78,7 @@ function NonTechStudentsData() {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          "http://103.118.158.24/api/api /admin/non-tech-student-details",
+          "http://localhost:5000/api/admin/non-tech-student-details",
           { withCredentials: true }
         );
         if (res.data.status && Array.isArray(res.data.result)) {
@@ -248,7 +248,7 @@ function NonTechStudentsData() {
       };
 
       const response = await axios.post(
-        "http://103.118.158.24/api/api /admin/interview-schedule-mail",
+        "http://localhost:5000/api/admin/interview-schedule-mail",
         payload,
         {
           headers: { "Content-Type": "application/json" },

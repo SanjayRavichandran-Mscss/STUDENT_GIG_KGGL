@@ -228,7 +228,7 @@
 
 //         console.log("[submitTest] Submitting:", JSON.stringify(submissionData, null, 2));
 
-//         await axios.post("http://103.118.158.24/api/api /test/submit-test", submissionData, {
+//         await axios.post("http://localhost:5000/api/test/submit-test", submissionData, {
 //           withCredentials: true,
 //           headers: { "Content-Type": "application/json" },
 //         });
@@ -272,7 +272,7 @@
 //       setAttemptId(storedAttemptId);
 //       try {
 //         const response = await axios.get(
-//           `http://103.118.158.24/api/api /test/test-time/${storedAttemptId}`,
+//           `http://localhost:5000/api/test/test-time/${storedAttemptId}`,
 //           { withCredentials: true }
 //         );
 //         setTimeLeft(response.data.time_left_seconds);
@@ -290,7 +290,7 @@
 
 //     try {
 //       const response = await axios.post(
-//         "http://103.118.158.24/api/api /test/start-test",
+//         "http://localhost:5000/api/test/start-test",
 //         { student_id: studentId, test_id: testId, test_type: type },
 //         { withCredentials: true }
 //       );
@@ -340,7 +340,7 @@
 //       try {
 //         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
 //         const response = await axios.get(
-//           `http://103.118.158.24/api/api /test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
+//           `http://localhost:5000/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${askedQuestionIds.join(",")}`,
 //           { withCredentials: true }
 //         );
 //         const newQuestions = response.data;
@@ -522,7 +522,7 @@
 //   useEffect(() => {
 //     const fetchTestData = async () => {
 //       try {
-//         const response = await axios.get(`http://103.118.158.24/api/api /test/all-tests/${studentId}`, {
+//         const response = await axios.get(`http://localhost:5000/api/test/all-tests/${studentId}`, {
 //           withCredentials: true,
 //         });
 //         const tests = response.data;
@@ -579,7 +579,7 @@
 
 //     const timer = setInterval(() => {
 //       axios
-//         .get(`http://103.118.158.24/api/api /test/test-time/${attemptId}`, { withCredentials: true })
+//         .get(`http://localhost:5000/api/test/test-time/${attemptId}`, { withCredentials: true })
 //         .then((response) => {
 //           const { time_left_seconds } = response.data;
 //           setTimeLeft(time_left_seconds);
@@ -871,7 +871,7 @@ export function Addproject() {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("http://103.118.158.24/api/api /college/skill")
+      .get("http://localhost:5000/api/college/skill")
       .then((res) => {
         setCollege(res.data.msg);
         setIsLoading(false);
@@ -884,7 +884,7 @@ export function Addproject() {
 
   useEffect(() => {
     axios
-      .get("http://103.118.158.24/api/api /test/difficulty-levels")
+      .get("http://localhost:5000/api/test/difficulty-levels")
       .then((res) => {
         setLevels(res.data);
       })
@@ -906,7 +906,7 @@ export function Addproject() {
 
     setIsLoading(true);
     axios
-      .post(`http://103.118.158.24/api/api /admin/addproject`, {
+      .post(`http://localhost:5000/api/admin/addproject`, {
         pname,
         pdes,
         skill,

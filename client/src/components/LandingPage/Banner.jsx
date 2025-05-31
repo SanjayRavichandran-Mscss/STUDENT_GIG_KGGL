@@ -33,7 +33,7 @@
 
 //   useEffect(() => {
 //     // Fetch total students
-//     fetch('http://103.118.158.24/api/api /stu/count')
+//     fetch('http://localhost:5000/api/stu/count')
 //       .then((response) => response.json())
 //       .then((data) => {
 //         if (data.status === 'success') {
@@ -43,7 +43,7 @@
 //       .catch((error) => console.error('Error fetching students count:', error));
 
 //     // Fetch total and live projects
-//     fetch('http://103.118.158.24/api/api /stu/projects/count')
+//     fetch('http://localhost:5000/api/stu/projects/count')
 //       .then((response) => response.json())
 //       .then((data) => {
 //         if (data.status === 'success') {
@@ -164,7 +164,7 @@ function Landingpage() {
 
   useEffect(() => {
     // Fetch total students
-    fetch('http://103.118.158.24/api/api /stu/count')
+    fetch('http://localhost:5000/api/stu/count')
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success') {
@@ -174,7 +174,7 @@ function Landingpage() {
       .catch((error) => console.error('Error fetching students count:', error));
 
     // Fetch total, live, and completed projects
-    fetch('http://103.118.158.24/api/api /stu/projects/count')
+    fetch('http://localhost:5000/api/stu/projects/count')
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success') {

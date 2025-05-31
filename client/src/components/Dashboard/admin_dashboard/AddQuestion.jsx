@@ -28,8 +28,8 @@ function AddQuestion() {
       try {
         setIsLoading(true);
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get("http://103.118.158.24/api/api /test/skills"),
-          axios.get("http://103.118.158.24/api/api /test/difficulty-levels"),
+          axios.get("http://localhost:5000/api/test/skills"),
+          axios.get("http://localhost:5000/api/test/difficulty-levels"),
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -110,7 +110,7 @@ function AddQuestion() {
         question_status: 1, // Set question_status to 1 (single_question)
       };
 
-      const response = await axios.post("http://103.118.158.24/api/api /test/mcq", questionToSave);
+      const response = await axios.post("http://localhost:5000/api/test/mcq", questionToSave);
 
       Swal.fire({
         title: "Success!",

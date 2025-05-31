@@ -16,7 +16,7 @@
 //     event.preventDefault();
 
 //     try {
-//       const response = await axios.post("http://103.118.158.24/api/api /stu/login", {
+//       const response = await axios.post("http://localhost:5000/api/stu/login", {
 //         email,
 //         password,
 //       });
@@ -159,7 +159,7 @@ export function Login() {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://103.118.158.24/api/api /stu/login", {
+      const response = await axios.post("http://localhost:5000/api/stu/login", {
         email,
         password,
       });
@@ -183,7 +183,7 @@ export function Login() {
         // Fetch technical_status using email
         let technical_status;
         try {
-          const techRes = await axios.get(`http://103.118.158.24/api/api /stu/technical-status/${email}`);
+          const techRes = await axios.get(`http://localhost:5000/api/stu/technical-status/${email}`);
           technical_status = techRes.data.technical_status;
           sessionStorage.setItem("technical_status", technical_status);
           console.log("Technical Status:", technical_status);

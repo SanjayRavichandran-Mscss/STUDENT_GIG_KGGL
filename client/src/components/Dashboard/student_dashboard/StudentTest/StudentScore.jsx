@@ -15,7 +15,7 @@ export default function UserScoreDetails() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://103.118.158.24/api/api /stu/student-test-data/${decoded}`);
+        const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decoded}`);
         // Filter unique test results by test_name
         const uniqueTestResults = [];
         const seenTestNames = new Set();
@@ -31,7 +31,7 @@ export default function UserScoreDetails() {
         });
 
         const testsResponse = await axios.get(
-          `http://103.118.158.24/api/api /test/all-tests/${decoded}`,
+          `http://localhost:5000/api/test/all-tests/${decoded}`,
           { withCredentials: true }
         );
 

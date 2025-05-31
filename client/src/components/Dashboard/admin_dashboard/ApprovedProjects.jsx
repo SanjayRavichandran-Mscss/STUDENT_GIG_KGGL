@@ -28,7 +28,7 @@ function ApprovedProjects() {
       try {
         setIsLoading(true);
         // Fetch approved projects
-        const projectsResponse = await axios.get('http://103.118.158.24/api/api /admin/accepted-bits');
+        const projectsResponse = await axios.get('http://localhost:5000/api/admin/accepted-bits');
         const projects = projectsResponse.data.result.map((project) => ({
           ...project,
           formatted_datetime: formatDate(project.datetime),
@@ -36,12 +36,12 @@ function ApprovedProjects() {
         setApprovedProjects(projects);
 
         // Fetch bit statuses
-        const statusesResponse = await axios.get('http://103.118.158.24/api/api /admin/bit-statuses');
+        const statusesResponse = await axios.get('http://localhost:5000/api/admin/bit-statuses');
         setBitStatuses(statusesResponse.data.result);
 
         // Fetch payment status for each project
         const paymentStatusPromises = projects.map((project) =>
-          axios.get(`http://103.118.158.24/api/api /admin/check-payment/${project.student_id}/${project.project_id}`)
+          axios.get(`http://localhost:5000/api/admin/check-payment/${project.student_id}/${project.project_id}`)
         );
         const paymentStatusResponses = await Promise.allSettled(paymentStatusPromises);
         const paymentStatusMap = {};
@@ -221,7 +221,7 @@ function ApprovedProjects() {
         formData.append('transaction_screenshot', details.transaction_screenshot);
 
         const paymentResponse = await axios.post(
-          'http://103.118.158.24/api/api /admin/save-payment-details',
+          'http://localhost:5000/api/admin/save-payment-details',
           formData,
           {
             headers: {
@@ -249,7 +249,7 @@ function ApprovedProjects() {
           toast.success('Payment details saved successfully');
           try {
             const updatedPayment = await axios.get(
-              `http://103.118.158.24/api/api /admin/check-payment/${studentId}/${projectId}`
+              `http://localhost:5000/api/admin/check-payment/${studentId}/${projectId}`
             );
             setPaymentStatus((prev) => ({
               ...prev,
@@ -275,7 +275,7 @@ function ApprovedProjects() {
 
     if (selectedStatusId && !paymentStatus[bitId]) {
       try {
-        const statusResponse = await axios.post('http://103.118.158.24/api/api /admin/update-bit-status', {
+        const statusResponse = await axios.post('http://localhost:5000/api/admin/update-bit-status', {
           bit_id: bitId,
           student_id: studentId,
           project_id: projectId,

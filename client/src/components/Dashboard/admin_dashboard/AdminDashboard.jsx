@@ -15,6 +15,8 @@
 // import AddBulkQuestions from "./AddBulkQuestions.jsx";
 // import ApprovedProjects from "./ApprovedProjects.jsx";
 // import ViewQuestions from "./ViewQuestions.jsx";
+// import NonTechStudentsData from "./NonTechStudentsData.jsx";
+// import StudentRefer from "./StudentRefer.jsx"; // Added import
 
 // // Main layout container styles
 // const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
@@ -47,7 +49,6 @@
 //   );
 // }
 
-
 // export function Dashstudent() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -56,6 +57,19 @@
 //       </div>
 //       <div className={contentClass}>
 //         <StudentsData />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export function NonTechStudents() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
+//         <NonTechStudentsData />
 //       </div>
 //     </div>
 //   );
@@ -218,9 +232,6 @@
 //   );
 // }
 
-
-
-
 // export function ViewQuestionsComponent() {
 //   return (
 //     <div className={layoutContainerClass}>
@@ -234,7 +245,20 @@
 //   );
 // }
 
-// export  {Dash};
+// export function StudentReferComponent() {
+//   return (
+//     <div className={layoutContainerClass}>
+//       <div className={sidebarClass}>
+//         <AdminMenu />
+//       </div>
+//       <div className={contentClass}>
+//         <StudentRefer />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export { Dash };
 
 
 
@@ -243,7 +267,14 @@
 
 
 
-import React from "react";
+
+
+
+
+
+
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import DoughnutPieChart from "./PieChart.jsx";
 import { AdminMenu } from "./AdminMenu.jsx";
 import StudentsData from "./StudentData.jsx";
@@ -261,14 +292,137 @@ import AddBulkQuestions from "./AddBulkQuestions.jsx";
 import ApprovedProjects from "./ApprovedProjects.jsx";
 import ViewQuestions from "./ViewQuestions.jsx";
 import NonTechStudentsData from "./NonTechStudentsData.jsx";
-import StudentRefer from "./StudentRefer.jsx"; // Added import
+import StudentRefer from "./StudentRefer.jsx";
+import NoAdminAccess from "../superadmin_dashboard/NoAdminAccess.jsx";
 
 // Main layout container styles
 const layoutContainerClass = "flex flex-col md:flex-row min-h-screen bg-gray-50";
-const sidebarClass = "w-full md:w-64 flex-shrink-0"; // Fixed width for sidebar
-const contentClass = "flex-1 overflow-auto p-4 md:p-8"; // Added overflow control
+const sidebarClass = "w-full md:w-64 flex-shrink-0";
+const contentClass = "flex-1 overflow-auto p-4 md:p-8";
+
+// Mapping of components to their menu names (from AdminAccessControl.jsx)
+const componentMenuMap = {
+  Dash: "Dashboard",
+  Dashstudent: "Student Data",
+  NonTechStudents: "Non-Tech Students",
+  Scorearea: "Score Area",
+  Dashproject: "Add Project",
+  DashAllProjects: "All Projects",
+  DashBit: "Bit Confirm",
+  AddQuizzes: "Add Quizzes",
+  AddQuizzesWithAI: "Add Quizzes with AI",
+  AssigningQuizz: "Assign Quiz",
+  TestCreationComponent: "Test Creation",
+  Addskillpage: "Add Skill",
+  AssignTestComponent: "Assign Test",
+  AddBulkQuestionsComponent: "Add Bulk Questions",
+  ApprovedProjectsComponent: "Approved Projects",
+  ViewQuestionsComponent: "View Questions",
+  StudentReferComponent: "Student Referral",
+};
+
+const usePermissions = (adminId, menuName) => {
+  const [hasAccess, setHasAccess] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const spadId = localStorage.getItem("spad_id");
+        const accessToken = localStorage.getItem("accessToken");
+        console.log("Permissions check:", { adminId, spadId, menuName });
+
+        if (!spadId) {
+          throw new Error("Missing spad_id");
+        }
+        if (!adminId) {
+          throw new Error("Missing admin_id");
+        }
+        if (!accessToken) {
+          throw new Error("Missing accessToken");
+        }
+
+        // Safely decode adminId
+        let decodedAdminId;
+        try {
+          if (typeof adminId === "string" && /^[A-Za-z0-9+/=]+$/.test(adminId)) {
+            decodedAdminId = atob(adminId);
+          } else {
+            decodedAdminId = adminId;
+          }
+        } catch (decodeError) {
+          console.error("Failed to decode adminId:", decodeError);
+          throw new Error("Invalid admin_id format");
+        }
+        console.log("Decoded adminId:", decodedAdminId);
+
+        const response = await fetch("http://localhost:5000/api/superadmin/getpermissions", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Permissions API failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Permissions API response:", data);
+
+        if (!data.status || !Array.isArray(data.result)) {
+          throw new Error("Invalid permissions API response");
+        }
+
+        // Find permission for the specific admin_id, spad_id, and menu_name
+        const permission = data.result.find(
+          (perm) =>
+            perm.admin_id === parseInt(decodedAdminId) &&
+            perm.spad_id === parseInt(spadId) &&
+            perm.menu_name === menuName &&
+            perm.is_allow === 1
+        );
+
+        console.log("Permission found:", permission);
+        setHasAccess(!!permission);
+      } catch (err) {
+        console.error("Permission error:", err.message);
+        setError(err.message);
+        setHasAccess(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPermissions();
+  }, [adminId, menuName]);
+
+  return { hasAccess, loading, error };
+};
 
 function Dash() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.Dash);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -295,6 +449,28 @@ function Dash() {
 }
 
 export function Dashstudent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.Dashstudent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -308,6 +484,28 @@ export function Dashstudent() {
 }
 
 export function NonTechStudents() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.NonTechStudents);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -321,6 +519,28 @@ export function NonTechStudents() {
 }
 
 export function Scorearea() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.Scorearea);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -334,6 +554,28 @@ export function Scorearea() {
 }
 
 export function Dashproject() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.Dashproject);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -347,6 +589,28 @@ export function Dashproject() {
 }
 
 export function DashAllProjects() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.DashAllProjects);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -360,6 +624,28 @@ export function DashAllProjects() {
 }
 
 export function DashBit() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.DashBit);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -373,6 +659,28 @@ export function DashBit() {
 }
 
 export function AddQuizzes() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.AddQuizzes);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -386,6 +694,28 @@ export function AddQuizzes() {
 }
 
 export function AddQuizzesWithAI() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.AddQuizzesWithAI);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -399,18 +729,63 @@ export function AddQuizzesWithAI() {
 }
 
 export function AssigningQuizz() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.AssigningQuizz);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
         <AdminMenu />
       </div>
       <div className={contentClass}>
+        <p className="text-gray-600">Assign Quiz functionality to be implemented</p>
       </div>
     </div>
   );
 }
 
 export function TestCreationComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.TestCreationComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -426,6 +801,28 @@ export function TestCreationComponent() {
 }
 
 export function Addskillpage() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.Addskillpage);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -439,6 +836,28 @@ export function Addskillpage() {
 }
 
 export function AssignTestComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.AssignTestComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -452,6 +871,28 @@ export function AssignTestComponent() {
 }
 
 export function AddBulkQuestionsComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.AddBulkQuestionsComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -465,6 +906,28 @@ export function AddBulkQuestionsComponent() {
 }
 
 export function ApprovedProjectsComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.ApprovedProjectsComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -478,6 +941,28 @@ export function ApprovedProjectsComponent() {
 }
 
 export function ViewQuestionsComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.ViewQuestionsComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
@@ -491,13 +976,43 @@ export function ViewQuestionsComponent() {
 }
 
 export function StudentReferComponent() {
+  const { id: adminId } = useParams();
+  const { hasAccess, loading, error } = usePermissions(adminId, componentMenuMap.StudentReferComponent);
+
+  if (loading) {
+    return (
+      <div className={contentClass}>
+        <p className="text-gray-600">Loading permissions...</p>
+      </div>
+    );
+  }
+
+  if (error || !hasAccess) {
+    return (
+      <div className={layoutContainerClass}>
+        <div className={sidebarClass}>
+          <AdminMenu />
+        </div>
+        <NoAdminAccess />
+      </div>
+    );
+  }
+
+  let decodedAdminId;
+  try {
+    decodedAdminId = typeof adminId === "string" && /^[A-Za-z0-9+/=]+$/.test(adminId) ? atob(adminId) : adminId;
+  } catch (decodeError) {
+    console.error("Failed to decode adminId in StudentReferComponent:", decodeError);
+    decodedAdminId = adminId;
+  }
+
   return (
     <div className={layoutContainerClass}>
       <div className={sidebarClass}>
         <AdminMenu />
       </div>
       <div className={contentClass}>
-        <StudentRefer />
+        <StudentRefer decodedAdminId={decodedAdminId} />
       </div>
     </div>
   );

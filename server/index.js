@@ -7,6 +7,7 @@ import  collegeRouter  from "./routes/collegeroute.js";
 import Verification from "./middleware/Verification.js";
 import adminRouter from "./routes/adminroute.js";
 import testRouter from "./routes/testroutes.js";
+import superadminRouter from "./routes/superadminroute.js"
 import path from "path";
 import multer from "multer";
 
@@ -42,6 +43,7 @@ app.use("/api/college", collegeRouter);
 app.use("/api/verify", Verification, studentRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/test", testRouter);
+app.use("/api/superadmin", superadminRouter);
 
 // Default route
 app.get("/", (req, res) => {

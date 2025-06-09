@@ -956,8 +956,6 @@
 
 
 
-
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -1032,12 +1030,9 @@ export default function Profile() {
 
         setAvailableSkills(skillsRes.data.msg || []);
 
-        // Check if resume, github, and linkedin are null to set requirement
+        // Check if resume and linkedin are null to set requirement
         const studentData = imageRes.data.result[0];
         setIsResumeRequired(studentData?.resume_file === null);
-        if (studentData?.github_link === null) {
-          setErrors((prev) => ({ ...prev, github: "GitHub URL is required." }));
-        }
         if (studentData?.linkedin_link === null) {
           setErrors((prev) => ({ ...prev, linkedIn: "LinkedIn URL is required." }));
         }
@@ -1078,6 +1073,11 @@ export default function Profile() {
   const validateInstaUrl = (url) => {
     const instaRegex = /^https?:\/\/(www\.)?(instagram\.com|instagr\.am)\/([A-Za-z0-9_-]+)(\/.*)?$/;
     return instaRegex.test(url);
+  };
+
+  const validateBehanceUrl = (url) => {
+    const behanceRegex = /^https?:\/\/(www\.)?behance\.net\/([A-Za-z0-9_-]+)(\/.*)?$/;
+    return behanceRegex.test(url);
   };
 
   const validateLinkedInUrl = (url) => {
@@ -1159,7 +1159,7 @@ export default function Profile() {
 
     if (!file && isResumeRequired) {
       setErrors((prev) => ({ ...prev, resume: "Resume is required." }));
-      toast.error("Resume is required.", { position: "top-right", autoClose: 3000 });
+      toast  .error("Resume is required.", { position: "top-right", autoClose: 3000 });
       return;
     }
 
@@ -1194,9 +1194,7 @@ export default function Profile() {
     let newErrors = { ...errors };
 
     if (name === "github") {
-      newErrors.github = !value && isResumeRequired
-        ? "GitHub URL is required."
-        : value && !validateGithubUrl(value)
+      newErrors.github = value && !validateGithubUrl(value)
         ? "Please enter a valid GitHub URL."
         : "";
 
@@ -1315,15 +1313,16 @@ export default function Profile() {
       const isValidVercel = validateVercelUrl(value);
       const isValidNetlify = validateNetlifyUrl(value);
       const isValidInsta = validateInstaUrl(value);
+      const isValidBehance = validateBehanceUrl(value);
       newErrors[skillId].url = !value
         ? "Project link is required."
-        : !(isValidGithub || isValidVercel || isValidNetlify || isValidInsta)
-        ? "Please enter a valid GitHub, Vercel, Netlify, or Instagram URL."
+        : !(isValidGithub || isValidVercel || isValidNetlify || isValidInsta || isValidBehance)
+        ? "Please enter a valid GitHub, Vercel, Netlify, Instagram, or Behance URL."
         : fileData.github === value
         ? "Project URL cannot be the same as GitHub profile URL."
         : "";
 
-      if ((isValidGithub || isValidVercel || isValidNetlify || isValidInsta) && value) {
+      if ((isValidGithub || isValidVercel || isValidNetlify || isValidInsta || isValidBehance) && value) {
         const otherSkills = selectedSkills.filter((id) => id !== skillId);
         const isDuplicate = otherSkills.some(
           (otherId) => skillDetails[otherId]?.skillUrl === value
@@ -1364,7 +1363,7 @@ export default function Profile() {
 
     // Validate all fields
     const newErrors = {
-      github: !fileData.github && isResumeRequired ? "GitHub URL is required." : fileData.github && !validateGithubUrl(fileData.github) ? "Please enter a valid GitHub URL." : "",
+      github: fileData.github && !validateGithubUrl(fileData.github) ? "Please enter a valid GitHub URL." : "",
       linkedIn: !fileData.linkedIn && isResumeRequired ? "LinkedIn URL is required." : fileData.linkedIn && !validateLinkedInUrl(fileData.linkedIn) ? "Please enter a valid LinkedIn URL." : "",
       resume: isResumeRequired && !fileData.selectedFile ? "Resume is required." : "",
       general: selectedSkills.length === 0 ? "At least one skill is required." : "",
@@ -1403,9 +1402,10 @@ export default function Profile() {
         !validateGithubUrl(details.skillUrl) &&
         !validateVercelUrl(details.skillUrl) &&
         !validateNetlifyUrl(details.skillUrl) &&
-        !validateInstaUrl(details.skillUrl)
+        !validateInstaUrl(details.skillUrl) &&
+        !validateBehanceUrl(details.skillUrl)
       ) {
-        skillErrors.url = "Please enter a valid GitHub, Vercel, Netlify, or Instagram URL.";
+        skillErrors.url = "Please enter a valid GitHub, Vercel, Netlify, Instagram, or Behance URL.";
       } else if (fileData.github === details.skillUrl) {
         skillErrors.url = "Project URL cannot be the same as GitHub profile URL.";
       } else {
@@ -1572,8 +1572,8 @@ export default function Profile() {
       <style>
         {`
           @keyframes borderBlink {
-            0% { border-color: red; } /* Violet-500 */
-            50% { border-color: pink; } /* Blue-500 */
+            0% { border-color: red; }
+            50% { border-color: pink; }
             100% { border-color: red; }
           }
           .blink-border {
@@ -1604,7 +1604,7 @@ export default function Profile() {
             <div className="p-2 sm:p-4">
               {profile.image ? (
                 <img 
-                  src={`http://localhost:5000/resumes/${profile.image}`} 
+                  src={`http://localhost:5000/resumes/${profile.imagebonanza}profile.image}`} 
                   alt="Profile" 
                   className="w-full max-w-[80vw] sm:max-w-[500px] h-auto max-h-[80vh] rounded-lg border-4 border-white shadow-lg object-contain"
                 />
@@ -1756,7 +1756,7 @@ export default function Profile() {
                               name="skillUrl"
                               value={skillDetails[skillId]?.skillUrl || ""}
                               onChange={(e) => handleSkillDetailChange(skillId, e)}
-                              placeholder="Paste GitHub, Vercel, Netlify, or Instagram URL"
+                              placeholder="Paste GitHub, Vercel, Netlify, Instagram, or Behance URL"
                               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               required
                             />
@@ -1805,7 +1805,7 @@ export default function Profile() {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Social Links</h3>
               <div>
                 <label htmlFor="github" className="block text-sm font-medium text-gray-700 mb-1">
-                  Paste GitHub Profile URL {isResumeRequired && <span className="text-red-500">*</span>}
+                  Paste GitHub Profile URL
                 </label>
                 <input
                   id="github"
@@ -1815,7 +1815,6 @@ export default function Profile() {
                   onChange={handleInputChange}
                   placeholder="https://github.com/username"
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required={isResumeRequired}
                 />
                 {errors.github && (
                   <p className="mt-1 text-sm text-red-600">{errors.github}</p>

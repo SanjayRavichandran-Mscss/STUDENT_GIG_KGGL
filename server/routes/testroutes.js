@@ -56,4 +56,8 @@ testRouter.get("/test-time/:attempt_id", testcontroller.getTestTime);
 testRouter.post("/toggle-test-status-skill-based", testcontroller.toggleTestStatusForSkillBased);
 
 testRouter.get("/active-tests/:student_id", testcontroller.getActiveTestsWithQuestions);
+
+
+testRouter.post("/save-performance", testcontroller.saveStudentPerformance);
+
 export default testRouter;

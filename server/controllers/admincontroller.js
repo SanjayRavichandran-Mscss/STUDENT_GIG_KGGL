@@ -137,12 +137,47 @@ const filterStudentSkills = async (req, res) => {
 };
 
 
+// const addProjects = async (req, res) => {
+//   const { pname, pdes, skill, date, level_id, number_of_students, created_by } = req.body;
+
+//   try {
+//     // Validate required fields
+//     if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !created_by) {
+//       return res.status(400).json({ msg: "All fields are required" });
+//     }
+
+//     // Validate number_of_students is a positive integer
+//     if (!Number.isInteger(Number(number_of_students)) || number_of_students <= 0) {
+//       return res.status(400).json({ msg: "Number of students must be a positive integer" });
+//     }
+
+//     // Validate created_by is a positive integer
+//     if (!Number.isInteger(Number(created_by)) || created_by <= 0) {
+//       return res.status(400).json({ msg: "Created by must be a positive integer" });
+//     }
+
+//     const sql =
+//       "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+//     db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, created_by], (err, result) => {
+//       if (err) {
+//         console.error("Database error:", err);
+//         return res.status(500).json({ msg: "db_error" });
+//       }
+//       res.json({ msg: "added" });
+//     });
+//   } catch (e) {
+//     console.error("Server error:", e);
+//     res.status(500).json({ msg: "server_error" });
+//   }
+// };
+
 const addProjects = async (req, res) => {
-  const { pname, pdes, skill, date, level_id, number_of_students, created_by } = req.body;
+  const { pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by } = req.body;
 
   try {
     // Validate required fields
-    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !created_by) {
+    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !total_amount || !created_by) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
@@ -151,15 +186,20 @@ const addProjects = async (req, res) => {
       return res.status(400).json({ msg: "Number of students must be a positive integer" });
     }
 
+    // Validate total_amount is a positive number
+    if (isNaN(Number(total_amount)) || Number(total_amount) <= 0) {
+      return res.status(400).json({ msg: "Total amount must be a positive number" });
+    }
+
     // Validate created_by is a positive integer
     if (!Number.isInteger(Number(created_by)) || created_by <= 0) {
       return res.status(400).json({ msg: "Created by must be a positive integer" });
     }
 
     const sql =
-      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, total_amount, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, created_by], (err, result) => {
+    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by], (err, result) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ msg: "db_error" });
@@ -171,6 +211,8 @@ const addProjects = async (req, res) => {
     res.status(500).json({ msg: "server_error" });
   }
 };
+
+
 
 const skillBasedProjects = async (req, res) => {
   const { id } = req.params;
@@ -222,6 +264,7 @@ const getAllProjects = async (req, res) => {
       p.level_id,
       d.level_name,
       p.number_of_students,
+      p.total_amount,
       p.created_at,
       p.created_by,
       p.expiry_date,
@@ -1521,6 +1564,521 @@ const ReferralMail = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Fetch all expense types and sub-types for the dropdown
+const getExpenseTypes = async (req, res) => {
+  try {
+    const sql = `
+      SELECT id, type, subtype
+      FROM expense_type
+      ORDER BY type, subtype
+    `;
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      res.json({ status: true, result });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
+// Save a payable ledger entry
+const savePayableLedger = (req, res) => {
+  try {
+    const {
+      expense_type_id,
+      project_id,
+      client_name,
+      team_size,
+      student_details,
+      petty_cash,
+      pettycash_description,
+      created_by,
+    } = req.body;
+
+    // Parse student_details if it's a string (from FormData)
+    let parsedStudentDetails;
+    try {
+      parsedStudentDetails = typeof student_details === "string" ? JSON.parse(student_details) : student_details;
+    } catch (e) {
+      return res.status(400).json({ status: false, msg: "Invalid student_details format" });
+    }
+
+    // Validate required fields
+    if (
+      !expense_type_id ||
+      !project_id ||
+      !client_name ||
+      !team_size ||
+      !parsedStudentDetails ||
+      !petty_cash ||
+      !created_by
+    ) {
+      return res.status(400).json({ status: false, msg: "All fields are required" });
+    }
+
+    // Validate expense_type_id exists
+    db.query(
+      "SELECT id FROM expense_type WHERE id = ?",
+      [expense_type_id],
+      (err, expenseResult) => {
+        if (err) {
+          console.error("Database error (expense type check):", err);
+          return res.status(500).json({ status: false, msg: "Server error" });
+        }
+        if (!expenseResult || expenseResult.length === 0) {
+          return res.status(400).json({ status: false, msg: "Invalid expense_type_id" });
+        }
+
+        // Validate project_id exists
+        db.query(
+          "SELECT project_id FROM projects WHERE project_id = ?",
+          [project_id],
+          (err, projectResult) => {
+            if (err) {
+              console.error("Database error (project check):", err);
+              return res.status(500).json({ status: false, msg: "Server error" });
+            }
+            if (!projectResult || projectResult.length === 0) {
+              return res.status(400).json({ status: false, msg: "Invalid project_id" });
+            }
+
+            // Validate created_by exists (assuming created_by is a student_id from students table)
+            db.query(
+              "SELECT student_id FROM students WHERE student_id = ?",
+              [created_by],
+              (err, userResult) => {
+                if (err) {
+                  console.error("Database error (user check):", err);
+                  return res.status(500).json({ status: false, msg: "Server error" });
+                }
+                if (!userResult || userResult.length === 0) {
+                  return res.status(400).json({ status: false, msg: "Invalid created_by" });
+                }
+
+                // Process student details to include transaction screenshots
+                const updatedStudentDetails = parsedStudentDetails.map((student, index) => {
+                  const screenshotField = req.files[`student_details[${index}][transaction_screenshot]`];
+                  return {
+                    ...student,
+                    transaction_screenshot: screenshotField
+                      ? `transaction_screenshots/${screenshotField[0].filename}`
+                      : null,
+                  };
+                });
+
+                // Insert into payableledger
+                const query = `
+                  INSERT INTO payableledger (
+                    expense_type_id,
+                    project_id,
+                    client_name,
+                    team_size,
+                    student_details,
+                    petty_cash,
+                    pettycash_description,
+                    created_by
+                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                const values = [
+                  expense_type_id,
+                  project_id,
+                  client_name,
+                  team_size,
+                  JSON.stringify(updatedStudentDetails),
+                  petty_cash,
+                  pettycash_description || null,
+                  created_by,
+                ];
+
+                db.query(query, values, (err, result) => {
+                  if (err) {
+                    console.error("Database error (insert):", err);
+                    if (
+                      err.code === "ER_NO_REFERENCED_ROW_2" ||
+                      err.code === "ER_ROW_IS_REFERENCED_2"
+                    ) {
+                      return res.status(400).json({
+                        status: false,
+                        msg: "Foreign key constraint failed",
+                      });
+                    }
+                    return res.status(500).json({ status: false, msg: "Server error" });
+                  }
+
+                  if (result && result.affectedRows > 0) {
+                    return res.json({
+                      status: true,
+                      msg: "Payable ledger entry saved successfully",
+                    });
+                  } else {
+                    return res.status(500).json({
+                      status: false,
+                      msg: "Failed to save payable ledger entry",
+                    });
+                  }
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.error("Error saving payable ledger:", err);
+    return res.status(500).json({ status: false, msg: "Server error" });
+  }
+};
+
+// Fetch payable ledger history
+const getPayableLedgerHistory = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        pl.id,
+        et.type AS expense_type,
+        et.subtype AS expense_subtype,
+        p.project_name,
+        pl.client_name,
+        pl.team_size,
+        pl.student_details,
+        pl.petty_cash,
+        pl.pettycash_description,
+        pl.created_at,
+        s.name AS created_by_name
+      FROM payableledger pl
+      JOIN expense_type et ON pl.expense_type_id = et.id
+      JOIN projects p ON pl.project_id = p.project_id
+      JOIN students s ON pl.created_by = s.student_id
+      ORDER BY pl.created_at DESC
+    `;
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      res.json({ status: true, result });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
+// Save a receivable ledger entry
+const saveReceivableLedger = (req, res) => {
+  try {
+    const {
+      project_id,
+      client_name,
+      paid_amount,
+      from_upi_id,
+      to_upi_id,
+      transaction_id,
+      date_time,
+      created_by,
+    } = req.body;
+    const transaction_screenshot = req.file
+      ? `transaction_screenshots/${req.file.filename}`
+      : null;
+
+    // Validate required fields
+    if (
+      !project_id ||
+      !client_name ||
+      !paid_amount ||
+      !from_upi_id ||
+      !to_upi_id ||
+      !transaction_id ||
+      !date_time ||
+      !created_by ||
+      !transaction_screenshot
+    ) {
+      return res.status(400).json({ status: false, msg: "All fields are required" });
+    }
+
+    // Validate project_id exists
+    db.query(
+      "SELECT project_id FROM projects WHERE project_id = ?",
+      [project_id],
+      (err, projectResult) => {
+        if (err) {
+          console.error("Database error (project check):", err);
+          return res.status(500).json({ status: false, msg: "Server error" });
+        }
+        if (!projectResult || projectResult.length === 0) {
+          return res.status(400).json({ status: false, msg: "Invalid project_id" });
+        }
+
+        // Validate created_by exists
+        db.query(
+          "SELECT student_id FROM students WHERE student_id = ?",
+          [created_by],
+          (err, userResult) => {
+            if (err) {
+              console.error("Database error (user check):", err);
+              return res.status(500).json({ status: false, msg: "Server error" });
+            }
+            if (!userResult || userResult.length === 0) {
+              return res.status(400).json({ status: false, msg: "Invalid created_by" });
+            }
+
+            // Insert into receivableledger
+            const query = `
+              INSERT INTO receivableledger (
+                project_id,
+                client_name,
+                paid_amount,
+                from_upi_id,
+                to_upi_id,
+                transaction_id,
+                date_time,
+                transaction_screenshot,
+                created_by
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const values = [
+              project_id,
+              client_name,
+              paid_amount,
+              from_upi_id,
+              to_upi_id,
+              transaction_id,
+              date_time,
+              transaction_screenshot,
+              created_by,
+            ];
+
+            db.query(query, values, (err, result) => {
+              if (err) {
+                console.error("Database error (insert):", err);
+                if (
+                  err.code === "ER_NO_REFERENCED_ROW_2" ||
+                  err.code === "ER_ROW_IS_REFERENCED_2"
+                ) {
+                  return res.status(400).json({
+                    status: false,
+                    msg: "Foreign key constraint failed",
+                  });
+                }
+                return res.status(500).json({ status: false, msg: "Server error" });
+              }
+
+              if (result && result.affectedRows > 0) {
+                return res.json({
+                  status: true,
+                  msg: "Receivable ledger entry saved successfully",
+                });
+              } else {
+                return res.status(500).json({
+                  status: false,
+                  msg: "Failed to save receivable ledger entry",
+                });
+              }
+            });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.error("Error saving receivable ledger:", err);
+    return res.status(500).json({ status: false, msg: "Server error" });
+  }
+};
+
+// Fetch receivable ledger history
+const getReceivableLedgerHistory = async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        rl.id,
+        
+        p.project_name,
+        rl.client_name,
+        rl.paid_amount,
+        rl.from_upi_id,
+        rl.to_upi_id,
+        rl.transaction_id,
+        rl.date_time,
+        rl.transaction_screenshot,
+        rl.created_at,
+        s.name AS created_by_name
+      FROM receivableledger rl
+      JOIN projects p ON rl.project_id = p.project_id
+      JOIN students s ON rl.created_by = s.student_id
+      ORDER BY rl.created_at DESC
+    `;
+    db.query(sql, (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+      res.json({ status: true, result });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
+
+
+// Save payment verification
+const savePaymentVerification = (req, res) => {
+  const { student_id, project_id, amount, date_time, from_upi_id, to_upi_id, transaction_id } = req.body;
+  const transaction_screenshot = req.file ? `transaction_screenshots/${req.file.filename}` : null;
+
+  try {
+    // Validate required fields
+    if (!student_id || !project_id || !amount || !date_time || !from_upi_id || !to_upi_id || !transaction_id) {
+      return res.status(400).json({ status: false, msg: 'All fields are required' });
+    }
+
+    // Validate numeric fields
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ status: false, msg: 'Amount must be a positive number' });
+    }
+
+    // Validate date_time
+    const parsedDateTime = new Date(date_time);
+    if (isNaN(parsedDateTime.getTime())) {
+      return res.status(400).json({ status: false, msg: 'Invalid date and time format' });
+    }
+
+    // Check if payment already exists
+    db.query(
+      'SELECT id FROM studentpaymentverification WHERE student_id = ? AND project_id = ?',
+      [student_id, project_id],
+      (err, existing) => {
+        if (err) {
+          console.error('Database error (check existing):', err);
+          return res.status(500).json({ status: false, msg: 'Server error' });
+        }
+        if (existing.length > 0) {
+          return res.status(400).json({ status: false, msg: 'Payment verification already submitted for this project' });
+        }
+
+        // Insert payment verification
+        db.query(
+          `INSERT INTO studentpaymentverification 
+            (student_id, project_id, amount, date_time, from_upi_id, to_upi_id, transaction_id, transaction_screenshot)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [student_id, project_id, parsedAmount, parsedDateTime, from_upi_id, to_upi_id, transaction_id, transaction_screenshot],
+          (err, result) => {
+            if (err) {
+              console.error('Database error (insert):', err);
+              return res.status(500).json({ status: false, msg: `Server error: ${err.message}` });
+            }
+            if (result.affectedRows > 0) {
+              return res.status(200).json({ status: true, msg: 'Payment verification submitted successfully' });
+            } else {
+              return res.status(500).json({ status: false, msg: 'Failed to save payment verification' });
+            }
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error('Error saving payment verification:', error);
+    return res.status(500).json({ status: false, msg: `Server error: ${error.message}` });
+  }
+};
+
+// Get payment verification
+const getPaymentVerification = (req, res) => {
+  const { student_id, project_id } = req.params;
+
+  try {
+    // Validate parameters
+    const parsedStudentId = parseInt(student_id);
+    const parsedProjectId = parseInt(project_id);
+
+    if (isNaN(parsedStudentId) || isNaN(parsedProjectId)) {
+      return res.status(400).json({ status: false, msg: 'Invalid student_id or project_id' });
+    }
+
+    // Execute query
+    db.query(
+      `SELECT id, amount, date_time, from_upi_id, to_upi_id, transaction_id, transaction_screenshot
+       FROM studentpaymentverification 
+       WHERE student_id = ? AND project_id = ?`,
+      [parsedStudentId, parsedProjectId],
+      (err, rows) => {
+        if (err) {
+          console.error('Error fetching payment verification:', err);
+          return res.status(500).json({ status: false, msg: `Server error: ${err.message}` });
+        }
+        if (rows.length > 0) {
+          const paymentData = {
+            ...rows[0],
+            date_time: new Date(rows[0].date_time).toISOString(),
+            transaction_screenshot: rows[0].transaction_screenshot || null,
+          };
+          return res.status(200).json({ status: true, data: paymentData });
+        } else {
+          return res.status(404).json({ status: false, msg: 'No payment verification found' });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error fetching payment verification:', error);
+    return res.status(500).json({ status: false, msg: `Server error: ${error.message}` });
+  }
+};
+
+
 export {
   studentDetails,
   studentsCount,
@@ -1550,6 +2108,15 @@ export {
   NonTechStudentDetails,
   InterviewScheduleMail,
   ReferralMail,
-  getAllProjectsForStudentRequired
+  getAllProjectsForStudentRequired,
+
+
+  getExpenseTypes,
+  savePayableLedger,
+  getPayableLedgerHistory,
+  saveReceivableLedger,
+  getReceivableLedgerHistory,
+    savePaymentVerification,
+  getPaymentVerification,
 
 };

@@ -1,172 +1,87 @@
-// import axios from "axios";
-// import React, { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
-// import { FaBell } from "react-icons/fa";
-
-// function Projects() {
-//   const [notificationCount, setNotificationCount] = useState({});
-//   const [projects, setProjects] = useState([]);
-
-//   useEffect(() => {
-//     // Fetch all projects
-//     axios.get("http://localhost:5000/api/admin/getallprojects").then((res) => {
-//       setProjects(
-//         res.data.map((project) => ({
-//           ...project,
-//           formatted_expiry_date: formatExpiryDate(project.expiry_date),
-//           formatted_created_at: formatExpiryDate(project.created_at),
-//         }))
-//       );
-//     });
-
-//     // Fetch pending bid counts (only bids with bit_status_id IS NULL)
-//     axios.get("http://localhost:5000/api/admin/getbit").then((res) => {
-//       const countMap = {};
-//       res.data.forEach((item) => {
-//         countMap[item.project_id] = item.count;
-//       });
-//       setNotificationCount(countMap);
-//     }).catch((err) => {
-//       console.error("Error fetching pending bid counts:", err);
-//     });
-//   }, []);
-
-//   const formatExpiryDate = (expiryDate) => {
-//     let date = new Date(expiryDate);
-//     let hours = date.getHours();
-//     let minutes = date.getMinutes();
-//     let ampm = hours >= 12 ? "PM" : "AM";
-//     hours = hours % 12;
-//     hours = hours ? hours : 12;
-//     minutes = minutes < 10 ? "0" + minutes : minutes;
-//     let formattedTime = hours + ":" + minutes + " " + ampm;
-//     let options = { year: "numeric", month: "long", day: "numeric" };
-//     let formattedDate = date.toLocaleDateString("en-US", options);
-//     return formattedDate + " " + formattedTime;
-//   };
-
-//   return (
-//     <div className="p-4">
-//       <h1 className="text-2xl font-semibold text-gray-600 mb-4">Projects</h1>
-//       {projects.map((val) => (
-//         <div
-//           key={val.project_id}
-//           className="bg-white shadow-md rounded-lg p-6 mb-4"
-//         >
-//           <div className="flex justify-between items-center">
-//             <h2 className="text-xl font-semibold text-gray-800">
-//               {val.project_name}
-//             </h2>
-//             <Link
-//               to={`/bitconfirm/${btoa(val.project_id)}`}
-//               className="text-gray-800"
-//             >
-//               <div className="relative">
-//                 <FaBell size={24} />
-//                 {notificationCount[val.project_id] > 0 && (
-//                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-//                     {notificationCount[val.project_id]}
-//                   </span>
-//                 )}
-//               </div>
-//             </Link>
-//           </div>
-//           <p className="text-gray-600">Description: {val.description}</p>
-//           <p className="text-gray-600">Created at: {val.formatted_created_at}</p>
-//           <p className="text-gray-600">Expiry Date: {val.formatted_expiry_date}</p>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-// export default Projects;
-
-
-
-
-
-
-
-
-
-
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { FaBell } from "react-icons/fa";
+import { Link, useParams } from "react-router-dom";
+import { FaBell, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { Maximize2, X } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function Projects() {
+  const { id: encodedAdminId } = useParams();
   const [notificationCount, setNotificationCount] = useState({});
   const [projects, setProjects] = useState([]);
   const [expiredProjects, setExpiredProjects] = useState([]);
   const [newExpiryDates, setNewExpiryDates] = useState({});
+  const [expandedCards, setExpandedCards] = useState({});
+  const [modalDescription, setModalDescription] = useState(null);
 
   useEffect(() => {
-    // Fetch all projects
-    axios.get("http://localhost:5000/api/admin/getallprojects").then((res) => {
-      setProjects(
-        res.data.map((project) => ({
-          ...project,
-          formatted_expiry_date: formatExpiryDate(project.expiry_date),
-          formatted_created_at: formatExpiryDate(project.created_at),
-        }))
-      );
-    }).catch((err) => {
-      console.error("Error fetching all projects:", err);
-      toast.error("Failed to fetch projects", {
+    if (!encodedAdminId) {
+      toast.error("Admin ID is missing. Please log in again.", {
         position: "top-right",
         autoClose: 3000,
       });
-    });
+      return;
+    }
 
-    // Fetch expired projects
-    axios.get("http://localhost:5000/api/admin/getexpiredprojects").then((res) => {
-      setExpiredProjects(
-        res.data.map((project) => project.project_id)
-      );
-    }).catch((err) => {
-      console.error("Error fetching expired projects:", err);
-      toast.error("Failed to fetch expired projects", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    });
+    const fetchData = async () => {
+      try {
+        const [projectsRes, expiredRes, bitsRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/admin/getallprojects"),
+          axios.get("http://localhost:5000/api/admin/getexpiredprojects"),
+          axios.get("http://localhost:5000/api/admin/getbit")
+        ]);
 
-    // Fetch pending bid counts
-    axios.get("http://localhost:5000/api/admin/getbit").then((res) => {
-      const countMap = {};
-      res.data.forEach((item) => {
-        countMap[item.project_id] = item.count;
-      });
-      setNotificationCount(countMap);
-    }).catch((err) => {
-      console.error("Error fetching pending bid counts:", err);
-      toast.error("Failed to fetch pending bid counts", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    });
-  }, []);
+        const sortedProjects = projectsRes.data
+          .map(project => ({
+            ...project,
+            formatted_expiry_date: formatExpiryDate(project.expiry_date),
+            formatted_created_at: formatExpiryDate(project.created_at),
+            short_description: getShortDescription(project.description)
+          }))
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        setProjects(sortedProjects);
+        setExpiredProjects(expiredRes.data.map(project => project.project_id));
+
+        const countMap = {};
+        bitsRes.data.forEach(item => {
+          countMap[item.project_id] = item.count;
+        });
+        setNotificationCount(countMap);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        toast.error("Failed to load project data", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    };
+
+    fetchData();
+  }, [encodedAdminId]);
 
   const formatExpiryDate = (expiryDate) => {
-    let date = new Date(expiryDate);
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    let ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    let formattedTime = hours + ":" + minutes + " " + ampm;
-    let options = { year: "numeric", month: "long", day: "numeric" };
-    let formattedDate = date.toLocaleDateString("en-US", options);
-    return formattedDate + " " + formattedTime;
+    const date = new Date(expiryDate);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const getShortDescription = (description) => {
+    if (!description) return "";
+    const lines = description.split('\n');
+    if (lines[0].length <= 100) return lines[0];
+    return lines[0].substring(0, 100) + '...';
   };
 
   const handleExpiryDateChange = (projectId, value) => {
-    setNewExpiryDates((prev) => ({
+    setNewExpiryDates(prev => ({
       ...prev,
       [projectId]: value,
     }));
@@ -183,44 +98,58 @@ function Projects() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/admin/updateprojectexpiry", {
-        project_id: projectId,
-        new_expiry_date: newExpiryDate,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/admin/updateprojectexpiry",
+        {
+          project_id: projectId,
+          new_expiry_date: newExpiryDate,
+        }
+      );
+      
       toast.success(response.data.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      // Refresh projects and expired projects
-      const [allProjectsRes, expiredProjectsRes] = await Promise.all([
+      
+      const [projectsRes, expiredRes] = await Promise.all([
         axios.get("http://localhost:5000/api/admin/getallprojects"),
         axios.get("http://localhost:5000/api/admin/getexpiredprojects"),
       ]);
-      setProjects(
-        allProjectsRes.data.map((project) => ({
-          ...project,
-          formatted_expiry_date: formatExpiryDate(project.expiry_date),
-          formatted_created_at: formatExpiryDate(project.created_at),
-        }))
-      );
-      setExpiredProjects(
-        expiredProjectsRes.data.map((project) => project.project_id)
-      );
-      // Clear the input field
-      setNewExpiryDates((prev) => ({
-        ...prev,
-        [projectId]: "",
+
+      const updatedProjects = projectsRes.data.map(project => ({
+        ...project,
+        formatted_expiry_date: formatExpiryDate(project.expiry_date),
+        formatted_created_at: formatExpiryDate(project.created_at),
+        short_description: getShortDescription(project.description)
       }));
+
+      setProjects(updatedProjects);
+      setExpiredProjects(expiredRes.data.map(project => project.project_id));
+      setNewExpiryDates(prev => ({ ...prev, [projectId]: "" }));
     } catch (err) {
       console.error("Error updating expiry date:", err);
-      toast.error(err.response?.data || "Failed to update expiry date", {
+      toast.error(err.response?.data?.message || "Failed to update expiry date", {
         position: "top-right",
         autoClose: 3000,
       });
     }
   };
 
-  // Get today's date in YYYY-MM-DDTHH:MM format for min attribute
+  const toggleCardExpansion = (projectId) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId],
+    }));
+  };
+
+  const openDescriptionModal = (description) => {
+    setModalDescription(description);
+  };
+
+  const closeDescriptionModal = () => {
+    setModalDescription(null);
+  };
+
   const getMinDateTime = () => {
     const today = new Date();
     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
@@ -228,65 +157,209 @@ function Projects() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold text-gray-600 mb-4">Projects</h1>
-      {projects.map((val) => (
-        <div
-          key={val.project_id}
-          className="bg-white shadow-md rounded-lg p-6 mb-4"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {val.project_name}
-            </h2>
-            <Link
-              to={`/bitconfirm/${btoa(val.project_id)}`}
-              className="text-gray-800"
-            >
-              <div className="relative">
-                <FaBell size={24} />
-                {notificationCount[val.project_id] > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                    {notificationCount[val.project_id]}
-                  </span>
-                )}
-              </div>
-            </Link>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Projects</h1>
+            <p className="text-gray-600">Manage and monitor all projects</p>
           </div>
-          <p className="text-gray-600">Description: {val.description}</p>
-          <p className="text-gray-600">Created at: {val.formatted_created_at}</p>
-          <p className="text-gray-600">
-            Expiry Date: {val.formatted_expiry_date}
-            {expiredProjects.includes(val.project_id) && (
-              <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                Expired
-              </span>
-            )}
-          </p>
-          {expiredProjects.includes(val.project_id) && (
-            <div className="mt-4">
-              <label htmlFor={`extend-${val.project_id}`} className="text-gray-600">
-                Extend Expiry Date:
-              </label>
-              <input
-                type="datetime-local"
-                id={`extend-${val.project_id}`}
-                className="ml-2 border border-gray-300 rounded p-1"
-                value={newExpiryDates[val.project_id] || ""}
-                onChange={(e) => handleExpiryDateChange(val.project_id, e.target.value)}
-                min={getMinDateTime()}
-              />
-              <button
-                onClick={() => handleUpdateExpiry(val.project_id)}
-                className="ml-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-              >
-                Update
-              </button>
-            </div>
-          )}
         </div>
-      ))}
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map(project => (
+            <div
+              key={project.project_id}
+              className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200 ${
+                expiredProjects.includes(project.project_id) 
+                  ? "border-l-4 border-red-500" 
+                  : "border-l-4 border-green-500"
+              }`}
+            >
+              <div className="p-5 border-b border-gray-100 flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">
+                    {project.project_name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Created: {project.formatted_created_at}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/bitconfirm/${encodedAdminId}/${btoa(project.project_id)}`}
+                    className="relative"
+                  >
+                    <div className="p-2 bg-blue-50 rounded-full text-blue-600 hover:bg-blue-100 transition-colors">
+                      <FaBell className="text-lg" />
+                      {notificationCount[project.project_id] > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                          {notificationCount[project.project_id]}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                  
+                  <button
+                    onClick={() => toggleCardExpansion(project.project_id)}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-full transition-colors"
+                  >
+                    {expandedCards[project.project_id] ? (
+                      <FaChevronUp className="text-lg" />
+                    ) : (
+                      <FaChevronDown className="text-lg" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-5">
+                <div className="mb-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-gray-600 flex-grow">
+                      {project.short_description}
+                    </p>
+                    <button
+                      onClick={() => openDescriptionModal(project.description)}
+                      className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                      aria-label="View full description"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-sm font-medium text-gray-700">Skill:</span>
+                    <span className="text-sm text-gray-600">{project.skill_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm font-medium text-gray-700">Level:</span>
+                    <span className="text-sm text-gray-600">{project.level_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm font-medium text-gray-700">Students:</span>
+                    <span className="text-sm text-gray-600">{project.number_of_students}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Expires:</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${
+                        expiredProjects.includes(project.project_id)
+                          ? "text-red-600 font-medium"
+                          : "text-gray-600"
+                      }`}>
+                        {project.formatted_expiry_date}
+                      </span>
+                      {expiredProjects.includes(project.project_id) && (
+                        <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">
+                          Expired
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {expandedCards[project.project_id] && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Created By:</span>
+                        <span className="text-sm text-gray-600">{project.created_by_name}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Email:</span>
+                        <span className="text-sm text-gray-600 break-all">{project.email || "N/A"}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Mobile:</span>
+                        <span className="text-sm text-gray-600">{project.mobile_number || "N/A"}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Bids:</span>
+                        <span className="text-sm text-gray-600">{project.bit_count}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {expiredProjects.includes(project.project_id) && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Extend expiry date:
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          className="flex-grow text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          value={newExpiryDates[project.project_id] || ""}
+                          onChange={(e) => handleExpiryDateChange(project.project_id, e.target.value)}
+                          min={getMinDateTime()}
+                        />
+                        <button
+                          onClick={() => handleUpdateExpiry(project.project_id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Extend
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Description Modal */}
+        {modalDescription && (
+          <div
+            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={closeDescriptionModal}
+          >
+            <div
+              className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Project Description
+                </h3>
+                <button
+                  onClick={closeDescriptionModal}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="p-6">
+                <div className="prose max-w-none text-gray-700 whitespace-pre-line">
+                  {modalDescription}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </div>
     </div>
   );
 }

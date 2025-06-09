@@ -436,6 +436,7 @@ export default function StudentMenu() {
                     View Score
                   </Link>
                 </li>
+
               </>
             ) : (
               <li>

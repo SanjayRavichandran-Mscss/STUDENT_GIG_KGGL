@@ -1114,7 +1114,7 @@ const getAssignedStudents = async (req, res) => {
 };
 
 
-
+// old code working good without validation
 // const getAllTestsWithQuestions = async (req, res) => {
 //   try {
 //     const { student_id } = req.params;
@@ -1170,13 +1170,13 @@ const getAssignedStudents = async (req, res) => {
 //       new Promise((resolve, reject) => {
 //         db.query(sqlAssignedTests, [student_id], (err, results) => {
 //           if (err) reject(err);
-//           else resolve(results);
+//           else resolve(results || []);
 //         });
 //       }),
 //       new Promise((resolve, reject) => {
 //         db.query(sqlSkillTests, [student_id], (err, results) => {
 //           if (err) reject(err);
-//           else resolve(results);
+//           else resolve(results || []);
 //         });
 //       }),
 //     ]);
@@ -1204,11 +1204,11 @@ const getAssignedStudents = async (req, res) => {
 //         params.push(...validExcludeIds);
 //       }
 //       sql += ` ORDER BY RAND() LIMIT ?`;
-//       params.push(count);
+//       params.push(count * 2); // Fetch double the number of questions
 //       return new Promise((resolve, reject) => {
 //         db.query(sql, params, (err, rows) => {
 //           if (err) reject(err);
-//           else resolve(rows);
+//           else resolve(rows || []); // Ensure empty array if no rows
 //         });
 //       });
 //     };
@@ -1222,9 +1222,9 @@ const getAssignedStudents = async (req, res) => {
 //         test_id,
 //         test_name,
 //       } = test;
+//       const primaryQuestions = { easy: [], medium: [], hard: [] };
+//       let usedQuestionIds = [];
 //       try {
-//         const primaryQuestions = { easy: [], medium: [], hard: [] };
-//         let usedQuestionIds = [];
 //         if (difficulty_level_id >= 1 && easy_level_question > 0) {
 //           const easyQuestions = await fetchQuestionsForLevel(
 //             1,
@@ -1232,16 +1232,14 @@ const getAssignedStudents = async (req, res) => {
 //             skill_id,
 //             usedQuestionIds
 //           );
-//           if (easyQuestions.length < easy_level_question) {
+//           if (easyQuestions.length < easy_level_question * 2) {
 //             throw new Error(
-//               `Please add ${
-//                 easy_level_question - easyQuestions.length
-//               } more Easy questions for test ${test_name} (ID: ${test_id}). Only ${
-//                 easyQuestions.length
-//               } available.`
+//               `Insufficient Easy questions for test ${test_name} (ID: ${test_id}). Required: ${
+//                 easy_level_question * 2
+//               }, Available: ${easyQuestions.length}`
 //             );
 //           }
-//           primaryQuestions.easy = easyQuestions;
+//           primaryQuestions.easy = easyQuestions.slice(0, easy_level_question * 2);
 //           usedQuestionIds = [
 //             ...usedQuestionIds,
 //             ...easyQuestions.map((q) => q.id),
@@ -1254,16 +1252,14 @@ const getAssignedStudents = async (req, res) => {
 //             skill_id,
 //             usedQuestionIds
 //           );
-//           if (mediumQuestions.length < medium_level_question) {
+//           if (mediumQuestions.length < medium_level_question * 2) {
 //             throw new Error(
-//               `Please add ${
-//                 medium_level_question - mediumQuestions.length
-//               } more Medium questions for test ${test_name} (ID: ${test_id}). Only ${
-//                 mediumQuestions.length
-//               } available.`
+//               `Insufficient Medium questions for test ${test_name} (ID: ${test_id}). Required: ${
+//                 medium_level_question * 2
+//               }, Available: ${mediumQuestions.length}`
 //             );
 //           }
-//           primaryQuestions.medium = mediumQuestions;
+//           primaryQuestions.medium = mediumQuestions.slice(0, medium_level_question * 2);
 //           usedQuestionIds = [
 //             ...usedQuestionIds,
 //             ...mediumQuestions.map((q) => q.id),
@@ -1276,23 +1272,25 @@ const getAssignedStudents = async (req, res) => {
 //             skill_id,
 //             usedQuestionIds
 //           );
-//           if (hardQuestions.length < hard_level_question) {
+//           if (hardQuestions.length < hard_level_question * 2) {
 //             throw new Error(
-//               `Please add ${
-//                 hard_level_question - hardQuestions.length
-//               } more Hard questions for test ${test_name} (ID: ${test_id}). Only ${
-//                 hardQuestions.length
-//               } available.`
+//               `Insufficient Hard questions for test ${test_name} (ID: ${test_id}). Required: ${
+//                 hard_level_question * 2
+//               }, Available: ${hardQuestions.length}`
 //             );
 //           }
-//           primaryQuestions.hard = hardQuestions;
+//           primaryQuestions.hard = hardQuestions.slice(0, hard_level_question * 2);
 //           usedQuestionIds = [
 //             ...usedQuestionIds,
 //             ...hardQuestions.map((q) => q.id),
 //           ];
 //         }
-//         const parseQuestions = (questions) =>
-//           questions.map((q) => {
+//         const parseQuestions = (questions) => {
+//           if (!Array.isArray(questions)) {
+//             console.warn(`Questions is not an array for test ${test_name} (ID: ${test_id})`);
+//             return [];
+//           }
+//           return questions.map((q) => {
 //             let parsedOption = [];
 //             try {
 //               if (Array.isArray(q.option)) {
@@ -1310,7 +1308,7 @@ const getAssignedStudents = async (req, res) => {
 //               }
 //             } catch (error) {
 //               console.error(
-//                 `Error parsing option for question ID ${q.id}:`,
+//                 `Error parsing option for question ID ${q.id} in test ${test_name} (ID: ${test_id}):`,
 //                 error.message
 //               );
 //               parsedOption = [];
@@ -1320,17 +1318,13 @@ const getAssignedStudents = async (req, res) => {
 //               option: parsedOption,
 //             };
 //           });
+//         };
 //         testsWithQuestions.push({
 //           ...test,
 //           primary_questions: {
 //             easy: parseQuestions(primaryQuestions.easy),
 //             medium: parseQuestions(primaryQuestions.medium),
 //             hard: parseQuestions(primaryQuestions.hard),
-//           },
-//           additional_questions: {
-//             easy: [],
-//             medium: [],
-//             hard: [],
 //           },
 //         });
 //       } catch (error) {
@@ -1341,8 +1335,6 @@ const getAssignedStudents = async (req, res) => {
 //         testsWithQuestions.push({
 //           ...test,
 //           primary_questions: { easy: [], medium: [], hard: [] },
-//           additional_questions: { easy: [], medium: [], hard: [] },
-//           error: error.message,
 //         });
 //       }
 //     }
@@ -1354,9 +1346,6 @@ const getAssignedStudents = async (req, res) => {
 //       .json({ msg: error.message || "Failed to fetch tests" });
 //   }
 // };
-
-
-// new changes
 
 
 const getAllTestsWithQuestions = async (req, res) => {
@@ -1426,6 +1415,7 @@ const getAllTestsWithQuestions = async (req, res) => {
     ]);
     const allTests = [...assignedTests, ...skillTests];
     const testsWithQuestions = [];
+
     const fetchQuestionsForLevel = async (
       difficultyId,
       count,
@@ -1440,7 +1430,7 @@ const getAllTestsWithQuestions = async (req, res) => {
       let sql = `
         SELECT id, questions, \`option\`, correct_answer, difficulty_level_id
         FROM questions_mcq
-        WHERE skill_id = ? AND difficulty_level_id = ?
+        WHERE skill_id = ? AND difficulty_level_id = ? AND question_status IN (1, 2, 3)
       `;
       const params = [skillId, difficultyId];
       if (validExcludeIds.length > 0) {
@@ -1448,87 +1438,94 @@ const getAllTestsWithQuestions = async (req, res) => {
         params.push(...validExcludeIds);
       }
       sql += ` ORDER BY RAND() LIMIT ?`;
-      params.push(count * 2); // Fetch double the number of questions
+      params.push(count);
       return new Promise((resolve, reject) => {
         db.query(sql, params, (err, rows) => {
           if (err) reject(err);
-          else resolve(rows || []); // Ensure empty array if no rows
+          else resolve(rows || []);
         });
       });
     };
+
     for (const test of allTests) {
       const {
         skill_id,
         easy_level_question,
         medium_level_question,
         hard_level_question,
-        difficulty_level_id,
         test_id,
         test_name,
       } = test;
-      const primaryQuestions = { easy: [], medium: [], hard: [] };
+
+      const testQuestions = [];
+      const questionCounts = { easy: 0, medium: 0, hard: 0 };
+      const errors = [];
       let usedQuestionIds = [];
+
       try {
-        if (difficulty_level_id >= 1 && easy_level_question > 0) {
+        // Calculate desired question counts
+        const easyDesired = easy_level_question + medium_level_question + hard_level_question;
+        const mediumDesired = medium_level_question + hard_level_question;
+        const hardDesired = hard_level_question;
+
+        // Fetch Easy questions
+        if (easyDesired > 0) {
           const easyQuestions = await fetchQuestionsForLevel(
             1,
-            easy_level_question,
+            easyDesired,
             skill_id,
             usedQuestionIds
           );
-          if (easyQuestions.length < easy_level_question * 2) {
-            throw new Error(
-              `Insufficient Easy questions for test ${test_name} (ID: ${test_id}). Required: ${
-                easy_level_question * 2
-              }, Available: ${easyQuestions.length}`
+          if (easyQuestions.length < easyDesired) {
+            errors.push(
+              `Insufficient Easy questions for test ${test_name} (ID: ${test_id}). ` +
+              `Required: ${easyDesired}, Available: ${easyQuestions.length}`
             );
           }
-          primaryQuestions.easy = easyQuestions.slice(0, easy_level_question * 2);
-          usedQuestionIds = [
-            ...usedQuestionIds,
-            ...easyQuestions.map((q) => q.id),
-          ];
+          testQuestions.push(...easyQuestions);
+          questionCounts.easy = easyQuestions.length;
+          usedQuestionIds = [...usedQuestionIds, ...easyQuestions.map((q) => q.id)];
         }
-        if (difficulty_level_id >= 2 && medium_level_question > 0) {
+
+        // Fetch Medium questions
+        if (mediumDesired > 0) {
           const mediumQuestions = await fetchQuestionsForLevel(
             2,
-            medium_level_question,
+            mediumDesired,
             skill_id,
             usedQuestionIds
           );
-          if (mediumQuestions.length < medium_level_question * 2) {
-            throw new Error(
-              `Insufficient Medium questions for test ${test_name} (ID: ${test_id}). Required: ${
-                medium_level_question * 2
-              }, Available: ${mediumQuestions.length}`
+          if (mediumQuestions.length < mediumDesired) {
+            errors.push(
+              `Insufficient Medium questions for test ${test_name} (ID: ${test_id}). ` +
+              `Required: ${mediumDesired}, Available: ${mediumQuestions.length}`
             );
           }
-          primaryQuestions.medium = mediumQuestions.slice(0, medium_level_question * 2);
-          usedQuestionIds = [
-            ...usedQuestionIds,
-            ...mediumQuestions.map((q) => q.id),
-          ];
+          testQuestions.push(...mediumQuestions);
+          questionCounts.medium = mediumQuestions.length;
+          usedQuestionIds = [...usedQuestionIds, ...mediumQuestions.map((q) => q.id)];
         }
-        if (difficulty_level_id === 3 && hard_level_question > 0) {
+
+        // Fetch Hard questions
+        if (hardDesired > 0) {
           const hardQuestions = await fetchQuestionsForLevel(
             3,
-            hard_level_question,
+            hardDesired,
             skill_id,
             usedQuestionIds
           );
-          if (hardQuestions.length < hard_level_question * 2) {
-            throw new Error(
-              `Insufficient Hard questions for test ${test_name} (ID: ${test_id}). Required: ${
-                hard_level_question * 2
-              }, Available: ${hardQuestions.length}`
+          if (hardQuestions.length < hardDesired) {
+            errors.push(
+              `Insufficient Hard questions for test ${test_name} (ID: ${test_id}). ` +
+              `Required: ${hardDesired}, Available: ${hardQuestions.length}`
             );
           }
-          primaryQuestions.hard = hardQuestions.slice(0, hard_level_question * 2);
-          usedQuestionIds = [
-            ...usedQuestionIds,
-            ...hardQuestions.map((q) => q.id),
-          ];
+          testQuestions.push(...hardQuestions);
+          questionCounts.hard = hardQuestions.length;
+          usedQuestionIds = [...usedQuestionIds, ...hardQuestions.map((q) => q.id)];
         }
+
+        // Parse questions
         const parseQuestions = (questions) => {
           if (!Array.isArray(questions)) {
             console.warn(`Questions is not an array for test ${test_name} (ID: ${test_id})`);
@@ -1539,20 +1536,15 @@ const getAllTestsWithQuestions = async (req, res) => {
             try {
               if (Array.isArray(q.option)) {
                 parsedOption = q.option;
-              } else if (
-                typeof q.option === "string" &&
-                q.option.trim() !== ""
-              ) {
+              } else if (typeof q.option === 'string' && q.option.trim() !== '') {
                 parsedOption = JSON.parse(q.option);
                 if (!Array.isArray(parsedOption)) {
-                  throw new Error(
-                    `Invalid option format for question ID ${q.id}`
-                  );
+                  throw new Error(`Invalid option format for question ID ${q.id}`);
                 }
               }
             } catch (error) {
               console.error(
-                `Error parsing option for question ID ${q.id} in test ${test_name} (ID: ${test_id}):`,
+                `Error parsing option for question ID ${q.id} in test ${test_name} (ID: ${test_id})`,
                 error.message
               );
               parsedOption = [];
@@ -1563,13 +1555,18 @@ const getAllTestsWithQuestions = async (req, res) => {
             };
           });
         };
+
+        // Add to response
         testsWithQuestions.push({
           ...test,
-          primary_questions: {
-            easy: parseQuestions(primaryQuestions.easy),
-            medium: parseQuestions(primaryQuestions.medium),
-            hard: parseQuestions(primaryQuestions.hard),
+          test_questions: parseQuestions(testQuestions),
+          question_counts: {
+            easy: questionCounts.easy,
+            medium: questionCounts.medium,
+            hard: questionCounts.hard,
+            total_questions: questionCounts.easy + questionCounts.medium + questionCounts.hard,
           },
+          ...(errors.length > 0 && { errors: errors }),
         });
       } catch (error) {
         console.error(
@@ -1578,203 +1575,24 @@ const getAllTestsWithQuestions = async (req, res) => {
         );
         testsWithQuestions.push({
           ...test,
-          primary_questions: { easy: [], medium: [], hard: [] },
+          test_questions: [],
+          question_counts: { easy: 0, medium: 0, hard: 0, total_questions: 0 },
+          errors: [error.message],
         });
       }
     }
+
     return res.status(200).json(testsWithQuestions);
   } catch (error) {
     console.error("Error in getAllTestsWithQuestions:", error);
-    return res
-      .status(400)
-      .json({ msg: error.message || "Failed to fetch tests" });
+    return res.status(400).json({ msg: error.message || "Failed to fetch tests" });
   }
 };
 
 
 
 
-const submitTest = async (req, res) => {
-  try {
-    const {
-      test_id,
-      student_id,
-      answers,
-      easy_score,
-      medium_score,
-      hard_score,
-      total_score,
-      incorrect_answer_count,
-      skipped_question_count,
-      student_level,
-      percentage,
-      attempt_id,
-      easy_attended,
-      medium_attended,
-      hard_attended,
-    } = req.body;
 
-    if (
-      !test_id ||
-      !student_id ||
-      !answers ||
-      typeof answers !== "object" ||
-      !student_level ||
-      percentage === undefined ||
-      !attempt_id ||
-      easy_attended === undefined ||
-      medium_attended === undefined ||
-      hard_attended === undefined
-    ) {
-      return res.status(400).json({ msg: "All required fields are required" });
-    }
-
-    const TOTAL_QUESTIONS = 20;
-    const EASY_QUESTIONS = 10;
-    const MEDIUM_QUESTIONS = 6;
-    const HARD_QUESTIONS = 4;
-
-    // Fetch test details
-    const getTestSql = `
-      SELECT 
-        test_id, easy_pass_mark, medium_pass_mark, hard_pass_mark,
-        difficulty_level_id, total_no_of_questions
-      FROM testcreation
-      WHERE test_id = ?
-    `;
-    const [test] = await new Promise((resolve, reject) => {
-      db.query(getTestSql, [test_id], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    });
-
-    if (!test) {
-      return res.status(404).json({ msg: "Test not found" });
-    }
-
-    // Validate question counts
-    // if (
-    //   easy_attended !== EASY_QUESTIONS ||
-    //   medium_attended !== MEDIUM_QUESTIONS ||
-    //   hard_attended !== HARD_QUESTIONS ||
-    //   (easy_attended + medium_attended + hard_attended) !== (TOTAL_QUESTIONS)
-    // ) {
-    //   return res.status(400).json({
-    //     msg: "Invalid attended question counts",
-    //     details: { easy_attended, medium_attended, hard_attended, expected: TOTAL_QUESTIONS },
-        
-    //   });
-
-    
-    // }
-
-    // Validate scores
-    // if (
-    //   easy_score > easy_attended ||
-    //   medium_score > medium_attended ||
-    //   hard_score > hard_attended ||
-    //   (total_score) !== easy_score + medium_score + hard_score ||
-    //   incorrect_answer_count !== TOTAL_QUESTIONS - total_score ||
-    //   skipped_question_count !== 0
-    // ) {
-    //   return res.status(400).json({
-    //     msg: "Invalid scores or counts",
-    //     details: {
-    //       easy_score,
-    //       medium_score,
-    //       hard_score,
-    //       total_score,
-    //       incorrect_answer_count,
-    //       skipped_question_count,
-    //     },
-    //   });
-    // }
-
-    // Validate student level
-    let expectedLevel = "Failed";
-    if (easy_score >= test.easy_pass_mark) {
-      expectedLevel = "Easy";
-      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
-        expectedLevel = "Medium";
-        if (test.difficulty_level_id === 3 && hard_score >= test.hard_pass_mark) {
-          expectedLevel = "Hard";
-        }
-      }
-    }
-    if (student_level !== expectedLevel) {
-      return res.status(400).json({ msg: "Invalid student level", expectedLevel });
-    }
-
-    // Check for recent submissions
-    const checkSql = `
-      SELECT id
-      FROM testresults
-      WHERE test_id = ? AND student_id = ? AND attend_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE)
-    `;
-    const existingResults = await new Promise((resolve, reject) => {
-      db.query(checkSql, [test_id, student_id], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    });
-
-    if (existingResults.length > 0) {
-      return res.status(400).json({ msg: "Test result already submitted recently" });
-    }
-
-    // Mark attempt as completed
-    const completeSql = `UPDATE test_attempts SET completed = TRUE WHERE id = ?`;
-    await new Promise((resolve, reject) => {
-      db.query(completeSql, [attempt_id], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
-    });
-
-    // Insert test results
-    const insertSql = `
-      INSERT INTO testresults (
-        test_id, student_id, easy_score, medium_score, hard_score,
-        total_score, incorrect_answer_count, skipped_question_count,
-        student_level, percentage, easy_attended, medium_attended,
-        hard_attended, attend_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `;
-    const result = await new Promise((resolve, reject) => {
-      db.query(
-        insertSql,
-        [
-          test_id,
-          student_id,
-          easy_score,
-          medium_score,
-          hard_score,
-          total_score,
-          incorrect_answer_count,
-          skipped_question_count,
-          student_level,
-          percentage,
-          easy_attended,
-          medium_attended,
-          hard_attended,
-        ],
-        (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
-        }
-      );
-    });
-
-    return res.status(201).json({
-      msg: "Test results saved successfully",
-      result_id: result.insertId,
-    });
-  } catch (error) {
-    console.error("Error in submitTest:", error);
-    return res.status(500).json({ msg: "Server error", error: error.message });
-  }
-};
 
 
 // Get questions by skill and difficulty level
@@ -2387,8 +2205,270 @@ const getActiveTestsWithQuestions = async (req, res) => {
 
 
 
+const submitTest = async (req, res) => {
+  try {
+    const {
+      test_id,
+      student_id,
+      answers,
+      easy_score,
+      medium_score,
+      hard_score,
+      total_score,
+      incorrect_answer_count,
+      skipped_question_count,
+      student_level,
+      percentage,
+      attempt_id,
+      easy_attended,
+      medium_attended,
+      hard_attended,
+    } = req.body;
+
+    if (
+      !test_id ||
+      !student_id ||
+      !answers ||
+      typeof answers !== "object" ||
+      !student_level ||
+      percentage === undefined ||
+      !attempt_id ||
+      easy_attended === undefined ||
+      medium_attended === undefined ||
+      hard_attended === undefined
+    ) {
+      return res.status(400).json({ msg: "All required fields are required" });
+    }
+
+    const TOTAL_QUESTIONS = 20;
+    const EASY_QUESTIONS = 10;
+    const MEDIUM_QUESTIONS = 6;
+    const HARD_QUESTIONS = 4;
+
+    // Fetch test details
+    const getTestSql = `
+      SELECT 
+        test_id, easy_pass_mark, medium_pass_mark, hard_pass_mark,
+        difficulty_level_id, total_no_of_questions
+      FROM testcreation
+      WHERE test_id = ?
+    `;
+    const [test] = await new Promise((resolve, reject) => {
+      db.query(getTestSql, [test_id], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
+    if (!test) {
+      return res.status(404).json({ msg: "Test not found" });
+    }
+
+    // Validate question counts
+    // if (
+    //   easy_attended !== EASY_QUESTIONS ||
+    //   medium_attended !== MEDIUM_QUESTIONS ||
+    //   hard_attended !== HARD_QUESTIONS ||
+    //   (easy_attended + medium_attended + hard_attended) !== (TOTAL_QUESTIONS)
+    // ) {
+    //   return res.status(400).json({
+    //     msg: "Invalid attended question counts",
+    //     details: { easy_attended, medium_attended, hard_attended, expected: TOTAL_QUESTIONS },
+        
+    //   });
+
+    
+    // }
+
+    // Validate scores
+    // if (
+    //   easy_score > easy_attended ||
+    //   medium_score > medium_attended ||
+    //   hard_score > hard_attended ||
+    //   (total_score) !== easy_score + medium_score + hard_score ||
+    //   incorrect_answer_count !== TOTAL_QUESTIONS - total_score ||
+    //   skipped_question_count !== 0
+    // ) {
+    //   return res.status(400).json({
+    //     msg: "Invalid scores or counts",
+    //     details: {
+    //       easy_score,
+    //       medium_score,
+    //       hard_score,
+    //       total_score,
+    //       incorrect_answer_count,
+    //       skipped_question_count,
+    //     },
+    //   });
+    // }
+
+    // Validate student level
+    
+    let expectedLevel = "Failed";
+    if (easy_score >= test.easy_pass_mark) {
+      expectedLevel = "Easy";
+      if (test.difficulty_level_id >= 2 && medium_score >= test.medium_pass_mark) {
+        expectedLevel = "Medium";
+        if (test.difficulty_level_id >= 3 && hard_score >= test.hard_pass_mark) {
+          expectedLevel = "Hard";
+        }
+      }
+    }
+    if (student_level !== expectedLevel) {
+      return res.status(400).json({ msg: "Invalid student level", expectedLevel });
+    }
+
+    // Check for recent submissions
+    const checkSql = `
+      SELECT id
+      FROM testresults
+      WHERE test_id = ? AND student_id = ? AND attend_at >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE)
+    `;
+    const existingResults = await new Promise((resolve, reject) => {
+      db.query(checkSql, [test_id, student_id], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
+    if (existingResults.length > 0) {
+      return res.status(400).json({ msg: "Test result already submitted recently" });
+    }
+
+    // Mark attempt as completed
+    const completeSql = `UPDATE test_attempts SET completed = TRUE WHERE id = ?`;
+    await new Promise((resolve, reject) => {
+      db.query(completeSql, [attempt_id], (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    // Insert test results
+    const insertSql = `
+      INSERT INTO testresults (
+        test_id, student_id, easy_score, medium_score, hard_score,
+        total_score, incorrect_answer_count, skipped_question_count,
+        student_level, percentage, easy_attended, medium_attended,
+        hard_attended, attend_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `;
+    const result = await new Promise((resolve, reject) => {
+      db.query(
+        insertSql,
+        [
+          test_id,
+          student_id,
+          easy_score,
+          medium_score,
+          hard_score,
+          total_score,
+          incorrect_answer_count,
+          skipped_question_count,
+          student_level,
+          percentage,
+          easy_attended,
+          medium_attended,
+          hard_attended,
+        ],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
+    });
+
+    return res.status(201).json({
+      msg: "Test results saved successfully",
+      result_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error in submitTest:", error);
+    return res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
 
 // Save student performance
+
+// const saveStudentPerformance = async (req, res) => {
+//   try {
+//     const { test_id, student_id, performance, completed_duration } = req.body;
+
+//     if (!test_id || !student_id || !performance || !completed_duration) {
+//       return res.status(400).json({ msg: "All required fields are required" });
+//     }
+
+//     if (typeof performance !== "object" || performance === null) {
+//       return res.status(400).json({ msg: "Performance must be a valid object" });
+//     }
+
+//     const durationRegex = /^([0-9]{2}):([0-5][0-9]):([0-5][0-9])$/;
+//     if (!durationRegex.test(completed_duration)) {
+//       return res.status(400).json({ msg: "Invalid duration format (HH:MM:SS)" });
+//     }
+
+//     // Validate question IDs
+//     const questionIds = Object.keys(performance).map(Number);
+//     const validateSql = `
+//       SELECT id
+//       FROM questions_mcq
+//       WHERE id IN (?)
+//     `;
+//     const validQuestions = await new Promise((resolve, reject) => {
+//       db.query(validateSql, [questionIds], (err, results) => {
+//         if (err) reject(err);
+//         else resolve(results);
+//       });
+//     });
+
+//     if (validQuestions.length !== questionIds.length) {
+//       return res.status(400).json({ msg: "Invalid question IDs in performance" });
+//     }
+
+//     // Check test attempt
+//     const checkAttemptSql = `
+//       SELECT id
+//       FROM test_attempts
+//       WHERE test_id = ? AND student_id = ? AND completed = TRUE
+//     `;
+//     const attempt = await new Promise((resolve, reject) => {
+//       db.query(checkAttemptSql, [test_id, student_id], (err, results) => {
+//         if (err) reject(err);
+//         else resolve(results[0]);
+//       });
+//     });
+
+//     // if (!attempt) {
+//     //   return res.status(404).json({ msg: "No completed test attempt found" });
+//     // }
+
+//     const performanceJson = JSON.stringify(performance);
+//     const insertSql = `
+//       INSERT INTO studentperformance (test_id, student_id, performance, completed_duration)
+//       VALUES (?, ?, ?, ?)
+//     `;
+//     const result = await new Promise((resolve, reject) => {
+//       db.query(insertSql, [test_id, student_id, performanceJson, completed_duration], (err, result) => {
+//         if (err) reject(err);
+//         else resolve(result);
+//       });
+//     });
+
+//     return res.status(201).json({
+//       msg: "Student performance saved successfully",
+//       performance_id: result.insertId,
+//     });
+//   } catch (error) {
+//     console.error("Error in saveStudentPerformance:", error);
+//     return res.status(500).json({ msg: "Server error", error: error.message });
+//   }
+// };
+
+
+
+
+
+
 
 const saveStudentPerformance = async (req, res) => {
   try {
@@ -2407,10 +2487,10 @@ const saveStudentPerformance = async (req, res) => {
       return res.status(400).json({ msg: "Invalid duration format (HH:MM:SS)" });
     }
 
-    // Validate question IDs
+    // Validate question IDs and get their difficulty levels
     const questionIds = Object.keys(performance).map(Number);
     const validateSql = `
-      SELECT id
+      SELECT id, difficulty_level_id
       FROM questions_mcq
       WHERE id IN (?)
     `;
@@ -2425,7 +2505,28 @@ const saveStudentPerformance = async (req, res) => {
       return res.status(400).json({ msg: "Invalid question IDs in performance" });
     }
 
-    // Check test attempt
+    // Count questions by difficulty level
+    const levelCounts = {
+      easy_attended: 0,
+      medium_attended: 0,
+      hard_attended: 0
+    };
+
+    validQuestions.forEach(question => {
+      switch(question.difficulty_level_id) {
+        case 1:
+          levelCounts.easy_attended++;
+          break;
+        case 2:
+          levelCounts.medium_attended++;
+          break;
+        case 3:
+          levelCounts.hard_attended++;
+          break;
+      }
+    });
+
+    // Check test attempt (optional based on your requirements)
     const checkAttemptSql = `
       SELECT id
       FROM test_attempts
@@ -2444,28 +2545,40 @@ const saveStudentPerformance = async (req, res) => {
 
     const performanceJson = JSON.stringify(performance);
     const insertSql = `
-      INSERT INTO studentperformance (test_id, student_id, performance, completed_duration)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO studentperformance 
+        (test_id, student_id, performance, completed_duration, 
+         easy_attended, medium_attended, hard_attended)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const result = await new Promise((resolve, reject) => {
-      db.query(insertSql, [test_id, student_id, performanceJson, completed_duration], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      });
+      db.query(
+        insertSql, 
+        [
+          test_id, 
+          student_id, 
+          performanceJson, 
+          completed_duration,
+          levelCounts.easy_attended,
+          levelCounts.medium_attended,
+          levelCounts.hard_attended
+        ], 
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
     });
 
     return res.status(201).json({
       msg: "Student performance saved successfully",
       performance_id: result.insertId,
+      level_counts: levelCounts
     });
   } catch (error) {
     console.error("Error in saveStudentPerformance:", error);
     return res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
-
-
-
 
 
 

@@ -234,7 +234,7 @@ export function Login() {
           }
         } else if (role === 1) {
           localStorage.setItem("spad_id", "9"); // Hardcode spad_id for admins to match API
-          setTimeout(() => navigate(`/manager/${encodedId}`), 500); // Use encoded id
+          setTimeout(() => navigate(`/dash/${encodedId}`), 500); // Use encoded id
         } else if (role === 3) {
           localStorage.setItem("spad_id", id); // Store decoded spad_id
           setTimeout(() => navigate(`/superadmin/access-control/${encodedId}`), 500);

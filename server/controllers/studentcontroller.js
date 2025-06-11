@@ -659,6 +659,229 @@ const StudentProjectDetails = async (req, res) => {
   }
 };
 
+// const getStudentDataAndTest = async (req, res) => {
+//   const { id } = req.params;
+
+//   // Validate input
+//   if (!id || isNaN(parseInt(id))) {
+//     console.error(`Invalid student_id: ${id}`);
+//     return res.status(400).json({
+//       status: "error",
+//       message: "Invalid student ID",
+//     });
+//   }
+
+//   try {
+//     const studentId = parseInt(id);
+//     console.log(`Fetching data for student_id: ${studentId}`);
+
+//     const query = "SELECT tr.*, tc.test_name FROM testresults tr JOIN testcreation tc ON tr.test_id = tc.test_id WHERE tr.student_id = ?";
+//     const query1 = "SELECT * FROM students WHERE student_id = ?";
+//     const query2 = "SELECT COUNT(skill_id) AS skillCount FROM student_skills WHERE student_id = ?";
+//     const performanceQuery = `
+//       SELECT 
+//         sp.*, 
+//         s.name AS student_name,
+//         tc.test_id AS tc_test_id, 
+//         tc.test_name, 
+//         tc.test_description, 
+//         tc.skill_id, 
+//         tc.difficulty_level_id, 
+//         tc.easy_level_question, 
+//         tc.medium_level_question, 
+//         tc.hard_level_question, 
+//         tc.total_no_of_questions, 
+//         tc.easy_pass_mark, 
+//         tc.medium_pass_mark, 
+//         tc.hard_pass_mark, 
+//         tc.created_at AS tc_created_at, 
+//         tc.duration_minutes, 
+//         tc.active_status
+//       FROM studentperformance sp
+//       JOIN students s ON sp.student_id = s.student_id
+//       LEFT JOIN testcreation tc ON sp.test_id = tc.test_id
+//       WHERE sp.student_id = ?
+//       ORDER BY sp.created_at DESC`;
+
+//     const [testResults, studentData, skillCountResult, performanceResults] = await Promise.all([
+//       dbQuery(query, [studentId]).catch(err => { throw new Error(`Test results query failed: ${err.message}`); }),
+//       dbQuery(query1, [studentId]).catch(err => { throw new Error(`Student data query failed: ${err.message}`); }),
+//       dbQuery(query2, [studentId]).catch(err => { throw new Error(`Skill count query failed: ${err.message}`); }),
+//       dbQuery(performanceQuery, [studentId]).catch(err => { throw new Error(`Performance query failed: ${err.message}`); }),
+//     ]);
+
+//     console.log(`Query results for student_id ${studentId}:`, {
+//       testResultsCount: testResults.length,
+//       studentDataCount: studentData.length,
+//       skillCount: skillCountResult.length > 0 ? skillCountResult[0].skillCount : 0,
+//       performanceResultsCount: performanceResults.length,
+//     });
+
+//     if (studentData.length === 0) {
+//       console.warn(`No student found for student_id: ${studentId}`);
+//       return res.status(404).json({
+//         status: "error",
+//         message: "Student not found",
+//       });
+//     }
+
+//     // Debug: Log performance results
+//     console.log(`Performance results for student_id ${studentId}:`, {
+//       count: performanceResults.length,
+//       data: performanceResults.map(r => ({
+//         performance_id: r.id,
+//         student_id: r.student_id,
+//         test_id: r.test_id,
+//         performance: r.performance,
+//         performance_type: typeof r.performance,
+//         has_test_creation: !!r.tc_test_id
+//       }))
+//     });
+
+//     // Process performance results
+//     const performanceData = await Promise.all(
+//       performanceResults.map(async (perf) => {
+//         let performanceData;
+//         try {
+//           performanceData = typeof perf.performance === 'string'
+//             ? JSON.parse(perf.performance)
+//             : perf.performance;
+//           console.log(`Processed performance for performance_id ${perf.id}:`, performanceData);
+//         } catch (jsonError) {
+//           console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message, `Raw value: ${perf.performance}`);
+//           performanceData = {};
+//         }
+
+//         const questionIds = Object.keys(performanceData)
+//           .filter(id => !isNaN(parseInt(id, 10)))
+//           .map(id => parseInt(id, 10));
+
+//         // Debug: Log question IDs
+//         console.log(`Question IDs for performance_id ${perf.id}:`, questionIds);
+
+//         let questions = [];
+//         if (questionIds.length > 0) {
+//           const questionSql = `
+//             SELECT *
+//             FROM questions_mcq
+//             WHERE id IN (?)
+//           `;
+//           try {
+//             questions = await dbQuery(questionSql, [questionIds]);
+//             console.log(`Question results for performance_id ${perf.id}:`, {
+//               count: questions.length,
+//               question_ids: questions.map(q => q.id),
+//               questions: questions.map(q => ({
+//                 question_id: q.id,
+//                 questions: q.questions,
+//                 option: q.option,
+//                 option_type: typeof q.option,
+//                 correct_answer: q.correct_answer
+//               }))
+//             });
+//           } catch (queryError) {
+//             console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message, `Question IDs: ${questionIds}`);
+//             questions = [];
+//           }
+//         } else {
+//           console.log(`No valid questionIds for performance_id ${perf.id}`);
+//         }
+
+//         const formattedQuestions = questions.map(q => {
+//           let parsedOption = [];
+//           if (q.option == null) {
+//             console.warn(`Null or undefined option for question_id ${q.id}`);
+//             parsedOption = [];
+//           } else if (typeof q.option === 'string') {
+//             try {
+//               parsedOption = JSON.parse(q.option);
+//               console.log(`Parsed option (string) for question_id ${q.id}:`, parsedOption);
+//             } catch (optionError) {
+//               console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message, `Raw value: ${q.option}`);
+//               parsedOption = [];
+//             }
+//           } else if (Array.isArray(q.option)) {
+//             parsedOption = q.option;
+//             console.log(`Using option (array) for question_id ${q.id}:`, parsedOption);
+//           } else {
+//             console.warn(`Unexpected option type for question_id ${q.id}:`, typeof q.option, q.option);
+//             parsedOption = [];
+//           }
+//           return {
+//             question_id: q.id,
+//             skill_id: q.skill_id,
+//             difficulty_level_id: q.difficulty_level_id,
+//             questions: q.questions,
+//             option: parsedOption,
+//             correct_answer: q.correct_answer,
+//             created_at: q.created_at,
+//             question_status: q.question_status,
+//             student_answer: performanceData[q.id.toString()] || null,
+//           };
+//         });
+
+//         return {
+//           performance_id: perf.id,
+//           student_id: perf.student_id,
+//           student_name: perf.student_name,
+//           test_id: perf.test_id,
+//           test_details: perf.tc_test_id ? {
+//             test_id: perf.tc_test_id,
+//             test_name: perf.test_name || null,
+//             test_description: perf.test_description || null,
+//             skill_id: perf.skill_id || null,
+//             difficulty_level_id: perf.difficulty_level_id || null,
+//             easy_level_question: perf.easy_level_question || 0,
+//             medium_level_question: perf.medium_level_question || 0,
+//             hard_level_question: perf.hard_level_question || 0,
+//             total_no_of_questions: perf.total_no_of_questions || 0,
+//             easy_pass_mark: perf.easy_pass_mark || 0,
+//             medium_pass_mark: perf.medium_pass_mark || 0,
+//             hard_pass_mark: perf.hard_pass_mark || 0,
+//             created_at: perf.tc_created_at || null,
+//             duration_minutes: perf.duration_minutes || 0,
+//             active_status: perf.active_status || 0,
+//           } : {},
+//           questions: formattedQuestions,
+//           completed_duration: perf.completed_duration ? perf.completed_duration.toString() : null,
+//           created_at: perf.created_at,
+//         };
+//       })
+//     );
+
+//     // Debug: Log final performance data
+//     console.log(`Final performance data for student_id ${studentId}:`, {
+//       count: performanceData.length,
+//       performance_ids: performanceData.map(p => p.performance_id),
+//       question_counts: performanceData.map(p => ({
+//         performance_id: p.performance_id,
+//         question_count: p.questions.length
+//       }))
+//     });
+
+//     const response = {
+//       status: "success",
+//       student: studentData[0],
+//       testResults: testResults,
+//       skillCount: skillCountResult[0]?.skillCount || 0,
+//       studentperformance: performanceData,
+//     };
+
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     console.error(`Error in getStudentDataAndTest for student_id ${id}:`, {
+//       message: error.message,
+//       stack: error.stack,
+//     });
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve data",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
 const getStudentDataAndTest = async (req, res) => {
   const { id } = req.params;
 
@@ -725,19 +948,6 @@ const getStudentDataAndTest = async (req, res) => {
       });
     }
 
-    // Debug: Log performance results
-    console.log(`Performance results for student_id ${studentId}:`, {
-      count: performanceResults.length,
-      data: performanceResults.map(r => ({
-        performance_id: r.id,
-        student_id: r.student_id,
-        test_id: r.test_id,
-        performance: r.performance,
-        performance_type: typeof r.performance,
-        has_test_creation: !!r.tc_test_id
-      }))
-    });
-
     // Process performance results
     const performanceData = await Promise.all(
       performanceResults.map(async (perf) => {
@@ -746,9 +956,8 @@ const getStudentDataAndTest = async (req, res) => {
           performanceData = typeof perf.performance === 'string'
             ? JSON.parse(perf.performance)
             : perf.performance;
-          console.log(`Processed performance for performance_id ${perf.id}:`, performanceData);
         } catch (jsonError) {
-          console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message, `Raw value: ${perf.performance}`);
+          console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message);
           performanceData = {};
         }
 
@@ -756,57 +965,28 @@ const getStudentDataAndTest = async (req, res) => {
           .filter(id => !isNaN(parseInt(id, 10)))
           .map(id => parseInt(id, 10));
 
-        // Debug: Log question IDs
-        console.log(`Question IDs for performance_id ${perf.id}:`, questionIds);
-
         let questions = [];
         if (questionIds.length > 0) {
-          const questionSql = `
-            SELECT *
-            FROM questions_mcq
-            WHERE id IN (?)
-          `;
+          const questionSql = `SELECT * FROM questions_mcq WHERE id IN (?)`;
           try {
             questions = await dbQuery(questionSql, [questionIds]);
-            console.log(`Question results for performance_id ${perf.id}:`, {
-              count: questions.length,
-              question_ids: questions.map(q => q.id),
-              questions: questions.map(q => ({
-                question_id: q.id,
-                questions: q.questions,
-                option: q.option,
-                option_type: typeof q.option,
-                correct_answer: q.correct_answer
-              }))
-            });
           } catch (queryError) {
-            console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message, `Question IDs: ${questionIds}`);
-            questions = [];
+            console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message);
           }
-        } else {
-          console.log(`No valid questionIds for performance_id ${perf.id}`);
         }
 
         const formattedQuestions = questions.map(q => {
           let parsedOption = [];
-          if (q.option == null) {
-            console.warn(`Null or undefined option for question_id ${q.id}`);
-            parsedOption = [];
-          } else if (typeof q.option === 'string') {
+          if (q.option && typeof q.option === 'string') {
             try {
               parsedOption = JSON.parse(q.option);
-              console.log(`Parsed option (string) for question_id ${q.id}:`, parsedOption);
             } catch (optionError) {
-              console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message, `Raw value: ${q.option}`);
-              parsedOption = [];
+              console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message);
             }
           } else if (Array.isArray(q.option)) {
             parsedOption = q.option;
-            console.log(`Using option (array) for question_id ${q.id}:`, parsedOption);
-          } else {
-            console.warn(`Unexpected option type for question_id ${q.id}:`, typeof q.option, q.option);
-            parsedOption = [];
           }
+          
           return {
             question_id: q.id,
             skill_id: q.skill_id,
@@ -844,20 +1024,13 @@ const getStudentDataAndTest = async (req, res) => {
           } : {},
           questions: formattedQuestions,
           completed_duration: perf.completed_duration ? perf.completed_duration.toString() : null,
+          easy_attended: perf.easy_attended || 0,
+          medium_attended: perf.medium_attended || 0,
+          hard_attended: perf.hard_attended || 0,
           created_at: perf.created_at,
         };
       })
     );
-
-    // Debug: Log final performance data
-    console.log(`Final performance data for student_id ${studentId}:`, {
-      count: performanceData.length,
-      performance_ids: performanceData.map(p => p.performance_id),
-      question_counts: performanceData.map(p => ({
-        performance_id: p.performance_id,
-        question_count: p.questions.length
-      }))
-    });
 
     const response = {
       status: "success",
@@ -869,10 +1042,7 @@ const getStudentDataAndTest = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
-    console.error(`Error in getStudentDataAndTest for student_id ${id}:`, {
-      message: error.message,
-      stack: error.stack,
-    });
+    console.error(`Error in getStudentDataAndTest for student_id ${id}:`, error);
     return res.status(500).json({
       status: "error",
       message: "Failed to retrieve data",
@@ -880,6 +1050,225 @@ const getStudentDataAndTest = async (req, res) => {
     });
   }
 };
+
+// const getAllStudentsDataAndTest = async (req, res) => {
+//   try {
+//     const studentsQuery = "SELECT * FROM students WHERE role_id = 2";
+//     const testResultsQuery = "SELECT tr.*, tc.test_name FROM testresults tr JOIN testcreation tc ON tr.test_id = tc.test_id";
+//     const skillCountQuery = "SELECT student_id, COUNT(skill_id) AS skillCount FROM student_skills GROUP BY student_id";
+//     const performanceQuery = `
+//       SELECT 
+//         sp.*, 
+//         s.name AS student_name,
+//         tc.test_id AS tc_test_id, 
+//         tc.test_name, 
+//         tc.test_description, 
+//         tc.skill_id, 
+//         tc.difficulty_level_id, 
+//         tc.easy_level_question, 
+//         tc.medium_level_question, 
+//         tc.hard_level_question, 
+//         tc.total_no_of_questions, 
+//         tc.easy_pass_mark, 
+//         tc.medium_pass_mark, 
+//         tc.hard_pass_mark, 
+//         tc.created_at AS tc_created_at, 
+//         tc.duration_minutes, 
+//         tc.active_status
+//       FROM studentperformance sp
+//       JOIN students s ON sp.student_id = s.student_id
+//       LEFT JOIN testcreation tc ON sp.test_id = tc.test_id
+//       ORDER BY sp.created_at DESC`;
+
+//     const [studentsResult, testResultsResult, skillCountResult, performanceResults] = await Promise.all([
+//       dbQuery(studentsQuery),
+//       dbQuery(testResultsQuery),
+//       dbQuery(skillCountQuery),
+//       dbQuery(performanceQuery),
+//     ]);
+
+//     if (studentsResult.length === 0) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "No students found",
+//       });
+//     }
+
+//     // Debug: Log performance results
+//     console.log("All performance results:", {
+//       count: performanceResults.length,
+//       data: performanceResults.map(r => ({
+//         performance_id: r.id,
+//         student_id: r.student_id,
+//         test_id: r.test_id,
+//         performance: r.performance,
+//         performance_type: typeof r.performance,
+//         has_test_creation: !!r.tc_test_id
+//       }))
+//     });
+
+//     // Map skill counts to student_id
+//     const skillCountMap = {};
+//     skillCountResult.forEach((row) => {
+//       skillCountMap[row.student_id] = row.skillCount;
+//     });
+
+//     // Map test results to student_id
+//     const testResultsMap = {};
+//     testResultsResult.forEach((test) => {
+//       if (!testResultsMap[test.student_id]) {
+//         testResultsMap[test.student_id] = [];
+//       }
+//       testResultsMap[test.student_id].push(test);
+//     });
+
+//     // Process performance results
+//     const performanceMap = {};
+//     await Promise.all(
+//       performanceResults.map(async (perf) => {
+//         if (!performanceMap[perf.student_id]) {
+//           performanceMap[perf.student_id] = [];
+//         }
+
+//         let performanceData;
+//         try {
+//           performanceData = typeof perf.performance === 'string'
+//             ? JSON.parse(perf.performance)
+//             : perf.performance;
+//           console.log(`Processed performance for performance_id ${perf.id}:`, performanceData);
+//         } catch (jsonError) {
+//           console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message, `Raw value: ${perf.performance}`);
+//           performanceData = {};
+//         }
+
+//         const questionIds = Object.keys(performanceData)
+//           .filter(id => !isNaN(parseInt(id, 10)))
+//           .map(id => parseInt(id, 10));
+
+//         // Debug: Log question IDs
+//         console.log(`Question IDs for performance_id ${perf.id}:`, questionIds);
+
+//         let questions = [];
+//         if (questionIds.length > 0) {
+//           const questionSql = `
+//             SELECT *
+//             FROM questions_mcq
+//             WHERE id IN (?)
+//           `;
+//           try {
+//             questions = await dbQuery(questionSql, [questionIds]);
+//             console.log(`Question results for performance_id ${perf.id}:`, {
+//               count: questions.length,
+//               question_ids: questions.map(q => q.id),
+//               questions: questions.map(q => ({
+//                 question_id: q.id,
+//                 questions: q.questions,
+//                 option: q.option,
+//                 option_type: typeof q.option,
+//                 correct_answer: q.correct_answer
+//               }))
+//             });
+//           } catch (queryError) {
+//             console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message, `Question IDs: ${questionIds}`);
+//           }
+//         } else {
+//           console.log(`No valid question IDs for performance_id ${perf.id}`);
+//         }
+
+//         const formattedQuestions = questions.map(q => {
+//           let parsedOption = [];
+//           if (q.option == null) {
+//             console.warn(`Null or undefined option for question_id ${q.id}:`, q.option);
+//             parsedOption = [];
+//           } else if (typeof q.option === 'string') {
+//             try {
+//               parsedOption = JSON.parse(q.option);
+//               console.log(`Parsed option (string) for question_id ${q.id}:`, parsedOption);
+//             } catch (optionError) {
+//               console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message, `Raw value: ${q.option}`);
+//               parsedOption = [];
+//             }
+//           } else if (Array.isArray(q.option)) {
+//             parsedOption = q.option;
+//             console.log(`Using option (array) for question_id ${q.id}:`, parsedOption);
+//           } else {
+//             console.warn(`Unexpected option type for question_id ${q.id}:`, typeof q.option, q.option);
+//             parsedOption = [];
+//           }
+//           return {
+//             question_id: q.id,
+//             skill_id: q.skill_id,
+//             difficulty_level_id: q.difficulty_level_id,
+//             questions: q.questions,
+//             option: parsedOption,
+//             correct_answer: q.correct_answer,
+//             created_at: q.created_at,
+//             question_status: q.question_status,
+//             student_answer: performanceData[q.id.toString()] || null,
+//           };
+//         });
+
+//         performanceMap[perf.student_id].push({
+//           performance_id: perf.id,
+//           student_id: perf.student_id,
+//           student_name: perf.student_name,
+//           test_id: perf.test_id,
+//           test_details: perf.tc_test_id ? {
+//             test_id: perf.tc_test_id,
+//             test_name: perf.test_name || null,
+//             test_description: perf.test_description || null,
+//             skill_id: perf.skill_id || null,
+//             difficulty_level_id: perf.difficulty_level_id || null,
+//             easy_level_question: perf.easy_level_question || 0,
+//             medium_level_question: perf.medium_level_question || 0,
+//             hard_level_question: perf.hard_level_question || 0,
+//             total_no_of_questions: perf.total_no_of_questions || 0,
+//             easy_pass_mark: perf.easy_pass_mark || 0,
+//             medium_pass_mark: perf.medium_pass_mark || 0,
+//             hard_pass_mark: perf.hard_pass_mark || 0,
+//             created_at: perf.tc_created_at || null,
+//             duration_minutes: perf.duration_minutes || 0,
+//             active_status: perf.active_status || 0,
+//           } : {},
+//           questions: formattedQuestions,
+//           completed_duration: perf.completed_duration ? perf.completed_duration.toString() : null,
+//           created_at: perf.created_at,
+//         });
+//       })
+//     );
+
+//     // Debug: Log final performance map
+//     console.log("Final performance map:", {
+//       student_ids: Object.keys(performanceMap),
+//       counts: Object.fromEntries(Object.entries(performanceMap).map(([sid, data]) => [sid, data.length])),
+//       question_counts: Object.fromEntries(Object.entries(performanceMap).map(([sid, data]) => [sid, data.map(d => ({
+//         performance_id: d.performance_id,
+//         question_count: d.questions.length
+//       }))]))
+//     });
+
+//     // Build response
+//     const response = {
+//       status: "success",
+//       students: studentsResult.map((student) => ({
+//         student,
+//         testResults: testResultsMap[student.student_id] || [],
+//         skillCount: skillCountMap[student.student_id] || 0,
+//         studentperformance: performanceMap[student.student_id] || [],
+//       })),
+//     };
+
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     console.error("Error in getAllStudentsDataAndTest:", error);
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve data",
+//     });
+//   }
+// };
+
+
 
 const getAllStudentsDataAndTest = async (req, res) => {
   try {
@@ -924,19 +1313,6 @@ const getAllStudentsDataAndTest = async (req, res) => {
       });
     }
 
-    // Debug: Log performance results
-    console.log("All performance results:", {
-      count: performanceResults.length,
-      data: performanceResults.map(r => ({
-        performance_id: r.id,
-        student_id: r.student_id,
-        test_id: r.test_id,
-        performance: r.performance,
-        performance_type: typeof r.performance,
-        has_test_creation: !!r.tc_test_id
-      }))
-    });
-
     // Map skill counts to student_id
     const skillCountMap = {};
     skillCountResult.forEach((row) => {
@@ -965,9 +1341,8 @@ const getAllStudentsDataAndTest = async (req, res) => {
           performanceData = typeof perf.performance === 'string'
             ? JSON.parse(perf.performance)
             : perf.performance;
-          console.log(`Processed performance for performance_id ${perf.id}:`, performanceData);
         } catch (jsonError) {
-          console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message, `Raw value: ${perf.performance}`);
+          console.error(`Invalid JSON in performance for performance_id ${perf.id}:`, jsonError.message);
           performanceData = {};
         }
 
@@ -975,56 +1350,28 @@ const getAllStudentsDataAndTest = async (req, res) => {
           .filter(id => !isNaN(parseInt(id, 10)))
           .map(id => parseInt(id, 10));
 
-        // Debug: Log question IDs
-        console.log(`Question IDs for performance_id ${perf.id}:`, questionIds);
-
         let questions = [];
         if (questionIds.length > 0) {
-          const questionSql = `
-            SELECT *
-            FROM questions_mcq
-            WHERE id IN (?)
-          `;
+          const questionSql = `SELECT * FROM questions_mcq WHERE id IN (?)`;
           try {
             questions = await dbQuery(questionSql, [questionIds]);
-            console.log(`Question results for performance_id ${perf.id}:`, {
-              count: questions.length,
-              question_ids: questions.map(q => q.id),
-              questions: questions.map(q => ({
-                question_id: q.id,
-                questions: q.questions,
-                option: q.option,
-                option_type: typeof q.option,
-                correct_answer: q.correct_answer
-              }))
-            });
           } catch (queryError) {
-            console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message, `Question IDs: ${questionIds}`);
+            console.error(`Failed to fetch questions for performance_id ${perf.id}:`, queryError.message);
           }
-        } else {
-          console.log(`No valid question IDs for performance_id ${perf.id}`);
         }
 
         const formattedQuestions = questions.map(q => {
           let parsedOption = [];
-          if (q.option == null) {
-            console.warn(`Null or undefined option for question_id ${q.id}:`, q.option);
-            parsedOption = [];
-          } else if (typeof q.option === 'string') {
+          if (q.option && typeof q.option === 'string') {
             try {
               parsedOption = JSON.parse(q.option);
-              console.log(`Parsed option (string) for question_id ${q.id}:`, parsedOption);
             } catch (optionError) {
-              console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message, `Raw value: ${q.option}`);
-              parsedOption = [];
+              console.error(`Failed to parse option JSON for question_id ${q.id}:`, optionError.message);
             }
           } else if (Array.isArray(q.option)) {
             parsedOption = q.option;
-            console.log(`Using option (array) for question_id ${q.id}:`, parsedOption);
-          } else {
-            console.warn(`Unexpected option type for question_id ${q.id}:`, typeof q.option, q.option);
-            parsedOption = [];
           }
+          
           return {
             question_id: q.id,
             skill_id: q.skill_id,
@@ -1062,20 +1409,13 @@ const getAllStudentsDataAndTest = async (req, res) => {
           } : {},
           questions: formattedQuestions,
           completed_duration: perf.completed_duration ? perf.completed_duration.toString() : null,
+          easy_attended: perf.easy_attended || 0,
+          medium_attended: perf.medium_attended || 0,
+          hard_attended: perf.hard_attended || 0,
           created_at: perf.created_at,
         });
       })
     );
-
-    // Debug: Log final performance map
-    console.log("Final performance map:", {
-      student_ids: Object.keys(performanceMap),
-      counts: Object.fromEntries(Object.entries(performanceMap).map(([sid, data]) => [sid, data.length])),
-      question_counts: Object.fromEntries(Object.entries(performanceMap).map(([sid, data]) => [sid, data.map(d => ({
-        performance_id: d.performance_id,
-        question_count: d.questions.length
-      }))]))
-    });
 
     // Build response
     const response = {
@@ -1097,7 +1437,6 @@ const getAllStudentsDataAndTest = async (req, res) => {
     });
   }
 };
-
 
 const getBidCredits = async (req, res) => {
   const { id } = req.params;

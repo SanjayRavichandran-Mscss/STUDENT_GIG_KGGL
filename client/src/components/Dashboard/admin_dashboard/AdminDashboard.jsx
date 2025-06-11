@@ -92,7 +92,8 @@ const usePermissions = (adminId, menuName) => {
 
         const response = await fetch("http://localhost:5000/api/superadmin/getpermissions", {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type':'application/json'
           },
         });
 
@@ -145,7 +146,7 @@ function Dash() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -193,7 +194,7 @@ function Dashstudent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -228,7 +229,7 @@ function NonTechStudents() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -263,7 +264,7 @@ function Scorearea() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -298,7 +299,7 @@ function Dashproject() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -333,7 +334,7 @@ function DashAllProjects() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -368,7 +369,7 @@ function DashBit() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -403,7 +404,7 @@ function AddQuizzes() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -438,7 +439,7 @@ function AddQuizzesWithAI() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -473,7 +474,7 @@ function AssigningQuizz() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -508,7 +509,7 @@ function TestCreationComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -545,7 +546,7 @@ function Addskillpage() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -580,7 +581,7 @@ function AssignTestComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -615,7 +616,7 @@ function AddBulkQuestionsComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -650,7 +651,7 @@ function ApprovedProjectsComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -685,7 +686,7 @@ function ViewQuestionsComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -720,7 +721,7 @@ function StudentReferComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -766,7 +767,7 @@ function LedgerComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -807,7 +808,7 @@ function ReceivableLedgerComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>
@@ -842,7 +843,7 @@ function PayableLedgerComponent() {
     );
   }
 
-  if (error || !hasAccess) {
+  if (error || hasAccess) {
     return (
       <div className={layoutContainerClass}>
         <div className={sidebarClass}>

@@ -32,7 +32,7 @@
 //     const fetchAdminsAndPermissions = async () => {
 //       try {
 //         // Fetch menus
-//         const menuResponse = await fetch("http://localhost:5000/api/superadmin/getmenus");
+//         const menuResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getmenus");
 //         if (!menuResponse.ok) {
 //           throw new Error(`Menus API failed: ${menuResponse.status} ${menuResponse.statusText}`);
 //         }
@@ -43,7 +43,7 @@
 //         setMenus(menuData.result);
 
 //         // Fetch admins
-//         const adminResponse = await fetch("http://localhost:5000/api/superadmin/getalladmins");
+//         const adminResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getalladmins");
 //         if (!adminResponse.ok) {
 //           throw new Error(`Admins API failed: ${adminResponse.status} ${adminResponse.statusText}`);
 //         }
@@ -53,7 +53,7 @@
 //         }
 
 //         // Fetch permissions
-//         const permissionResponse = await fetch("http://localhost:5000/api/superadmin/getpermissions");
+//         const permissionResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getpermissions");
 //         if (!permissionResponse.ok) {
 //           throw new Error(`Permissions API failed: ${permissionResponse.status} ${permissionResponse.statusText}`);
 //         }
@@ -104,7 +104,7 @@
 
 //   const handleSave = async (adminId) => {
 //     try {
-//       const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spad_id}`, {
+//       const response = await fetch(`https://gig.kggeniuslabs.com/apiapi/superadmin/updatepermissions/${spad_id}`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -127,7 +127,7 @@
 
 //   const handleSaveAll = async () => {
 //     try {
-//       const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spad_id}`, {
+//       const response = await fetch(`https://gig.kggeniuslabs.com/apiapi/superadmin/updatepermissions/${spad_id}`, {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -284,7 +284,7 @@ const AdminAccessControl = () => {
     const fetchAdminsAndPermissions = async () => {
       try {
         // Fetch menus
-        const menuResponse = await fetch("http://localhost:5000/api/superadmin/getmenus");
+        const menuResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getmenus");
         if (!menuResponse.ok) {
           throw new Error(`Menus API failed: ${menuResponse.status} ${menuResponse.statusText}`);
         }
@@ -295,7 +295,7 @@ const AdminAccessControl = () => {
         setMenus(menuData.result);
 
         // Fetch admins
-        const adminResponse = await fetch("http://localhost:5000/api/superadmin/getalladmins");
+        const adminResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getalladmins");
         if (!adminResponse.ok) {
           throw new Error(`Admins API failed: ${adminResponse.status} ${adminResponse.statusText}`);
         }
@@ -305,7 +305,7 @@ const AdminAccessControl = () => {
         }
 
         // Fetch permissions
-        const permissionResponse = await fetch("http://localhost:5000/api/superadmin/getpermissions");
+        const permissionResponse = await fetch("https://gig.kggeniuslabs.com/apiapi/superadmin/getpermissions");
         if (!permissionResponse.ok) {
           throw new Error(`Permissions API failed: ${permissionResponse.status} ${permissionResponse.statusText}`);
         }
@@ -370,7 +370,7 @@ const AdminAccessControl = () => {
 
   const handleSave = async (adminId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spad_id}`, {
+      const response = await fetch(`https://gig.kggeniuslabs.com/apiapi/superadmin/updatepermissions/${spad_id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -421,7 +421,7 @@ const AdminAccessControl = () => {
       });
 
       if (result.isConfirmed) {
-        const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spad_id}`, {
+        const response = await fetch(`https://gig.kggeniuslabs.com/apiapi/superadmin/updatepermissions/${spad_id}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -33,7 +33,7 @@ export function Registration() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const collegeRes = await axios.get("http://localhost:5000/api/college/getcollege");
+        const collegeRes = await axios.get("https://gig.kggeniuslabs.com/apiapi/college/getcollege");
         setCollege(collegeRes.data.msg || []);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -47,7 +47,7 @@ export function Registration() {
   useEffect(() => {
     if (selectedCategory) {
       axios
-        .get(`http://localhost:5000/api/college/course/${selectedCategory}`)
+        .get(`https://gig.kggeniuslabs.com/apiapi/college/course/${selectedCategory}`)
         .then((res) => {
           setColleges(res.data.result || []);
         })
@@ -66,7 +66,7 @@ export function Registration() {
   useEffect(() => {
     if (selectedCollege) {
       axios
-        .get(`http://localhost:5000/api/college/years/${selectedCollege}`)
+        .get(`https://gig.kggeniuslabs.com/apiapi/college/years/${selectedCollege}`)
         .then((res) => {
           setCourses(res.data.result[0]?.years || 0);
         })
@@ -160,7 +160,7 @@ export function Registration() {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/stu/registration", payload);
+      const res = await axios.post("https://gig.kggeniuslabs.com/apiapi/stu/registration", payload);
       if (res.data.status === "inserted") {
         toast.success("Data registered successfully!", {
           position: "top-right",

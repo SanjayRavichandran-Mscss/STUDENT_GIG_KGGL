@@ -193,11 +193,11 @@
 //         };
 
 //         await Promise.all([
-//           axios.post('http://localhost:5000/api/test/submit-test', submissionData, {
+//           axios.post('https://gig.kggeniuslabs.com/apiapi/test/submit-test', submissionData, {
 //             withCredentials: true,
 //             headers: { 'Content-Type': 'application/json' },
 //           }),
-//           axios.post('http://localhost:5000/api/test/save-performance', performanceData, {
+//           axios.post('https://gig.kggeniuslabs.com/apiapi/test/save-performance', performanceData, {
 //             withCredentials: true,
 //             headers: { 'Content-Type': 'application/json' },
 //           }),
@@ -250,7 +250,7 @@
 //     const storedAttemptId = sessionStorage.getItem(storageKey);
 //     if (storedAttemptId) {
 //       try {
-//         const response = await axios.get(`http://localhost:5000/api/test/test-time/${storedAttemptId}`, {
+//         const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${storedAttemptId}`, {
 //           withCredentials: true,
 //         });
 //         setAttemptId(storedAttemptId);
@@ -271,7 +271,7 @@
 
 //     try {
 //       const response = await axios.post(
-//         'http://localhost:5000/api/test/start-test',
+//         'https://gig.kggeniuslabs.com/apiapi/test/start-test',
 //         { student_id: studentId, test_id: testId, test_type: type },
 //         { withCredentials: true }
 //       );
@@ -318,7 +318,7 @@
 //       try {
 //         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
 //         const response = await axios.get(
-//           `http://localhost:5000/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
+//           `https://gig.kggeniuslabs.com/apiapi/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
 //             askedQuestionIds
 //           ).join(',')}`,
 //           { withCredentials: true }
@@ -489,7 +489,7 @@
 //   useEffect(() => {
 //     const fetchTestData = async () => {
 //       try {
-//         const response = await axios.get(`http://localhost:5000/api/test/all-tests/${studentId}`, {
+//         const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/all-tests/${studentId}`, {
 //           withCredentials: true,
 //         });
 //         const tests = response.data;
@@ -564,7 +564,7 @@
 
 //     const timer = setInterval(() => {
 //       axios
-//         .get(`http://localhost:5000/api/test/test-time/${attemptId}`, {
+//         .get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${attemptId}`, {
 //           withCredentials: true,
 //         })
 //         .then((response) => {
@@ -854,6 +854,40 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import axios from 'axios';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -1046,11 +1080,11 @@ export default function AttendTest() {
         };
 
         await Promise.all([
-          axios.post('http://localhost:5000/api/test/submit-test', submissionData, {
+          axios.post('https://gig.kggeniuslabs.com/apiapi/test/submit-test', submissionData, {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           }),
-          axios.post('http://localhost:5000/api/test/save-performance', performanceData, {
+          axios.post('https://gig.kggeniuslabs.com/apiapi/test/save-performance', performanceData, {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -1103,7 +1137,7 @@ export default function AttendTest() {
     const storedAttemptId = sessionStorage.getItem(storageKey);
     if (storedAttemptId) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/test/test-time/${storedAttemptId}`, {
+        const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${storedAttemptId}`, {
           withCredentials: true,
         });
         setAttemptId(storedAttemptId);
@@ -1124,7 +1158,7 @@ export default function AttendTest() {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/test/start-test',
+        'https://gig.kggeniuslabs.com/apiapi/test/start-test',
         { student_id: studentId, test_id: testId, test_type: type },
         { withCredentials: true }
       );
@@ -1171,7 +1205,7 @@ export default function AttendTest() {
       try {
         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
         const response = await axios.get(
-          `http://localhost:5000/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
+          `https://gig.kggeniuslabs.com/apiapi/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
             askedQuestionIds
           ).join(',')}`,
           { withCredentials: true }
@@ -1280,7 +1314,7 @@ export default function AttendTest() {
         nextLevel = 2;
       } else if (
         currentLevel === 2 &&
-        newQuestionsAskedByLevel.medium > test.medium_level_question &&
+        newQuestionsAskedByLevel.medium >= test.medium_level_question &&
         newCorrectCounts.medium >= test.medium_pass_mark &&
         test.difficulty_level_id >= 3
       ) {
@@ -1346,7 +1380,7 @@ export default function AttendTest() {
   useEffect(() => {
     const fetchTestData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/test/all-tests/${studentId}`, {
+        const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/all-tests/${studentId}`, {
           withCredentials: true,
         });
         const tests = response.data;
@@ -1404,9 +1438,9 @@ export default function AttendTest() {
           ...selectedTest,
           primary_questions,
           total_no_of_questions: TOTAL_QUESTIONS,
-          easy_level_question: selectedTest.easy_level_question || 15,
-          medium_level_question: selectedTest.medium_level_question || 4,
-          hard_level_question: selectedTest.hard_level_question || 1,
+          easy_level_question: selectedTest.easy_level_question || 10,
+          medium_level_question: selectedTest.medium_level_question || 6,
+          hard_level_question: selectedTest.hard_level_question || 4,
           easy_pass_mark: selectedTest.easy_pass_mark || 6,
           medium_pass_mark: selectedTest.medium_pass_mark || 4,
           hard_pass_mark: selectedTest.hard_pass_mark || 2,
@@ -1426,7 +1460,7 @@ export default function AttendTest() {
 
     const timer = setInterval(() => {
       axios
-        .get(`http://localhost:5000/api/test/test-time/${attemptId}`, {
+        .get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${attemptId}`, {
           withCredentials: true,
         })
         .then((response) => {

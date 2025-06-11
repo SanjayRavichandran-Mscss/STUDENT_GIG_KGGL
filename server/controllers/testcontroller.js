@@ -2487,10 +2487,10 @@ const saveStudentPerformance = async (req, res) => {
       return res.status(400).json({ msg: "Invalid duration format (HH:MM:SS)" });
     }
 
-    // Validate question IDs and get their difficulty levels
+    // Validate question IDs and get their difficulty levels and correct answers
     const questionIds = Object.keys(performance).map(Number);
     const validateSql = `
-      SELECT id, difficulty_level_id
+      SELECT id, difficulty_level_id, correct_answer
       FROM questions_mcq
       WHERE id IN (?)
     `;
@@ -2505,28 +2505,36 @@ const saveStudentPerformance = async (req, res) => {
       return res.status(400).json({ msg: "Invalid question IDs in performance" });
     }
 
-    // Count questions by difficulty level
-    const levelCounts = {
+    // Calculate scores by difficulty level
+    let levelCounts = {
       easy_attended: 0,
       medium_attended: 0,
-      hard_attended: 0
+      hard_attended: 0,
+      easy_score: 0,
+      medium_score: 0,
+      hard_score: 0,
     };
 
     validQuestions.forEach(question => {
-      switch(question.difficulty_level_id) {
+      const studentAnswer = performance[question.id];
+      const isCorrect = studentAnswer && studentAnswer.trim() === question.correct_answer.trim();
+      switch (question.difficulty_level_id) {
         case 1:
           levelCounts.easy_attended++;
+          if (isCorrect) levelCounts.easy_score++;
           break;
         case 2:
           levelCounts.medium_attended++;
+          if (isCorrect) levelCounts.medium_score++;
           break;
         case 3:
           levelCounts.hard_attended++;
+          if (isCorrect) levelCounts.hard_score++;
           break;
       }
     });
 
-    // Check test attempt (optional based on your requirements)
+    // Check test attempt (keeping existing logic)
     const checkAttemptSql = `
       SELECT id
       FROM test_attempts
@@ -2539,29 +2547,29 @@ const saveStudentPerformance = async (req, res) => {
       });
     });
 
-    // if (!attempt) {
-    //   return res.status(404).json({ msg: "No completed test attempt found" });
-    // }
-
     const performanceJson = JSON.stringify(performance);
     const insertSql = `
       INSERT INTO studentperformance 
         (test_id, student_id, performance, completed_duration, 
-         easy_attended, medium_attended, hard_attended)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+         easy_attended, medium_attended, hard_attended,
+         easy_score, medium_score, hard_score)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const result = await new Promise((resolve, reject) => {
       db.query(
-        insertSql, 
+        insertSql,
         [
-          test_id, 
-          student_id, 
-          performanceJson, 
+          test_id,
+          student_id,
+          performanceJson,
           completed_duration,
           levelCounts.easy_attended,
           levelCounts.medium_attended,
-          levelCounts.hard_attended
-        ], 
+          levelCounts.hard_attended,
+          levelCounts.easy_score,
+          levelCounts.medium_score,
+          levelCounts.hard_score,
+        ],
         (err, result) => {
           if (err) reject(err);
           else resolve(result);
@@ -2572,7 +2580,14 @@ const saveStudentPerformance = async (req, res) => {
     return res.status(201).json({
       msg: "Student performance saved successfully",
       performance_id: result.insertId,
-      level_counts: levelCounts
+      level_counts: {
+        easy_attended: levelCounts.easy_attended,
+        medium_attended: levelCounts.medium_attended,
+        hard_attended: levelCounts.hard_attended,
+        easy_score: levelCounts.easy_score,
+        medium_score: levelCounts.medium_score,
+        hard_score: levelCounts.hard_score,
+      },
     });
   } catch (error) {
     console.error("Error in saveStudentPerformance:", error);

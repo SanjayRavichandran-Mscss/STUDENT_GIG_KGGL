@@ -17,7 +17,7 @@
 //     const fetchBitInfo = async () => {
 //       try {
 //         const response = await axios.get(
-//           `http://localhost:5000/api/admin/bittedDetail/${decoded}`,
+//           `https://gig.kggeniuslabs.com/apiapi/admin/bittedDetail/${decoded}`,
 //           {
 //             withCredentials: true,
 //           }
@@ -62,7 +62,7 @@
 //   const handleAccept = async (stuid, proid, email) => {
 //     try {
 //       const response = await axios.post(
-//         `http://localhost:5000/api/admin/accept/${stuid}/${proid}`,
+//         `https://gig.kggeniuslabs.com/apiapi/admin/accept/${stuid}/${proid}`,
 //         { email },
 //         { withCredentials: true }
 //       );
@@ -98,7 +98,7 @@
 //   const handleDecline = async (stuid, proid, email) => {
 //     try {
 //       const response = await axios.post(
-//         `http://localhost:5000/api/admin/decline/${stuid}/${proid}`,
+//         `https://gig.kggeniuslabs.com/apiapi/admin/decline/${stuid}/${proid}`,
 //         { email },
 //         { withCredentials: true }
 //       );
@@ -255,7 +255,7 @@ function BitConfirm() {
     const fetchBitInfo = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/admin/bittedDetail/${decodedProjectId}`,
+          `https://gig.kggeniuslabs.com/apiapi/admin/bittedDetail/${decodedProjectId}`,
           {
             headers: {
               "Admin-ID": decodedAdminId,
@@ -303,7 +303,7 @@ function BitConfirm() {
   const handleAccept = async (stuid, proid, email) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/admin/accept/${stuid}/${proid}`,
+        `https://gig.kggeniuslabs.com/apiapi/admin/accept/${stuid}/${proid}`,
         { email },
         {
           headers: {
@@ -344,7 +344,7 @@ function BitConfirm() {
   const handleDecline = async (stuid, proid, email) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/admin/decline/${stuid}/${proid}`,
+        `https://gig.kggeniuslabs.com/apiapi/admin/decline/${stuid}/${proid}`,
         { email },
         {
           headers: {

@@ -25,10 +25,10 @@ export default function AssignTest() {
       setIsLoading(true);
       try {
         const [testsResponse, questionsResponse, skillsResponse, levelsResponse] = await Promise.all([
-          axios.get("http://localhost:5000/api/test/tests", { withCredentials: true }),
-          axios.get("http://localhost:5000/api/test/available-questions", { withCredentials: true }),
-          axios.get("http://localhost:5000/api/test/skills", { withCredentials: true }),
-          axios.get("http://localhost:5000/api/test/difficulty-levels", { withCredentials: true }),
+          axios.get("https://gig.kggeniuslabs.com/apiapi/test/tests", { withCredentials: true }),
+          axios.get("https://gig.kggeniuslabs.com/apiapi/test/available-questions", { withCredentials: true }),
+          axios.get("https://gig.kggeniuslabs.com/apiapi/test/skills", { withCredentials: true }),
+          axios.get("https://gig.kggeniuslabs.com/apiapi/test/difficulty-levels", { withCredentials: true }),
         ]);
         setTests(Array.isArray(testsResponse.data) ? testsResponse.data : []);
         setAvailableQuestions(Array.isArray(questionsResponse.data) ? questionsResponse.data : []);
@@ -55,7 +55,7 @@ export default function AssignTest() {
     try {
       const newStatus = !currentStatus;
       const response = await axios.post(
-        "http://localhost:5000/api/test/toggle-test-status-skill-based",
+        "https://gig.kggeniuslabs.com/apiapi/test/toggle-test-status-skill-based",
         { test_id: testId, active_status: newStatus },
         { withCredentials: true }
       );

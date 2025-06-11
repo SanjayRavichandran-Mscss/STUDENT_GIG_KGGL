@@ -1027,6 +1027,9 @@ const getStudentDataAndTest = async (req, res) => {
           easy_attended: perf.easy_attended || 0,
           medium_attended: perf.medium_attended || 0,
           hard_attended: perf.hard_attended || 0,
+          easy_score: perf.easy_score || 0,
+          medium_score: perf.medium_score || 0,
+          hard_score: perf.hard_score || 0,
           created_at: perf.created_at,
         };
       })
@@ -1269,7 +1272,6 @@ const getStudentDataAndTest = async (req, res) => {
 // };
 
 
-
 const getAllStudentsDataAndTest = async (req, res) => {
   try {
     const studentsQuery = "SELECT * FROM students WHERE role_id = 2";
@@ -1412,6 +1414,9 @@ const getAllStudentsDataAndTest = async (req, res) => {
           easy_attended: perf.easy_attended || 0,
           medium_attended: perf.medium_attended || 0,
           hard_attended: perf.hard_attended || 0,
+          easy_score: perf.easy_score || 0,
+          medium_score: perf.medium_score || 0,
+          hard_score: perf.hard_score || 0,
           created_at: perf.created_at,
         });
       })

@@ -71,7 +71,7 @@ function StudentsData() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://gig.kggeniuslabs.com/apiapi/admin/student-details");
+        const res = await axios.get("https://gig.kggeniuslabs.com/api/api/admin/student-details");
         if (res.data.status && Array.isArray(res.data.result)) {
           // Clean the resume_file and profile_photo paths
           const cleanedData = res.data.result.map((student) => ({
@@ -251,7 +251,7 @@ function StudentsData() {
                           <img
                             src={
                               student.profile_photo
-                                ? `https://gig.kggeniuslabs.com/apiresumes/${student.profile_photo}`
+                                ? `https://gig.kggeniuslabs.com/api/resumes/${student.profile_photo}`
                                 : defaultProfile
                             }
                             alt="Profile"
@@ -329,7 +329,7 @@ function StudentsData() {
                   <img
                     src={
                       selectedStudent.profile_photo
-                        ? `https://gig.kggeniuslabs.com/apiresumes/${selectedStudent.profile_photo}`
+                        ? `https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.profile_photo}`
                         : defaultProfile
                     }
                     alt="Profile"
@@ -480,7 +480,7 @@ function StudentsData() {
                   <strong className="text-gray-700 text-lg">Resume:</strong>
                   {selectedStudent.resume_file && (
                     <a
-                      href={`https://gig.kggeniuslabs.com/apiresumes/${selectedStudent.resume_file}`}
+                      href={`https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.resume_file}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 transition duration-200"
@@ -494,7 +494,7 @@ function StudentsData() {
                   <div className="h-[60vh] sm:h-[70vh] border rounded-lg overflow-hidden shadow-sm">
                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                       <Viewer
-                        fileUrl={`https://gig.kggeniuslabs.com/apiresumes/${selectedStudent.resume_file}`}
+                        fileUrl={`https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.resume_file}`}
                         plugins={[defaultLayoutPluginInstance]}
                         initialPage={0}
                       />
@@ -527,7 +527,7 @@ function StudentsData() {
                 <img
                   src={
                     zoomedProfile.profile_photo
-                      ? `https://gig.kggeniuslabs.com/apiresumes/${zoomedProfile.profile_photo}`
+                      ? `https://gig.kggeniuslabs.com/api/resumes/${zoomedProfile.profile_photo}`
                       : defaultProfile
                   }
                   alt="Profile Photo"
@@ -537,7 +537,7 @@ function StudentsData() {
                 <a
                   href={
                     zoomedProfile.profile_photo
-                      ? `https://gig.kggeniuslabs.com/apiresumes/${zoomedProfile.profile_photo}`
+                      ? `https://gig.kggeniuslabs.com/api/resumes/${zoomedProfile.profile_photo}`
                       : defaultProfile
                   }
                   target="_blank"

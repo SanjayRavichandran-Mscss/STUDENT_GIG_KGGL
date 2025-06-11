@@ -68,7 +68,7 @@
 //   useEffect(() => {
 //     const fetchProjects = async () => {
 //       try {
-//         const response = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/getallprojects');
+//         const response = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects');
 //         setProjects(response.data);
 //       } catch (error) {
 //         console.error('Error fetching projects:', error.message);
@@ -88,7 +88,7 @@
 
 //     const fetchData = async () => {
 //       try {
-//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history');
+//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
 //         if (historyResponse.data.status) {
 //           setTransactions(historyResponse.data.result);
 //           updateBalance();
@@ -239,7 +239,7 @@
 //       formDataToSend.append('created_by', createdBy);
 
 //       const response = await axios.post(
-//         'https://gig.kggeniuslabs.com/apiapi/admin/save-receivable-ledger',
+//         'https://gig.kggeniuslabs.com/api/api/admin/save-receivable-ledger',
 //         formDataToSend,
 //         { headers: { 'Content-Type': 'multipart/form-data' } }
 //       );
@@ -251,7 +251,7 @@
 //           text: 'Your receivable transaction has been successfully recorded!',
 //         });
 
-//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history');
+//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
 //         if (historyResponse.data.status) {
 //           setTransactions(historyResponse.data.result);
 //           updateBalance();
@@ -302,7 +302,7 @@
 //           <div>
 //             <strong>Transaction Screenshot:</strong>{' '}
 //             {transaction.transaction_screenshot ? (
-//               <a href={`https://gig.kggeniuslabs.com/api${transaction.transaction_screenshot}`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+//               <a href={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
 //                 View
 //               </a>
 //             ) : 'N/A'}
@@ -324,7 +324,7 @@
 
 //   const viewScreenshot = (screenshotPath) => {
 //     MySwal.fire({
-//       imageUrl: `https://gig.kggeniuslabs.com/api${screenshotPath}`,
+//       imageUrl: `https://gig.kggeniuslabs.com/api/${screenshotPath}`,
 //       imageAlt: 'Transaction Screenshot',
 //       showCloseButton: true,
 //       confirmButtonText: 'Close',
@@ -675,7 +675,7 @@ const ReceivableLedger = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/getallprojects');
+        const response = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects');
         setProjects(response.data);
         
         // Set the last project as default selected
@@ -701,7 +701,7 @@ const ReceivableLedger = () => {
 
     const fetchData = async () => {
       try {
-        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
           updateProjectSummary();
@@ -844,7 +844,7 @@ const ReceivableLedger = () => {
       formDataToSend.append('created_by', createdBy);
 
       const response = await axios.post(
-        'https://gig.kggeniuslabs.com/apiapi/admin/save-receivable-ledger',
+        'https://gig.kggeniuslabs.com/api/api/admin/save-receivable-ledger',
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -856,7 +856,7 @@ const ReceivableLedger = () => {
           text: 'Your receivable transaction has been successfully recorded!',
         });
 
-        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
           updateProjectSummary();
@@ -955,13 +955,13 @@ const ReceivableLedger = () => {
                   <div className="text-sm font-medium text-gray-500">Screenshot</div>
                   <div className="mt-2">
                     <img 
-                      src={`https://gig.kggeniuslabs.com/api${transaction.transaction_screenshot}`} 
+                      src={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`} 
                       alt="Transaction Screenshot" 
                       className="rounded-lg border border-gray-200 max-w-full h-auto max-h-40"
                     />
                     <div className="mt-2 flex gap-2">
                       <a 
-                        href={`https://gig.kggeniuslabs.com/api${transaction.transaction_screenshot}`} 
+                        href={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -969,7 +969,7 @@ const ReceivableLedger = () => {
                         <Eye className="w-4 h-4" /> View Full
                       </a>
                       <a 
-                        href={`https://gig.kggeniuslabs.com/api${transaction.transaction_screenshot}`} 
+                        href={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`} 
                         download
                         className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
                       >

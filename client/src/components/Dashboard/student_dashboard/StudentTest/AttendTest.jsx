@@ -193,11 +193,11 @@
 //         };
 
 //         await Promise.all([
-//           axios.post('https://gig.kggeniuslabs.com/apiapi/test/submit-test', submissionData, {
+//           axios.post('https://gig.kggeniuslabs.com/api/api/test/submit-test', submissionData, {
 //             withCredentials: true,
 //             headers: { 'Content-Type': 'application/json' },
 //           }),
-//           axios.post('https://gig.kggeniuslabs.com/apiapi/test/save-performance', performanceData, {
+//           axios.post('https://gig.kggeniuslabs.com/api/api/test/save-performance', performanceData, {
 //             withCredentials: true,
 //             headers: { 'Content-Type': 'application/json' },
 //           }),
@@ -250,7 +250,7 @@
 //     const storedAttemptId = sessionStorage.getItem(storageKey);
 //     if (storedAttemptId) {
 //       try {
-//         const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${storedAttemptId}`, {
+//         const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/test/test-time/${storedAttemptId}`, {
 //           withCredentials: true,
 //         });
 //         setAttemptId(storedAttemptId);
@@ -271,7 +271,7 @@
 
 //     try {
 //       const response = await axios.post(
-//         'https://gig.kggeniuslabs.com/apiapi/test/start-test',
+//         'https://gig.kggeniuslabs.com/api/api/test/start-test',
 //         { student_id: studentId, test_id: testId, test_type: type },
 //         { withCredentials: true }
 //       );
@@ -318,7 +318,7 @@
 //       try {
 //         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
 //         const response = await axios.get(
-//           `https://gig.kggeniuslabs.com/apiapi/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
+//           `https://gig.kggeniuslabs.com/api/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
 //             askedQuestionIds
 //           ).join(',')}`,
 //           { withCredentials: true }
@@ -489,7 +489,7 @@
 //   useEffect(() => {
 //     const fetchTestData = async () => {
 //       try {
-//         const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/all-tests/${studentId}`, {
+//         const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/test/all-tests/${studentId}`, {
 //           withCredentials: true,
 //         });
 //         const tests = response.data;
@@ -564,7 +564,7 @@
 
 //     const timer = setInterval(() => {
 //       axios
-//         .get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${attemptId}`, {
+//         .get(`https://gig.kggeniuslabs.com/api/api/test/test-time/${attemptId}`, {
 //           withCredentials: true,
 //         })
 //         .then((response) => {
@@ -1080,11 +1080,11 @@ export default function AttendTest() {
         };
 
         await Promise.all([
-          axios.post('https://gig.kggeniuslabs.com/apiapi/test/submit-test', submissionData, {
+          axios.post('https://gig.kggeniuslabs.com/api/api/test/submit-test', submissionData, {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           }),
-          axios.post('https://gig.kggeniuslabs.com/apiapi/test/save-performance', performanceData, {
+          axios.post('https://gig.kggeniuslabs.com/api/api/test/save-performance', performanceData, {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -1137,7 +1137,7 @@ export default function AttendTest() {
     const storedAttemptId = sessionStorage.getItem(storageKey);
     if (storedAttemptId) {
       try {
-        const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${storedAttemptId}`, {
+        const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/test/test-time/${storedAttemptId}`, {
           withCredentials: true,
         });
         setAttemptId(storedAttemptId);
@@ -1158,7 +1158,7 @@ export default function AttendTest() {
 
     try {
       const response = await axios.post(
-        'https://gig.kggeniuslabs.com/apiapi/test/start-test',
+        'https://gig.kggeniuslabs.com/api/api/test/start-test',
         { student_id: studentId, test_id: testId, test_type: type },
         { withCredentials: true }
       );
@@ -1205,7 +1205,7 @@ export default function AttendTest() {
       try {
         const levelId = level === 1 ? 1 : level === 2 ? 2 : 3;
         const response = await axios.get(
-          `https://gig.kggeniuslabs.com/apiapi/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
+          `https://gig.kggeniuslabs.com/api/api/test/questions/${test.skill_id}/${levelId}?count=${count}&exclude=${Array.from(
             askedQuestionIds
           ).join(',')}`,
           { withCredentials: true }
@@ -1380,7 +1380,7 @@ export default function AttendTest() {
   useEffect(() => {
     const fetchTestData = async () => {
       try {
-        const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/test/all-tests/${studentId}`, {
+        const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/test/all-tests/${studentId}`, {
           withCredentials: true,
         });
         const tests = response.data;
@@ -1460,7 +1460,7 @@ export default function AttendTest() {
 
     const timer = setInterval(() => {
       axios
-        .get(`https://gig.kggeniuslabs.com/apiapi/test/test-time/${attemptId}`, {
+        .get(`https://gig.kggeniuslabs.com/api/api/test/test-time/${attemptId}`, {
           withCredentials: true,
         })
         .then((response) => {

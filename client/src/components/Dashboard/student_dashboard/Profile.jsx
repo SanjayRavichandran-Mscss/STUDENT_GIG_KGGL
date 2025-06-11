@@ -50,10 +50,10 @@
 //     const fetchData = async () => {
 //       try {
 //         const [profileRes, skillsRes, studentSkillsRes, imageRes] = await Promise.all([
-//           axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getdata/${decoded}`),
-//           axios.get("https://gig.kggeniuslabs.com/apiapi/college/skill"),
-//           axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getSkill/${decoded}`),
-//           axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getall/${decoded}`),
+//           axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getdata/${decoded}`),
+//           axios.get("https://gig.kggeniuslabs.com/api/api/college/skill"),
+//           axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getSkill/${decoded}`),
+//           axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getall/${decoded}`),
 //         ]);
 
 //         setProfile({
@@ -119,7 +119,7 @@
 //     if (skillName.length > 50) return "Custom skill name cannot exceed 50 characters.";
 
 //     try {
-//       const response = await axios.get("https://gig.kggeniuslabs.com/apiapi/college/skill");
+//       const response = await axios.get("https://gig.kggeniuslabs.com/api/api/college/skill");
 //       const existingSkills = response.data.msg || [];
 //       const skillExists = existingSkills.some(
 //         (skill) => skill.skill_name.toLowerCase() === skillName.trim().toLowerCase()
@@ -137,7 +137,7 @@
 //   // Check for duplicate GitHub/LinkedIn links
 //   const checkDuplicateLinks = async (github, linkedin) => {
 //     try {
-//       const response = await axios.post("https://gig.kggeniuslabs.com/apiapi/stu/check-links", {
+//       const response = await axios.post("https://gig.kggeniuslabs.com/api/api/stu/check-links", {
 //         github_link: github,
 //         linkedin_link: linkedin,
 //         student_id: decoded,
@@ -498,14 +498,14 @@
 //       });
 //       formData.append("skills", JSON.stringify(skillsData));
 
-//       const response = await axios.post("https://gig.kggeniuslabs.com/apiapi/stu/upload", formData, {
+//       const response = await axios.post("https://gig.kggeniuslabs.com/api/api/stu/upload", formData, {
 //         headers: {
 //           "Content-Type": "multipart/form-data",
 //         },
 //       });
 
 //       if (response.data === "Profile updated successfully") {
-//         const skillRes = await axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getSkill/${decoded}`);
+//         const skillRes = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getSkill/${decoded}`);
 //         setProfile((prev) => ({
 //           ...prev,
 //           skillNames: skillRes.data.map((e) => e.skill_name),
@@ -627,7 +627,7 @@
 //             <div className="p-4">
 //               {profile.image ? (
 //                 <img 
-//                   src={`https://gig.kggeniuslabs.com/apiresumes/${profile.image}`} 
+//                   src={`https://gig.kggeniuslabs.com/api/resumes/${profile.image}`} 
 //                   alt="Profile" 
 //                   className="w-full h-auto rounded-lg border-2 border-white shadow-lg"
 //                 />
@@ -653,7 +653,7 @@
 //         <div className="flex flex-col sm:flex-row items-center mb-6">
 //           <div className="relative group">
 //             <img
-//               src={profile.image ? `https://gig.kggeniuslabs.com/apiresumes/${profile.image}` : backgroundimg}
+//               src={profile.image ? `https://gig.kggeniuslabs.com/api/resumes/${profile.image}` : backgroundimg}
 //               className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg mb-4 sm:mb-0 sm:mr-4 cursor-pointer hover:opacity-90 transition-opacity"
 //               alt="Profile"
 //               onClick={toggleImageModal}
@@ -1009,10 +1009,10 @@ export default function Profile() {
     const fetchData = async () => {
       try {
         const [profileRes, skillsRes, studentSkillsRes, imageRes] = await Promise.all([
-          axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getdata/${decoded}`),
-          axios.get("https://gig.kggeniuslabs.com/apiapi/college/skill"),
-          axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getSkill/${decoded}`),
-          axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getall/${decoded}`),
+          axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getdata/${decoded}`),
+          axios.get("https://gig.kggeniuslabs.com/api/api/college/skill"),
+          axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getSkill/${decoded}`),
+          axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getall/${decoded}`),
         ]);
 
         setProfile({
@@ -1090,7 +1090,7 @@ export default function Profile() {
     if (skillName.length > 50) return "Custom skill name cannot exceed 50 characters.";
 
     try {
-      const response = await axios.get("https://gig.kggeniuslabs.com/apiapi/college/skill");
+      const response = await axios.get("https://gig.kggeniuslabs.com/api/api/college/skill");
       const existingSkills = response.data.msg || [];
       const skillExists = existingSkills.some(
         (skill) => skill.skill_name.toLowerCase() === skillName.trim().toLowerCase()
@@ -1108,7 +1108,7 @@ export default function Profile() {
   // Check for duplicate GitHub/LinkedIn links
   const checkDuplicateLinks = async (github, linkedin) => {
     try {
-      const response = await axios.post("https://gig.kggeniuslabs.com/apiapi/stu/check-links", {
+      const response = await axios.post("https://gig.kggeniuslabs.com/api/api/stu/check-links", {
         github_link: github,
         linkedin_link: linkedin,
         student_id: decoded,
@@ -1475,14 +1475,14 @@ export default function Profile() {
       });
       formData.append("skills", JSON.stringify(skillsData));
 
-      const response = await axios.post("https://gig.kggeniuslabs.com/apiapi/stu/upload", formData, {
+      const response = await axios.post("https://gig.kggeniuslabs.com/api/api/stu/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.data === "Profile updated successfully") {
-        const skillRes = await axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/getSkill/${decoded}`);
+        const skillRes = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/getSkill/${decoded}`);
         setProfile((prev) => ({
           ...prev,
           skillNames: skillRes.data.map((e) => e.skill_name),
@@ -1604,7 +1604,7 @@ export default function Profile() {
             <div className="p-2 sm:p-4">
               {profile.image ? (
                 <img 
-                  src={`https://gig.kggeniuslabs.com/apiresumes/${profile.imagebonanza}profile.image}`} 
+                  src={`https://gig.kggeniuslabs.com/api/resumes/${profile.imagebonanza}profile.image}`} 
                   alt="Profile" 
                   className="w-full max-w-[80vw] sm:max-w-[500px] h-auto max-h-[80vh] rounded-lg border-4 border-white shadow-lg object-contain"
                 />
@@ -1630,7 +1630,7 @@ export default function Profile() {
         <div className="flex flex-col sm:flex-row items-center mb-6">
           <div className="relative group">
             <img
-              src={profile.image ? `https://gig.kggeniuslabs.com/apiresumes/${profile.image}` : backgroundimg}
+              src={profile.image ? `https://gig.kggeniuslabs.com/api/resumes/${profile.image}` : backgroundimg}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-lg mb-4 sm:mb-0 sm:mr-4 cursor-pointer hover:opacity-90 transition-opacity"
               alt="Profile"
               onClick={toggleImageModal}

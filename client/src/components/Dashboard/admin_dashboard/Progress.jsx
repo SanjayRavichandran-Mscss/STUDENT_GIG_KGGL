@@ -24,7 +24,7 @@ const Kgcas = () => {
   const [Data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get(`https://gig.kggeniuslabs.com/apiapi/admin/skill`).then((res) => {
+    axios.get(`https://gig.kggeniuslabs.com/api/api/admin/skill`).then((res) => {
       setData(res.data.result);
     });
   }, []);

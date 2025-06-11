@@ -13,7 +13,7 @@
 //     const fetchProjects = async () => {
 //       try {
 //         setIsLoading(true);
-//         const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/projects-by-level/${decoded}`);
+//         const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/projects-by-level/${decoded}`);
 
 //         // Check if the response status is success
 //         if (response.data.status === "success") {
@@ -172,7 +172,7 @@ export default function StudentProject({ credits }) {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`https://gig.kggeniuslabs.com/apiapi/stu/projects-by-level/${decoded}`);
+        const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/projects-by-level/${decoded}`);
 
         // Check if the response status is success
         if (response.data.status === "success") {

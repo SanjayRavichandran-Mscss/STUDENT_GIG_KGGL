@@ -63,11 +63,11 @@
 //     const fetchData = async () => {
 //       try {
 //         const [expenseResponse, studentsResponse, projectsResponse, historyResponse, receivableResponse] = await Promise.all([
-//           axios.get('https://gig.kggeniuslabs.com/apiapi/admin/expense-types'),
-//           axios.get('https://gig.kggeniuslabs.com/apiapi/admin/student-details'),
-//           axios.get('https://gig.kggeniuslabs.com/apiapi/admin/getallprojects'),
-//           axios.get('https://gig.kggeniuslabs.com/apiapi/admin/payable-ledger-history'),
-//           axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history'),
+//           axios.get('https://gig.kggeniuslabs.com/api/api/admin/expense-types'),
+//           axios.get('https://gig.kggeniuslabs.com/api/api/admin/student-details'),
+//           axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects'),
+//           axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history'),
+//           axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history'),
 //         ]);
 
 //         if (expenseResponse.data.status) setExpenseTypes(expenseResponse.data.result);
@@ -185,7 +185,7 @@
 //       if (result.isConfirmed) {
 //         const newSubOption = result.value;
 //         try {
-//           const response = await axios.post('https://gig.kggeniuslabs.com/apiapi/admin/expense-types', {
+//           const response = await axios.post('https://gig.kggeniuslabs.com/api/api/admin/expense-types', {
 //             type: 'Operational Payment',
 //             subtype: newSubOption,
 //           });
@@ -539,7 +539,7 @@
 //       }
 
 //       const response = await axios.post(
-//         'https://gig.kggeniuslabs.com/apiapi/admin/save-payable-ledger',
+//         'https://gig.kggeniuslabs.com/api/api/admin/save-payable-ledger',
 //         formDataToSend,
 //         { headers: { 'Content-Type': 'multipart/form-data' } }
 //       );
@@ -551,7 +551,7 @@
 //           text: 'Your payable transaction has been successfully recorded!',
 //         });
 
-//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/payable-ledger-history');
+//         const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history');
 //         if (historyResponse.data.status) setTransactions(historyResponse.data.result);
 //         resetForm();
 //       } else {
@@ -634,7 +634,7 @@
 //                     <strong>Transaction Screenshot:</strong>{' '}
 //                     {student.transaction_screenshot ? (
 //                       <a
-//                         href={`https://gig.kggeniuslabs.com/api${student.transaction_screenshot}`}
+//                         href={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`}
 //                         target="_blank"
 //                         rel="noopener noreferrer"
 //                         className="text-indigo-600 hover:underline"
@@ -671,7 +671,7 @@
 
 //   const viewScreenshot = (screenshotPath) => {
 //     MySwal.fire({
-//       imageUrl: `https://gig.kggeniuslabs.com/api${screenshotPath}`,
+//       imageUrl: `https://gig.kggeniuslabs.com/api/${screenshotPath}`,
 //       imageAlt: 'Transaction Screenshot',
 //       showCloseButton: true,
 //       confirmButtonText: 'Close',
@@ -1018,7 +1018,7 @@
 //                           student.transaction_screenshot ? (
 //                             <div className="mt-1 text-sm text-gray-600">
 //                               <a
-//                                 href={`https://gig.kggeniuslabs.com/api${student.transaction_screenshot}`}
+//                                 href={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`}
 //                                 target="_blank"
 //                                 rel="noopener noreferrer"
 //                                 className="text-indigo-600 hover:underline"
@@ -1296,11 +1296,11 @@ const PayableLedger = () => {
     if (createdBy === null) return;
     try {
       const [expenseResponse, studentsResponse, projectsResponse, historyResponse, receivableResponse] = await Promise.all([
-        axios.get('https://gig.kggeniuslabs.com/apiapi/admin/expense-types'),
-        axios.get('https://gig.kggeniuslabs.com/apiapi/admin/student-details'),
-        axios.get('https://gig.kggeniuslabs.com/apiapi/admin/getallprojects'),
-        axios.get('https://gig.kggeniuslabs.com/apiapi/admin/payable-ledger-history'),
-        axios.get('https://gig.kggeniuslabs.com/apiapi/admin/receivable-ledger-history'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/expense-types'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/student-details'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history'),
       ]);
 
       if (expenseResponse.data.status) setExpenseTypes(expenseResponse.data.result);
@@ -1506,7 +1506,7 @@ const PayableLedger = () => {
       if (result.isConfirmed) {
         const newSubOption = result.value;
         try {
-          const response = await axios.post('https://gig.kggeniuslabs.com/apiapi/admin/expense-types', {
+          const response = await axios.post('https://gig.kggeniuslabs.com/api/api/admin/expense-types', {
             type: 'Operational Payment',
             subtype: newSubOption,
           });
@@ -1804,7 +1804,7 @@ const PayableLedger = () => {
       });
 
       const response = await axios.post(
-        'https://gig.kggeniuslabs.com/apiapi/admin/save-payable-ledger',
+        'https://gig.kggeniuslabs.com/api/api/admin/save-payable-ledger',
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -1813,7 +1813,7 @@ const PayableLedger = () => {
         toast.success('Transaction recorded successfully!', {
           icon: <Check className="w-6 h-6 text-emerald-500" />,
         });
-        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/apiapi/admin/payable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
           updateProjectSummary();
@@ -1925,16 +1925,16 @@ const PayableLedger = () => {
                               <div>
                                 <div className="text-xs text-gray-500 font-medium mb-1">Transaction Proof</div>
                                 <div className="relative">
-                                  <PhotoView src={`https://gig.kggeniuslabs.com/api${student.transaction_screenshot}`}>
+                                  <PhotoView src={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`}>
                                     <img 
-                                      src={`https://gig.kggeniuslabs.com/api${student.transaction_screenshot}`} 
+                                      src={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`} 
                                       alt="Transaction Screenshot" 
                                       className="rounded-lg border border-gray-200 w-full h-auto max-h-40 object-contain cursor-pointer"
                                     />
                                   </PhotoView>
                                   <div className="absolute bottom-2 right-2 flex gap-2">
                                     <a 
-                                      href={`https://gig.kggeniuslabs.com/api${student.transaction_screenshot}`} 
+                                      href={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`} 
                                       download
                                       className="bg-white/90 p-1.5 rounded-full shadow hover:bg-white transition"
                                     >

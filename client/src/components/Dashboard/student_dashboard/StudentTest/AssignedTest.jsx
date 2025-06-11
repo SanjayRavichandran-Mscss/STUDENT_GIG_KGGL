@@ -13,7 +13,7 @@ export default function AssignedTest() {
     const fetchTests = async () => {
       try {
         const response = await axios.get(
-          `https://gig.kggeniuslabs.com/apiapi/test/assigned-tests/${studentId}`,
+          `https://gig.kggeniuslabs.com/api/api/test/assigned-tests/${studentId}`,
           { withCredentials: true }
         );
         setTests(response.data);

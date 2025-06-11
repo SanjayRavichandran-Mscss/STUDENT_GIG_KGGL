@@ -46,7 +46,7 @@
 //     const fetchData = async () => {
 //       try {
 //         setLoading(true);
-//         const response = await axios.get('https://gig.kggeniuslabs.com/apiapi/stu/all-students-test-data', {
+//         const response = await axios.get('https://gig.kggeniuslabs.com/api/api/stu/all-students-test-data', {
 //           headers: {
 //             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
 //             'X-Admin-ID': decodedId,
@@ -642,7 +642,7 @@
 //                               onClick={() =>
 //                                 handlePhotoClick(
 //                                   row.student?.profile_photo
-//                                     ? `https://gig.kggeniuslabs.com/apiresumes/${row.student.profile_photo}`
+//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
 //                                     : defaultProfile
 //                                 )
 //                               }
@@ -650,7 +650,7 @@
 //                               <img
 //                                 src={
 //                                   row.student?.profile_photo
-//                                     ? `https://gig.kggeniuslabs.com/apiresumes/${row.student.profile_photo}`
+//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
 //                                     : defaultProfile
 //                                 }
 //                                 alt="Profile"
@@ -790,7 +790,6 @@
 
 
 
-
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -839,7 +838,7 @@ export default function Score() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://gig.kggeniuslabs.com/apiapi/stu/all-students-test-data', {
+        const response = await axios.get('https://gig.kggeniuslabs.com/api/api/stu/all-students-test-data', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             'X-Admin-ID': decodedId,
@@ -907,21 +906,25 @@ export default function Score() {
     return { beginnerAttended, intermediateAttended, advancedAttended };
   };
 
-  const getLevelColor = (level) => {
-    switch (level?.toLowerCase()) {
-      case 'advanced':
-        return 'bg-red-100 text-red-800';
-      case 'intermediate':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'beginner':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+ const getLevelColor = (level) => {
+  const normalizedLevel = level?.toLowerCase() || '';
+  switch (normalizedLevel) {
+    case 'advanced':
+      return 'bg-green-100 text-green-800';
+    case 'intermediate':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'beginner':
+      return 'bg-red-100 text-red-800';
+    case 'failed':
+      return 'bg-purple-100 text-purple-800';
+    default:
+      return 'bg-purple-100 text-purple-800';
+  }
+};
 
   const getLevelTextColor = (level) => {
-    switch (level?.toLowerCase()) {
+    const normalizedLevel = level?.toLowerCase() || '';
+    switch (normalizedLevel) {
       case 'advanced':
         return 'text-red-600';
       case 'intermediate':
@@ -931,6 +934,21 @@ export default function Score() {
       default:
         return 'text-gray-600';
     }
+  };
+
+  const getDifficultyLevel = (easyScore, mediumScore, hardScore) => {
+    const isAdvanced = (hardScore || 0) >= 2; // Hard score >= 2/4
+    const isIntermediate = (mediumScore || 0) >= 4; // Medium score >= 4/6
+    const isBeginner = (easyScore || 0) >= 6; // Easy score >= 6/10
+        const totalScore = (easyScore || 0) + (mediumScore || 0) + (hardScore || 0);  
+    const isFailed = totalScore <= 5; // Total score <= 5 out of 20
+
+    if (isAdvanced) return 'Advanced';
+    if (isIntermediate) return 'Intermediate';
+    if (isBeginner) return 'Beginner';
+        if (isFailed) return "Failed";
+
+    return 'Beginner'; // Default if no criteria met
   };
 
   useEffect(() => {
@@ -965,12 +983,9 @@ export default function Score() {
           }
         });
 
-        const totalScore = uniqueTestResults.reduce((sum, r) => sum + (r.total_score || 0), 0);
-
         uniqueTestResults.forEach((result) => {
           tableRows.push({
             student: studentData.student,
-            totalScore,
             skillCount: studentData.skillCount || 0,
             testResult: result,
           });
@@ -984,26 +999,36 @@ export default function Score() {
       const testNameMatch =
         !filters.testName ||
         (row.testResult?.test_name?.toLowerCase()?.includes(filters.testName.toLowerCase()) || false);
+      const total_score = (row.testResult?.performance?.easy_score || 0) +
+                         (row.testResult?.performance?.medium_score || 0) +
+                         (row.testResult?.performance?.hard_score || 0);
+      const percentage = ((total_score / 20) * 100);
       const percentageMinMatch =
         filters.percentageMin === '' ||
-        (row.testResult?.percentage >= Number(filters.percentageMin) || false);
+        (percentage >= Number(filters.percentageMin) || false);
       const percentageMaxMatch =
         filters.percentageMax === '' ||
-        (row.testResult?.percentage <= Number(filters.percentageMax) || false);
+        (percentage <= Number(filters.percentageMax) || false);
 
       return searchMatch && testNameMatch && percentageMinMatch && percentageMaxMatch;
     });
 
     filtered.sort((a, b) => {
+      const a_total_score = (a.testResult?.performance?.easy_score || 0) +
+                           (a.testResult?.performance?.medium_score || 0) +
+                           (a.testResult?.performance?.hard_score || 0);
+      const b_total_score = (b.testResult?.performance?.easy_score || 0) +
+                           (b.testResult?.performance?.medium_score || 0) +
+                           (b.testResult?.performance?.hard_score || 0);
       switch (filters.sortBy) {
         case 'attendedAtDesc':
           return new Date(b.testResult?.attend_at || 0) - new Date(a.testResult?.attend_at || 0) || 0;
         case 'attendedAtAsc':
           return new Date(a.testResult?.attend_at || 0) - new Date(b.testResult?.attend_at || 0) || 0;
         case 'totalScoreDesc':
-          return (b.totalScore || 0) - (a.totalScore || 0);
+          return b_total_score - a_total_score;
         case 'totalScoreAsc':
-          return (a.totalScore || 0) - (b.totalScore || 0);
+          return a_total_score - b_total_score;
         default:
           return 0;
       }
@@ -1018,7 +1043,8 @@ export default function Score() {
   };
 
   const testNames = Array.from(
-    new Set(data?.students?.flatMap((s) => s.testResults?.map((r) => r.test_name) || []).filter(Boolean).sort()))
+    new Set(data?.students?.flatMap((s) => s.testResults?.map((r) => r.test_name) || []).filter(Boolean).sort())
+  );
 
   const resetFilters = () => {
     setFilters({
@@ -1044,7 +1070,7 @@ export default function Score() {
   };
 
   const toggleRowExpand = (index) => {
-    setExpandedRow(expandedRow === index ? null : index);
+    setExpandedRow(index === expandedRow ? null : index);
   };
 
   const stripHtml = (html) => {
@@ -1055,13 +1081,12 @@ export default function Score() {
   const renderSkeleton = () => (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="animate-pulse flex space space-x-4 p-4 bg-white rounded-lg shadow">
+        <div key={i} className="animate-pulse flex space-x-4 p-4 bg-white rounded-lg shadow-sm">
           <div className="flex-1 space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4">
+            <div className="h-4 bg-gray-100 rounded w-3/4"></div>
             <div className="space-y-2">
-              <div className="h-3 bg-gray-200 rounded"></div>
-              <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-            </div>
+              <div className="h-3 bg-gray-100 rounded"></div>
+              <div className="h-3 bg-gray-100 rounded w-5/6"></div>
             </div>
           </div>
         </div>
@@ -1448,6 +1473,15 @@ export default function Score() {
                         intermediateAttended: 0,
                         advancedAttended: 0
                       };
+                      const total_score = (row.testResult.performance?.easy_score || 0) +
+                                         (row.testResult.performance?.medium_score || 0) +
+                                         (row.testResult.performance?.hard_score || 0);
+                      const percentage = ((total_score / 20) * 100).toFixed(2);
+                      const difficulty_level = getDifficultyLevel(
+                        row.testResult.performance?.easy_score,
+                        row.testResult.performance?.medium_score,
+                        row.testResult.performance?.hard_score
+                      );
                       
                       return (
                         <motion.tr
@@ -1464,7 +1498,7 @@ export default function Score() {
                                 onClick={() =>
                                   handlePhotoClick(
                                     row.student?.profile_photo
-                                      ? `https://gig.kggeniuslabs.com/apiresumes/${row.student.profile_photo}`
+                                      ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
                                       : defaultProfile
                                   )
                                 }
@@ -1472,7 +1506,7 @@ export default function Score() {
                                 <img
                                   src={
                                     row.student?.profile_photo
-                                      ? `https://gig.kggeniuslabs.com/apiresumes/${row.student.profile_photo}`
+                                      ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
                                       : defaultProfile
                                   }
                                   alt="Profile"
@@ -1499,21 +1533,21 @@ export default function Score() {
                               <div className="text-center">
                                 <div className="text-xs text-gray-500">Beginner</div>
                                 <div className="text-sm font-medium">
-                                  <span className="text-green-600">{row.testResult?.easy_score ?? '0'}</span>
+                                  <span className="text-green-600">{row.testResult.performance?.easy_score || '0'}</span>
                                   <span className="text-gray-400"> / {adjustedAttended.beginnerAttended}</span>
                                 </div>
                               </div>
                               <div className="text-center">
                                 <div className="text-xs text-gray-500">Intermediate</div>
                                 <div className="text-sm font-medium">
-                                  <span className="text-yellow-600">{row.testResult?.medium_score ?? '0'}</span>
+                                  <span className="text-yellow-600">{row.testResult.performance?.medium_score || '0'}</span>
                                   <span className="text-gray-400"> / {adjustedAttended.intermediateAttended}</span>
                                 </div>
                               </div>
                               <div className="text-center">
                                 <div className="text-xs text-gray-500">Advanced</div>
                                 <div className="text-sm font-medium">
-                                  <span className="text-red-600">{row.testResult?.hard_score ?? '0'}</span>
+                                  <span className="text-red-600">{row.testResult.performance?.hard_score || '0'}</span>
                                   <span className="text-gray-400"> / {adjustedAttended.advancedAttended}</span>
                                 </div>
                               </div>
@@ -1524,19 +1558,19 @@ export default function Score() {
                               <div>
                                 <div className="text-xs text-gray-500">Total</div>
                                 <div className="text-sm font-medium text-indigo-600">
-                                  {row.testResult?.total_score ?? 'N/A'}
+                                  {total_score}
                                 </div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500">Percentage</div>
                                 <div className="text-sm font-medium">
-                                  {row.testResult?.percentage ? `${row.testResult.percentage}%` : 'N/A'}
+                                  {percentage ? `${percentage}%` : '0%'}
                                 </div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500">Level</div>
-                                <div className={`text-sm font-medium px-2 py-1 rounded-full ${getLevelColor(row.testResult?.student_level)}`}>
-                                  {row.testResult?.student_level || 'N/A'}
+                                <div className={`text-sm font-medium px-2 py-1 rounded-full ${getLevelColor(difficulty_level)}`}>
+                                  {difficulty_level}
                                 </div>
                               </div>
                             </div>
@@ -1546,6 +1580,7 @@ export default function Score() {
                               onClick={() => {
                                 if (expandedRow === index) {
                                   setExpandedRow(null);
+                                  setSelectedPerformance(null);
                                 } else {
                                   setExpandedRow(index);
                                   if (row.testResult?.performance) {

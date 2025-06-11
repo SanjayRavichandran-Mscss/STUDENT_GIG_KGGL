@@ -27,9 +27,9 @@ function Projects() {
     const fetchData = async () => {
       try {
         const [projectsRes, expiredRes, bitsRes] = await Promise.all([
-          axios.get("https://gig.kggeniuslabs.com/apiapi/admin/getallprojects"),
-          axios.get("https://gig.kggeniuslabs.com/apiapi/admin/getexpiredprojects"),
-          axios.get("https://gig.kggeniuslabs.com/apiapi/admin/getbit")
+          axios.get("https://gig.kggeniuslabs.com/api/api/admin/getallprojects"),
+          axios.get("https://gig.kggeniuslabs.com/api/api/admin/getexpiredprojects"),
+          axios.get("https://gig.kggeniuslabs.com/api/api/admin/getbit")
         ]);
 
         const sortedProjects = projectsRes.data
@@ -99,7 +99,7 @@ function Projects() {
 
     try {
       const response = await axios.post(
-        "https://gig.kggeniuslabs.com/apiapi/admin/updateprojectexpiry",
+        "https://gig.kggeniuslabs.com/api/api/admin/updateprojectexpiry",
         {
           project_id: projectId,
           new_expiry_date: newExpiryDate,
@@ -112,8 +112,8 @@ function Projects() {
       });
       
       const [projectsRes, expiredRes] = await Promise.all([
-        axios.get("https://gig.kggeniuslabs.com/apiapi/admin/getallprojects"),
-        axios.get("https://gig.kggeniuslabs.com/apiapi/admin/getexpiredprojects"),
+        axios.get("https://gig.kggeniuslabs.com/api/api/admin/getallprojects"),
+        axios.get("https://gig.kggeniuslabs.com/api/api/admin/getexpiredprojects"),
       ]);
 
       const updatedProjects = projectsRes.data.map(project => ({

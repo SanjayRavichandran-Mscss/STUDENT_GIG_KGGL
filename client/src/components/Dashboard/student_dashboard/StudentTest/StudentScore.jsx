@@ -33,7 +33,7 @@
 //     const fetchData = async () => {
 //       try {
 //         setLoading(true);
-//         const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/student-test-data/${decoded}`, {
+//         const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decoded}`, {
 //           headers: {
 //             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
 //           },
@@ -64,7 +64,7 @@
 //         });
 
 //         const testsResponse = await axios.get(
-//           `https://gig.kggeniuslabs.com/api/api/test/all-tests/${decoded}`,
+//           `http://localhost:5000/api/test/all-tests/${decoded}`,
 //           { withCredentials: true }
 //         );
 
@@ -637,7 +637,7 @@ export default function UserScoreDetails() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://gig.kggeniuslabs.com/api/api/stu/student-test-data/${decoded}`,
+          `http://localhost:5000/api/stu/student-test-data/${decoded}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -670,7 +670,7 @@ export default function UserScoreDetails() {
         });
 
         const testsResponse = await axios.get(
-          `https://gig.kggeniuslabs.com/api/api/test/all-tests/${decoded}`,
+          `http://localhost:5000/api/test/all-tests/${decoded}`,
           { withCredentials: true }
         );
 

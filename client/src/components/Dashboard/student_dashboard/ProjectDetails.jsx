@@ -24,7 +24,7 @@
 //         setIsLoading(true);
 //         // Fetch project details
 //         const projectResponse = await axios.get(
-//           `https://gig.kggeniuslabs.com/api/api/stu/prodeatil/${decodedProject}`
+//           `http://localhost:5000/api/stu/prodeatil/${decodedProject}`
 //         );
 //         setProjectDetails(
 //           projectResponse.data.map((project) => ({
@@ -35,7 +35,7 @@
 
 //         // Check if student has bidded and get latest bid status
 //         const bidResponse = await axios.get(
-//           `https://gig.kggeniuslabs.com/api/api/admin/checkBid/${decoded}/${decodedProject}`
+//           `http://localhost:5000/api/admin/checkBid/${decoded}/${decodedProject}`
 //         );
 //         setHasBidded(bidResponse.data.hasBidded);
 //         setBitStatus(bidResponse.data.bitStatus); // Store latest bid status
@@ -67,7 +67,7 @@
 //     try {
 //       setIsSubmitting(true);
 //       const response = await axios.post(
-//         `https://gig.kggeniuslabs.com/api/api/admin/bitinfo`,
+//         `http://localhost:5000/api/admin/bitinfo`,
 //         {
 //           stu_id,
 //           pro_id,
@@ -81,7 +81,7 @@
 //       }
 
 //       const updateCreditsResponse = await axios.put(
-//         `https://gig.kggeniuslabs.com/api/api/stu/updateBidCredits/${decoded}`,
+//         `http://localhost:5000/api/stu/updateBidCredits/${decoded}`,
 //         {
 //           bid_credits: updatedCredits,
 //         }
@@ -260,7 +260,7 @@ function ProjectDetails() {
 
         // Fetch project details
         const projectResponse = await axios.get(
-          `https://gig.kggeniuslabs.com/api/api/stu/prodeatil/${decodedProject}`
+          `http://localhost:5000/api/stu/prodeatil/${decodedProject}`
         );
         setProjectDetails(
           projectResponse.data.map((project) => ({
@@ -271,7 +271,7 @@ function ProjectDetails() {
 
         // Check bid status
         const bidResponse = await axios.get(
-          `https://gig.kggeniuslabs.com/api/api/admin/checkBid/${decoded}/${decodedProject}`
+          `http://localhost:5000/api/admin/checkBid/${decoded}/${decodedProject}`
         );
         setHasBidded(bidResponse.data.hasBidded);
         setBitStatus(bidResponse.data.bitStatus);
@@ -280,7 +280,7 @@ function ProjectDetails() {
         if (bidResponse.data.bitStatus === "payment_received") {
           try {
             const paymentResponse = await axios.get(
-              `https://gig.kggeniuslabs.com/api/api/admin/get-payment-verification/${decoded}/${decodedProject}`
+              `http://localhost:5000/api/admin/get-payment-verification/${decoded}/${decodedProject}`
             );
             if (paymentResponse.data.status && paymentResponse.data.data) {
               setPaymentDetails({
@@ -326,7 +326,7 @@ function ProjectDetails() {
     try {
       setIsSubmitting(true);
       const response = await axios.post(
-        `https://gig.kggeniuslabs.com/api/api/admin/bitinfo`,
+        `http://localhost:5000/api/admin/bitinfo`,
         {
           stu_id,
           pro_id,
@@ -340,7 +340,7 @@ function ProjectDetails() {
       }
 
       const updateCreditsResponse = await axios.put(
-        `https://gig.kggeniuslabs.com/api/api/stu/updateBidCredits/${decoded}`,
+        `http://localhost:5000/api/stu/updateBidCredits/${decoded}`,
         {
           bid_credits: updatedCredits,
         }
@@ -438,7 +438,7 @@ function ProjectDetails() {
           }
 
           const response = await axios.post(
-            `https://gig.kggeniuslabs.com/api/api/admin/save-payment-verification`,
+            `http://localhost:5000/api/admin/save-payment-verification`,
             formData,
             { headers: { "Content-Type": "multipart/form-data" } }
           );
@@ -592,7 +592,7 @@ function ProjectDetails() {
                       className="bg-indigo-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-200"
                       disabled={paymentDetails || isSubmitting}
                     >
-                      {paymentDetails ? "View Payment Details" : "Enter Payment Details"}
+                      {paymentDetails ? "Payment Details" : "Enter Payment Details"}
                     </button>
 
                     {showPaymentForm && !paymentDetails && (
@@ -606,7 +606,7 @@ function ProjectDetails() {
                             <input
                               type="number"
                               name="amount"
-                              value={paymentFormData.amount}
+                              // value={paymentFormData.amount}
                               onChange={handlePaymentInputChange}
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500"
                               placeholder="Enter amount"
@@ -737,7 +737,7 @@ function ProjectDetails() {
                             <strong>Transaction Screenshot:</strong>{" "}
                             {paymentDetails.transaction_screenshot ? (
                               <a
-                                href={`https://gig.kggeniuslabs.com/api/${paymentDetails.transaction_screenshot.replace(/\\/g, '/')}`}
+                                href={`http://localhost:5000/${paymentDetails.transaction_screenshot.replace(/\\/g, '/')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 hover:underline"

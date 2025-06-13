@@ -90,7 +90,7 @@ const usePermissions = (adminId, menuName) => {
         }
         console.log("Decoded adminId:", decodedAdminId);
 
-        const response = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getpermissions", {
+        const response = await fetch("http://localhost:5000/api/superadmin/getpermissions", {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type':'application/json'

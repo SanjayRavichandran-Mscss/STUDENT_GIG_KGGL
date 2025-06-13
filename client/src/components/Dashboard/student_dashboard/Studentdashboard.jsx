@@ -24,7 +24,7 @@
 //   useEffect(() => {
 //     const fetchBidCredits = async () => {
 //       try {
-//         const response = await fetch(`https://gig.kggeniuslabs.com/api/api/stu/getBidCredits/${decodedId}`, {
+//         const response = await fetch(`http://localhost:5000/api/stu/getBidCredits/${decodedId}`, {
 //           method: "GET",
 //           headers: {
 //             "Content-Type": "application/json",
@@ -54,10 +54,10 @@
 //         const fetchData = async () => {
 //             try {
 //                 setLoading(true);
-//                 const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/student-test-data/${decodedId}`);
+//                 const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decodedId}`);
 //                 setData(response.data);
 //                 const testsResponse = await axios.get(
-//                     `https://gig.kggeniuslabs.com/api/api/test/all-tests/${decodedId}`,
+//                     `http://localhost:5000/api/test/all-tests/${decodedId}`,
 //                     { withCredentials: true }
 //                 );
 
@@ -381,7 +381,7 @@ export function StudentDashboard() {
   useEffect(() => {
     const fetchBidCredits = async () => {
       try {
-        const response = await fetch(`https://gig.kggeniuslabs.com/api/api/stu/getBidCredits/${decodedId}`, {
+        const response = await fetch(`http://localhost:5000/api/stu/getBidCredits/${decodedId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -408,10 +408,10 @@ export function StudentDashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://gig.kggeniuslabs.com/api/api/stu/student-test-data/${decodedId}`);
+        const response = await axios.get(`http://localhost:5000/api/stu/student-test-data/${decodedId}`);
         setData(response.data);
         const testsResponse = await axios.get(
-          `https://gig.kggeniuslabs.com/api/api/test/all-tests/${decodedId}`,
+          `http://localhost:5000/api/test/all-tests/${decodedId}`,
           { withCredentials: true }
         );
 

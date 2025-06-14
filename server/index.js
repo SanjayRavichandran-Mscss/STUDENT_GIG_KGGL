@@ -10,6 +10,8 @@ import testRouter from "./routes/testroutes.js";
 import superadminRouter from "./routes/superadminroute.js"
 import path from "path";
 import multer from "multer";
+import cron from "node-cron";
+import axios from "axios";
 
 const app = express();
 dotenv.config();
@@ -70,3 +72,24 @@ app.listen(PORT, () => {
 
 
 
+
+
+
+// Function to check for expired, unbidded projects every second
+const startExpiredProjectCheck = () => {
+  console.log("Starting expired project check polling...");
+  
+  setInterval(async () => {
+    try {
+      await axios.post("http://localhost:5000/api/admin/send-expired-unbidded-mail");
+      console.log("Checked for expired unbidded projects at", new Date().toISOString());
+    } catch (err) {
+      console.error("Error checking expired unbidded projects:", err.message);
+    }
+  }, 1000); // Run every 1 second (1000 milliseconds)
+};
+
+// Start the polling when the server starts
+startExpiredProjectCheck();
+
+export default startExpiredProjectCheck;

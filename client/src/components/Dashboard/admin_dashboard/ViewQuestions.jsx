@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Edit, Trash2, X, Save,Filter, Search } from 'lucide-react';
+import { Check, Edit, Trash2, X, Save, Filter, Search } from 'lucide-react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import CountUp from 'react-countup';
@@ -171,11 +171,6 @@ const ViewQuestions = () => {
     }
   };
 
-  // Render HTML safely
-  const renderHTML = (htmlString) => {
-    return { __html: htmlString };
-  };
-
   // Strip HTML tags for search
   const stripHTML = (html) => {
     return html.replace(/<\/?[^>]+(>|$)/g, '').trim();
@@ -323,7 +318,7 @@ const ViewQuestions = () => {
 
                   {/* Difficulty Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty Level</label>
+                    <label className="block-sections text-sm font-medium text-gray-700 mb-1">Difficulty Level</label>
                     <div className="relative">
                       <select
                         value={filterDifficulty}
@@ -450,10 +445,9 @@ const ViewQuestions = () => {
                           rows={3}
                         />
                       ) : (
-                        <div
-                          className="text-base font-medium p-2 bg-white rounded-md text-gray-800"
-                          dangerouslySetInnerHTML={renderHTML(q.questions)}
-                        />
+                        <div className="text-base font-medium p-2 bg-white rounded-md text-gray-800">
+                          {stripPTags(q.questions)}
+                        </div>
                       )}
 
                       {/* Options */}
@@ -505,10 +499,9 @@ const ViewQuestions = () => {
                                     {String.fromCharCode(65 + optIndex)}
                                   </div>
                                   <div className="flex-1">
-                                    <div
-                                      className="text-sm font-medium text-gray-800"
-                                      dangerouslySetInnerHTML={renderHTML(opt.option)}
-                                    />
+                                    <div className="text-sm font-medium text-gray-800">
+                                      {opt.option}
+                                    </div>
                                     {opt.feedback && (
                                       <div className="mt-2 text-xs p-2 bg-indigo-50 text-indigo-700 rounded-md">
                                         <span className="font-medium">Feedback:</span> {opt.feedback}

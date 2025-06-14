@@ -196,14 +196,6 @@ import {
 
 
 
-
-
-
-
-
-
-
-
   getExpenseTypes,
   savePayableLedger,
   getPayableLedgerHistory,
@@ -211,6 +203,7 @@ import {
   getReceivableLedgerHistory,
   getPaymentVerification,
   savePaymentVerification,
+  sendExpiredUnbiddedProjectMail,
   
 } from "../controllers/admincontroller.js";
 import { body, validationResult } from "express-validator";
@@ -477,5 +470,6 @@ adminRouter.post(
 adminRouter.route("/get-payment-verification/:student_id/:project_id").get(getPaymentVerification);
 
 
+adminRouter.route("/send-expired-unbidded-mail").post(sendExpiredUnbiddedProjectMail);
 
 export default adminRouter;

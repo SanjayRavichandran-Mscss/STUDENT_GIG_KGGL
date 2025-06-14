@@ -2078,7 +2078,113 @@ const getPaymentVerification = (req, res) => {
   }
 };
 
+const sendExpiredUnbiddedProjectMail = async (req, res) => {
+  const to = ["2232j31@kgcas.com", "sanpro2004.jay@gmail.com"]; // Hardcoded recipient emails
 
+  try {
+    // Query to find expired projects that have no entries in the bit table and email not sent
+    const sql = `
+      SELECT 
+        p.project_id,
+        p.project_name,
+        p.expiry_date
+      FROM projects p
+      WHERE p.expiry_date < NOW()
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM bit b 
+        WHERE b.project_id = p.project_id
+      )
+      AND p.email_sent = 0;
+    `;
+
+    const expiredUnbiddedProjects = await new Promise((resolve, reject) => {
+      db.query(sql, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    if (expiredUnbiddedProjects.length === 0) {
+      return res.json({ status: true, msg: "No new expired and unbidded projects found" });
+    }
+
+    // Create Nodemailer transporter with explicit credentials
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "sanjayravichandran006@gmail.com",
+        pass: "lpzn amam wlgw kwdl",
+      },
+    });
+
+    // Send emails for each expired and unbidded project
+    const emailPromises = expiredUnbiddedProjects.map(async (project) => {
+      const mailOptions = {
+        from: '"KG Genius Labs" <sanjayravichandran006@gmail.com>',
+        to: to.join(", "), // Send to all hardcoded recipients
+        subject: `Notification: Project "${project.project_name}" Expired Without Bids`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                  .header { text-align: center; padding: 10px 0; background-color: #dc3545; color: #ffffff; }
+                  .content { padding: 20px; }
+                  .footer { text-align: center; padding: 10px 0; background-color: #f4f4f4; color: #333333; font-size: 12px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>Project Expiration Notification</h1>
+                  </div>
+                  <div class="content">
+                      <p>Dear Team,</p>
+                      <p>We regret to inform you that the project <strong>${project.project_name}</strong> has expired on <strong>${new Date(project.expiry_date).toLocaleDateString()}</strong> without receiving any bids.</p>
+                      <p>Please review the project details and consider re-listing or extending the project if necessary. For further assistance, contact the KG Genius Labs administration team.</p>
+                      <p>Best regards,</p>
+                      <p><strong>KG Genius Labs</strong></p>
+                  </div>
+                  <div class="footer">
+                      <p>© ${new Date().getFullYear()} KG Genius Labs. All rights reserved.</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+        `,
+      };
+
+      // Send the email
+      await transporter.sendMail(mailOptions);
+
+      // Update the email_sent flag in the projects table
+      const updateSql = `UPDATE projects SET email_sent = 1 WHERE project_id = ?`;
+      await new Promise((resolve, reject) => {
+        db.query(updateSql, [project.project_id], (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
+
+      return { status: true, project_id: project.project_id };
+    });
+
+    const results = await Promise.all(emailPromises);
+    const allSuccess = results.every((result) => result.status);
+
+    if (allSuccess) {
+      res.json({ status: true, msg: "Emails sent successfully for all expired unbidded projects" });
+    } else {
+      res.status(500).json({ status: false, msg: "Some emails failed to send" });
+    }
+  } catch (err) {
+    console.error("Email send error:", err);
+    res.status(500).json({ status: false, msg: "Failed to send email", error: err.message });
+  }
+};
 export {
   studentDetails,
   studentsCount,
@@ -2118,5 +2224,7 @@ export {
   getReceivableLedgerHistory,
     savePaymentVerification,
   getPaymentVerification,
+
+  sendExpiredUnbiddedProjectMail
 
 };

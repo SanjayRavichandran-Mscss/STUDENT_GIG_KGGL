@@ -18,8 +18,8 @@
 //       try {
 //         setIsLoading(true);
 //         const [skillsRes, levelsRes] = await Promise.all([
-//           axios.get("http://localhost:5000/api/test/skills"),
-//           axios.get("http://localhost:5000/api/test/difficulty-levels"),
+//           axios.get("https://gig.kggeniuslabs.com/api/api/test/skills"),
+//           axios.get("https://gig.kggeniuslabs.com/api/api/test/difficulty-levels"),
 //         ]);
 //         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
 //         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -123,7 +123,7 @@
 //         }
 
 //         // Send MCQs to the bulk API
-//         const response = await axios.post("http://localhost:5000/api/test/bulk-mcq", mcqs);
+//         const response = await axios.post("https://gig.kggeniuslabs.com/api/api/test/bulk-mcq", mcqs);
 
 //         setSuccess(response.data.msg);
 //         Swal.fire({
@@ -316,8 +316,8 @@ function AddBulkQuestions() {
       try {
         setIsLoading(true);
         const [skillsRes, levelsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/test/skills"),
-          axios.get("http://localhost:5000/api/test/difficulty-levels"),
+          axios.get("https://gig.kggeniuslabs.com/api/api/test/skills"),
+          axios.get("https://gig.kggeniuslabs.com/api/api/test/difficulty-levels"),
         ]);
         setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
         setDifficultyLevels(Array.isArray(levelsRes.data) ? levelsRes.data : []);
@@ -622,7 +622,7 @@ function AddBulkQuestions() {
 
           // Send MCQs to the backend
           const response = await axios.post(
-            "http://localhost:5000/api/test/bulk-mcq",
+            "https://gig.kggeniuslabs.com/api/api/test/bulk-mcq",
             mcqs
           );
 

@@ -78,7 +78,7 @@ function NonTechStudentsData() {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/admin/non-tech-student-details",
+          "https://gig.kggeniuslabs.com/api/api/admin/non-tech-student-details",
           { withCredentials: true }
         );
         if (res.data.status && Array.isArray(res.data.result)) {
@@ -248,7 +248,7 @@ function NonTechStudentsData() {
       };
 
       const response = await axios.post(
-        "http://localhost:5000/api/admin/interview-schedule-mail",
+        "https://gig.kggeniuslabs.com/api/api/admin/interview-schedule-mail",
         payload,
         {
           headers: { "Content-Type": "application/json" },
@@ -571,7 +571,7 @@ function NonTechStudentsData() {
                         <img
                           src={
                             student.profile_photo
-                              ? `http://localhost:5000/resumes/${student.profile_photo}`
+                              ? `https://gig.kggeniuslabs.com/api/resumes/${student.profile_photo}`
                               : defaultProfile
                           }
                           alt="Profile"
@@ -668,7 +668,7 @@ function NonTechStudentsData() {
                       <img
                         src={
                           selectedStudent.profile_photo
-                            ? `http://localhost:5000/resumes/${selectedStudent.profile_photo}`
+                            ? `https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.profile_photo}`
                             : defaultProfile
                         }
                         alt="Profile"
@@ -804,7 +804,7 @@ function NonTechStudentsData() {
                     <h3 className="text-lg font-semibold text-gray-900">Resume</h3>
                     {selectedStudent.resume_file && (
                       <a
-                        href={`http://localhost:5000/resumes/${selectedStudent.resume_file}`}
+                        href={`https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.resume_file}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-purple-600 hover:text-purple-800"
@@ -817,7 +817,7 @@ function NonTechStudentsData() {
                     <div className="h-[60vh] border rounded-xl overflow-hidden shadow-sm">
                       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                         <Viewer
-                          fileUrl={`http://localhost:5000/resumes/${selectedStudent.resume_file}`}
+                          fileUrl={`https://gig.kggeniuslabs.com/api/resumes/${selectedStudent.resume_file}`}
                           plugins={[defaultLayoutPluginInstance]}
                           initialPage={0}
                         />
@@ -850,7 +850,7 @@ function NonTechStudentsData() {
                   <img
                     src={
                       zoomedProfile.profile_photo
-                        ? `http://localhost:5000/resumes/${zoomedProfile.profile_photo}`
+                        ? `https://gig.kggeniuslabs.com/api/resumes/${zoomedProfile.profile_photo}`
                         : defaultProfile
                     }
                     alt="Profile Photo"
@@ -860,7 +860,7 @@ function NonTechStudentsData() {
                   <a
                     href={
                       zoomedProfile.profile_photo
-                        ? `http://localhost:5000/resumes/${zoomedProfile.profile_photo}`
+                        ? `https://gig.kggeniuslabs.com/api/resumes/${zoomedProfile.profile_photo}`
                         : defaultProfile
                     }
                     target="_blank"

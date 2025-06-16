@@ -23,7 +23,7 @@ const InterviewSchedule = () => {
     const fetchStudentData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/stu/get-non-tech-data/${decodedId}`,
+          `https://gig.kggeniuslabs.com/api/api/stu/get-non-tech-data/${decodedId}`,
           { withCredentials: true }
         );
         if (response.data.status) {

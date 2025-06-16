@@ -60,7 +60,7 @@ const ReceivableLedger = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/admin/getallprojects');
+        const response = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects');
         setProjects(response.data);
         
         // Set the last project as default selected
@@ -86,7 +86,7 @@ const ReceivableLedger = () => {
 
     const fetchData = async () => {
       try {
-        const historyResponse = await axios.get('http://localhost:5000/api/admin/receivable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
           updateProjectSummary();
@@ -229,7 +229,7 @@ const ReceivableLedger = () => {
       formDataToSend.append('created_by', createdBy);
 
       const response = await axios.post(
-        'http://localhost:5000/api/admin/save-receivable-ledger',
+        'https://gig.kggeniuslabs.com/api/api/admin/save-receivable-ledger',
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -241,7 +241,7 @@ const ReceivableLedger = () => {
           text: 'Your receivable transaction has been successfully recorded!',
         });
 
-        const historyResponse = await axios.get('http://localhost:5000/api/admin/receivable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
           updateProjectSummary();
@@ -267,7 +267,7 @@ const ReceivableLedger = () => {
 
   const showTransactionScreenshot = (transaction) => {
     MySwal.fire({
-      imageUrl: `http://localhost:5000/${transaction.transaction_screenshot}`,
+      imageUrl: `https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`,
       imageAlt: 'Transaction Screenshot',
       showCloseButton: true,
       showConfirmButton: false,
@@ -278,7 +278,7 @@ const ReceivableLedger = () => {
       footer: (
         <div className="flex gap-4 justify-center">
           <a
-            href={`http://localhost:5000/${transaction.transaction_screenshot}`}
+            href={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
@@ -286,7 +286,7 @@ const ReceivableLedger = () => {
             <Eye className="w-4 h-4" /> View Full
           </a>
           <a
-            href={`http://localhost:5000/${transaction.transaction_screenshot}`}
+            href={`https://gig.kggeniuslabs.com/api/${transaction.transaction_screenshot}`}
             download
             className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
           >

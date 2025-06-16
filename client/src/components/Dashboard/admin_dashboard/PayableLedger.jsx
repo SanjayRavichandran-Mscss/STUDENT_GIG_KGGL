@@ -188,7 +188,7 @@ const FullScreenTransactionModal = ({ transaction, studentDetails, onClose }) =>
                           <div className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Transaction Proof</div>
                           <div className="relative rounded-lg overflow-hidden">
                             <FilePreview 
-                              fileUrl={`http://localhost:5000/${student.transaction_screenshot}`} 
+                              fileUrl={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`} 
                               className="w-full h-auto"
                             />
                           </div>
@@ -270,11 +270,11 @@ const PayableLedger = () => {
     setIsLoading(true);
     try {
       const [expenseResponse, studentsResponse, projectsResponse, historyResponse, receivableResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/expense-types'),
-        axios.get('http://localhost:5000/api/admin/student-details'),
-        axios.get('http://localhost:5000/api/admin/getallprojects'),
-        axios.get('http://localhost:5000/api/admin/payable-ledger-history'),
-        axios.get('http://localhost:5000/api/admin/receivable-ledger-history'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/expense-types'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/student-details'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/getallprojects'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history'),
+        axios.get('https://gig.kggeniuslabs.com/api/api/admin/receivable-ledger-history'),
       ]);
 
       if (expenseResponse.data.status) setExpenseTypes(expenseResponse.data.result);
@@ -436,7 +436,7 @@ const PayableLedger = () => {
       if (result.isConfirmed) {
         const newSubOption = result.value;
         try {
-          const response = await axios.post('http://localhost:5000/api/admin/expense-types', {
+          const response = await axios.post('https://gig.kggeniuslabs.com/api/api/admin/expense-types', {
             type: 'Operational Payment',
             subtype: newSubOption,
           });
@@ -736,7 +736,7 @@ const PayableLedger = () => {
       });
 
       const response = await axios.post(
-        'http://localhost:5000/api/admin/save-payable-ledger',
+        'https://gig.kggeniuslabs.com/api/api/admin/save-payable-ledger',
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -745,7 +745,7 @@ const PayableLedger = () => {
         toast.success('Transaction recorded successfully!', {
           icon: <Check className="w-6 h-6 text-emerald-500" />,
         });
-        const historyResponse = await axios.get('http://localhost:5000/api/admin/payable-ledger-history');
+        const historyResponse = await axios.get('https://gig.kggeniuslabs.com/api/api/admin/payable-ledger-history');
         if (historyResponse.data.status) {
           setTransactions(historyResponse.data.result);
         }
@@ -1080,7 +1080,7 @@ const PayableLedger = () => {
                                 <div className="col-span-2">
                                   <div className="text-sm text-gray-600 mb-2">Transaction Proof</div>
                                   <FilePreview 
-                                    fileUrl={`http://localhost:5000/${student.transaction_screenshot}`} 
+                                    fileUrl={`https://gig.kggeniuslabs.com/api/${student.transaction_screenshot}`} 
                                   />
                                 </div>
                               )}

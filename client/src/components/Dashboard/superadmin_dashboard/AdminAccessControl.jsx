@@ -34,7 +34,7 @@ const AdminAccessControl = () => {
       if (!spadId) return;
       try {
         // Fetch menus
-        const menuResponse = await fetch("http://localhost:5000/api/superadmin/getmenus", {
+        const menuResponse = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getmenus", {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         if (!menuResponse.ok) throw new Error(`Menus API failed: ${menuResponse.status}`);
@@ -43,7 +43,7 @@ const AdminAccessControl = () => {
         setMenus(menuData.result);
 
         // Fetch admins
-        const adminResponse = await fetch("http://localhost:5000/api/superadmin/getalladmins", {
+        const adminResponse = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getalladmins", {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         if (!adminResponse.ok) throw new Error(`Admins API failed: ${adminResponse.status}`);
@@ -51,7 +51,7 @@ const AdminAccessControl = () => {
         if (!adminData.status || !Array.isArray(adminData.result)) throw new Error("Invalid admin API response");
 
         // Fetch permissions
-        const permissionResponse = await fetch("http://localhost:5000/api/superadmin/getpermissions", {
+        const permissionResponse = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getpermissions", {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         if (!permissionResponse.ok) throw new Error(`Permissions API failed: ${permissionResponse.status}`);
@@ -103,7 +103,7 @@ const AdminAccessControl = () => {
 
   const handleSave = async (adminId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spadId}`, {
+      const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/updatepermissions/${spadId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,7 +163,7 @@ const AdminAccessControl = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/superadmin/updatepermissions/${spadId}`, {
+      const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/updatepermissions/${spadId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

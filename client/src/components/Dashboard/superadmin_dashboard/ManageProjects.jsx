@@ -47,7 +47,7 @@
 //   useEffect(() => {
 //     const fetchSkills = async () => {
 //       try {
-//         const response = await fetch("http://localhost:5000/api/superadmin/getallskills", {
+//         const response = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getallskills", {
 //           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
 //         });
         
@@ -79,7 +79,7 @@
 //     const fetchProjects = async () => {
 //       setLoading(true);
 //       try {
-//         const response = await fetch("http://localhost:5000/api/superadmin/getallprojects", {
+//         const response = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getallprojects", {
 //           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
 //         });
         
@@ -194,7 +194,7 @@
 
 //   const handleUpdate = async (projectId) => {
 //     try {
-//       const response = await fetch(`http://localhost:5000/api/superadmin/updateproject/${projectId}`, {
+//       const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/updateproject/${projectId}`, {
 //         method: "PUT",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -255,7 +255,7 @@
 
 //     if (result.isConfirmed) {
 //       try {
-//         const response = await fetch(`http://localhost:5000/api/superadmin/deleteproject/${projectId}`, {
+//         const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/deleteproject/${projectId}`, {
 //           method: "DELETE",
 //           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
 //         });
@@ -593,7 +593,7 @@ export function ManageProjects() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/superadmin/getallskills", {
+        const response = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getallskills", {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         
@@ -625,7 +625,7 @@ export function ManageProjects() {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:5000/api/superadmin/getallprojects", {
+        const response = await fetch("https://gig.kggeniuslabs.com/api/api/superadmin/getallprojects", {
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         
@@ -741,7 +741,7 @@ export function ManageProjects() {
 
   const handleUpdate = async (projectId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/superadmin/updateproject/${projectId}`, {
+      const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/updateproject/${projectId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -802,7 +802,7 @@ export function ManageProjects() {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`http://localhost:5000/api/superadmin/deleteproject/${projectId}`, {
+        const response = await fetch(`https://gig.kggeniuslabs.com/api/api/superadmin/deleteproject/${projectId}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });

@@ -80,7 +80,7 @@ const startExpiredProjectCheck = () => {
   
   setInterval(async () => {
     try {
-      await axios.post("http://localhost:5000/api/admin/send-expired-unbidded-mail");
+      await axios.post("https://gig.kggeniuslabs.com/api/api/admin/send-expired-unbidded-mail");
       console.log("Checked for expired unbidded projects at", new Date().toISOString());
     } catch (err) {
       console.error("Error checking expired unbidded projects:", err.message);

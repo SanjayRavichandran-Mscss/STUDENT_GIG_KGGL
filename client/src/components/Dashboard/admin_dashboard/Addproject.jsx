@@ -40,7 +40,7 @@
 //   useEffect(() => {
 //     setIsLoading(true);
 //     axios
-//       .get("http://localhost:5000/api/college/skill")
+//       .get("https://gig.kggeniuslabs.com/api/api/college/skill")
 //       .then((res) => {
 //         setCollege(res.data.msg);
 //         setIsLoading(false);
@@ -54,7 +54,7 @@
 //   // Fetch difficulty levels
 //   useEffect(() => {
 //     axios
-//       .get("http://localhost:5000/api/test/difficulty-levels")
+//       .get("https://gig.kggeniuslabs.com/api/api/test/difficulty-levels")
 //       .then((res) => {
 //         setLevels(res.data);
 //       })
@@ -81,7 +81,7 @@
 
 //     setIsLoading(true);
 //     axios
-//       .post(`http://localhost:5000/api/admin/addproject`, {
+//       .post(`https://gig.kggeniuslabs.com/api/api/admin/addproject`, {
 //         pname,
 //         pdes,
 //         skill,
@@ -319,7 +319,7 @@ export function Addproject() {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("http://localhost:5000/api/college/skill")
+      .get("https://gig.kggeniuslabs.com/api/api/college/skill")
       .then((res) => {
         setCollege(res.data.msg);
         setIsLoading(false);
@@ -333,7 +333,7 @@ export function Addproject() {
   // Fetch difficulty levels
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/test/difficulty-levels")
+      .get("https://gig.kggeniuslabs.com/api/api/test/difficulty-levels")
       .then((res) => {
         setLevels(res.data);
       })
@@ -360,7 +360,7 @@ export function Addproject() {
 
     setIsLoading(true);
     axios
-      .post(`http://localhost:5000/api/admin/addproject`, {
+      .post(`https://gig.kggeniuslabs.com/api/api/admin/addproject`, {
         pname,
         pdes,
         skill,

@@ -51,7 +51,7 @@ export default function StudentRefer() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin/getallprojects-studentrequired');
+        const response = await fetch('https://gig.kggeniuslabs.com/api/api/admin/getallprojects-studentrequired');
         if (!response.ok) {
           throw new Error('Failed to fetch projects');
         }
@@ -100,7 +100,7 @@ export default function StudentRefer() {
 
     setEmailLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/send-referral-mail', {
+      const response = await axios.post('https://gig.kggeniuslabs.com/api/api/admin/send-referral-mail', {
         to,
         subject,
         body,

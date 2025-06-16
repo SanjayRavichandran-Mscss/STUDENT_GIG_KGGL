@@ -46,7 +46,7 @@
 //     const fetchData = async () => {
 //       try {
 //         setLoading(true);
-//         const response = await axios.get('http://localhost:5000/api/stu/all-students-test-data', {
+//         const response = await axios.get('https://gig.kggeniuslabs.com/api/api/stu/all-students-test-data', {
 //           headers: {
 //             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
 //             'X-Admin-ID': decodedId,
@@ -642,7 +642,7 @@
 //                               onClick={() =>
 //                                 handlePhotoClick(
 //                                   row.student?.profile_photo
-//                                     ? `http://localhost:5000/resumes/${row.student.profile_photo}`
+//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
 //                                     : defaultProfile
 //                                 )
 //                               }
@@ -650,7 +650,7 @@
 //                               <img
 //                                 src={
 //                                   row.student?.profile_photo
-//                                     ? `http://localhost:5000/resumes/${row.student.profile_photo}`
+//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
 //                                     : defaultProfile
 //                                 }
 //                                 alt="Profile"
@@ -838,7 +838,7 @@ export default function Score() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/stu/all-students-test-data', {
+        const response = await axios.get('https://gig.kggeniuslabs.com/api/api/stu/all-students-test-data', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
             'X-Admin-ID': decodedId,
@@ -1498,7 +1498,7 @@ export default function Score() {
                                 onClick={() =>
                                   handlePhotoClick(
                                     row.student?.profile_photo
-                                      ? `http://localhost:5000/resumes/${row.student.profile_photo}`
+                                      ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
                                       : defaultProfile
                                   )
                                 }
@@ -1506,7 +1506,7 @@ export default function Score() {
                                 <img
                                   src={
                                     row.student?.profile_photo
-                                      ? `http://localhost:5000/resumes/${row.student.profile_photo}`
+                                      ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
                                       : defaultProfile
                                   }
                                   alt="Profile"

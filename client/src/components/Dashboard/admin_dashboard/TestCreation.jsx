@@ -33,9 +33,9 @@
 //       setIsLoading(true);
 //       try {
 //         const [skillsResponse, difficultyResponse, questionsResponse] = await Promise.all([
-//           fetch("http://localhost:5000/api/test/skills", { credentials: 'include' }),
-//           fetch("http://localhost:5000/api/test/difficulty-levels", { credentials: 'include' }),
-//           fetch("http://localhost:5000/api/test/available-questions", { credentials: 'include' }),
+//           fetch("https://gig.kggeniuslabs.com/api/api/test/skills", { credentials: 'include' }),
+//           fetch("https://gig.kggeniuslabs.com/api/api/test/difficulty-levels", { credentials: 'include' }),
+//           fetch("https://gig.kggeniuslabs.com/api/api/test/available-questions", { credentials: 'include' }),
 //         ]);
         
 //         const skillsData = await skillsResponse.json();
@@ -207,7 +207,7 @@
 //         duration_minutes: Number(formData.duration_minutes),
 //       };
 
-//       const response = await fetch("http://localhost:5000/api/test/create-test", {
+//       const response = await fetch("https://gig.kggeniuslabs.com/api/api/test/create-test", {
 //         method: 'POST',
 //         headers: { 'Content-Type': 'application/json' },
 //         credentials: 'include',
@@ -687,8 +687,8 @@ export default function TestCreation() {
       setIsLoading(true);
       try {
         const [skillsResponse, questionsResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/test/skills", { credentials: 'include' }),
-          fetch("http://localhost:5000/api/test/available-questions", { credentials: 'include' }),
+          fetch("https://gig.kggeniuslabs.com/api/api/test/skills", { credentials: 'include' }),
+          fetch("https://gig.kggeniuslabs.com/api/api/test/available-questions", { credentials: 'include' }),
         ]);
         const skillsData = await skillsResponse.json();
         const questionsData = await questionsResponse.json();
@@ -776,7 +776,7 @@ export default function TestCreation() {
         hard_pass_mark: 2,
       };
 
-      const response = await fetch("http://localhost:5000/api/test/create-test", {
+      const response = await fetch("https://gig.kggeniuslabs.com/api/api/test/create-test", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

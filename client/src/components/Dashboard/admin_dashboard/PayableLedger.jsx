@@ -851,7 +851,7 @@ const PayableLedger = () => {
             <Select
               options={projects.map(project => ({
                 value: project.project_id,
-                label: `${project.project_name} (₹${parseFloat(project.total_amount).toFixed(2)})`,
+                label: `${project.project_name} - [${project.client_name}]`,
               }))}
               onChange={(option) => {
                 const project = projects.find(p => p.project_id === option.value);

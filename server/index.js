@@ -75,7 +75,6 @@ app.listen(PORT, () => {
 
 
 
-// Function to check for expired, unbidded projects every second
 const startExpiredProjectCheck = () => {
   console.log("Starting expired project check polling...");
   

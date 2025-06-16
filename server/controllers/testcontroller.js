@@ -324,66 +324,268 @@ const createMCQ = async (req, res) => {
 
 
 // Create bulk MCQs
+// const createBulkMcq = async (req, res) => {
+//   try {
+//     const mcqs = req.body;
+//     if (!Array.isArray(mcqs) || mcqs.length === 0) {
+//       return res.status(400).json({ msg: "An array of MCQs is required" });
+//     }
+//     const insertedIds = [];
+//     for (const mcq of mcqs) {
+//       if (
+//         !mcq.questions ||
+//         !mcq.option ||
+//         !Array.isArray(mcq.option) ||
+//         mcq.option.length < 4 ||
+//         !mcq.correct_answer ||
+//         !mcq.skill_id ||
+//         !mcq.difficulty_level_id ||
+//         !mcq.question_status
+//       ) {
+//         return res.status(400).json({
+//           msg: `Invalid MCQ: ${JSON.stringify(
+//             mcq
+//           )}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id, question_status) are required.`,
+//         });
+//       }
+//       for (const opt of mcq.option) {
+//         if (!opt.option || !opt.feedback) {
+//           return res.status(400).json({
+//             msg: `Invalid option in MCQ: ${JSON.stringify(
+//               mcq
+//             )}. Each option must have option text and feedback.`,
+//           });
+//         }
+//       }
+//       if (!mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
+//         return res.status(400).json({
+//           msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.`,
+//         });
+//       }
+//       const mcqData = {
+//         ...mcq,
+//         option: JSON.stringify(mcq.option),
+//       };
+//       const sql =
+//         "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
+//       const values = [
+//         mcqData.skill_id,
+//         mcqData.difficulty_level_id,
+//         mcqData.questions,
+//         mcqData.option,
+//         mcqData.correct_answer,
+//         mcqData.question_status,
+//       ];
+//       const result = await new Promise((resolve, reject) => {
+//         db.query(sql, values, (err, result) => {
+//           if (err) reject(err);
+//           else resolve(result);
+//         });
+//       });
+//       insertedIds.push(result.insertId);
+//     }
+//     return res.status(201).json({
+//       msg: `Successfully created ${insertedIds.length} MCQ(s)`,
+//       ids: insertedIds,
+//     });
+//   } catch (error) {
+//     console.error("Error in createBulkMcq:", error);
+//     return res.status(500).json({ msg: "Server error" });
+//   }
+// };
+
+
+
+
+
+
+// Create bulk MCQs ,updated for display issues in UI
 const createBulkMcq = async (req, res) => {
   try {
     const mcqs = req.body;
     if (!Array.isArray(mcqs) || mcqs.length === 0) {
       return res.status(400).json({ msg: "An array of MCQs is required" });
     }
+
+    const errors = [];
     const insertedIds = [];
-    for (const mcq of mcqs) {
-      if (
-        !mcq.questions ||
-        !mcq.option ||
-        !Array.isArray(mcq.option) ||
-        mcq.option.length < 4 ||
-        !mcq.correct_answer ||
-        !mcq.skill_id ||
-        !mcq.difficulty_level_id ||
-        !mcq.question_status
-      ) {
-        return res.status(400).json({
-          msg: `Invalid MCQ: ${JSON.stringify(
-            mcq
-          )}. All fields (questions, option, correct_answer, skill_id, difficulty_level_id, question_status) are required.`,
+
+    // Map column names to Excel column letters based on template
+    const columnMap = {
+      skill: "A",
+      difficulty_level: "B",
+      questions: "C",
+      option1: "D",
+      feedback1: "E",
+      option2: "F",
+      feedback2: "G",
+      option3: "H",
+      feedback3: "I",
+      option4: "J",
+      feedback4: "K",
+      correct_answer: "L",
+    };
+
+    for (let i = 0; i < mcqs.length; i++) {
+      const mcq = mcqs[i];
+      const rowNumber = i + 2; // Excel rows start from 1, plus 1 for header
+
+      // Validate required fields
+      if (!mcq.skill_id) {
+        errors.push({
+          row: rowNumber,
+          column: columnMap.skill,
+          message: "Skill ID is missing.",
+          resolution: "Ensure a valid skill ID is provided (mapped from skill name in column A).",
         });
       }
-      for (const opt of mcq.option) {
-        if (!opt.option || !opt.feedback) {
-          return res.status(400).json({
-            msg: `Invalid option in MCQ: ${JSON.stringify(
-              mcq
-            )}. Each option must have option text and feedback.`,
+      if (!mcq.difficulty_level_id) {
+        errors.push({
+          row: rowNumber,
+          column: columnMap.difficulty_level,
+          message: "Difficulty level ID is missing.",
+          resolution: "Ensure a valid difficulty level ID is provided (mapped from difficulty level name in column B).",
+        });
+      }
+      if (!mcq.questions || mcq.questions === "<p></p>") {
+        errors.push({
+          row: rowNumber,
+          column: columnMap.questions,
+          message: "Question text is missing.",
+          resolution: "Enter a valid question text in column C.",
+        });
+      }
+      if (!mcq.option || !Array.isArray(mcq.option) || mcq.option.length < 4) {
+        errors.push({
+          row: rowNumber,
+          column: "D,F,H,J",
+          message: "Four options are required.",
+          resolution: "Ensure all four option fields (columns D, F, H, J) are filled.",
+        });
+      }
+      if (!mcq.correct_answer) {
+        errors.push({
+          row: rowNumber,
+          column: columnMap.correct_answer,
+          message: "Correct answer is missing.",
+          resolution: "Enter a valid correct answer in column L.",
+        });
+      }
+      if (!mcq.question_status) {
+        errors.push({
+          row: rowNumber,
+          column: "N/A",
+          message: "Question status is missing.",
+          resolution: "Ensure the question status is set (default is 3 for multiple-choice).",
+        });
+      }
+
+      // Validate options and feedback
+      if (mcq.option && Array.isArray(mcq.option)) {
+        for (let j = 0; j < mcq.option.length; j++) {
+          const opt = mcq.option[j];
+          if (!opt.option) {
+            errors.push({
+              row: rowNumber,
+              column: columnMap[`option${j + 1}`],
+              message: `Option ${j + 1} is missing.`,
+              resolution: `Enter a valid option text in column ${columnMap[`option${j + 1}`]}.`,
+            });
+          }
+          if (!opt.feedback) {
+            errors.push({
+              row: rowNumber,
+              column: columnMap[`feedback${j + 1}`],
+              message: `Feedback for option ${j + 1} is missing.`,
+              resolution: `Enter feedback for option ${j + 1} in column ${columnMap[`feedback${j + 1}`]}.`,
+            });
+          }
+        }
+      }
+
+      // Validate correct answer matches an option
+      if (mcq.option && mcq.correct_answer && !mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
+        errors.push({
+          row: rowNumber,
+          column: columnMap.correct_answer,
+          message: `Correct answer "${mcq.correct_answer}" does not match any of the provided options.`,
+          resolution: "Ensure the correct answer in column L exactly matches one of the option texts in columns D, F, H, or J (case-sensitive).",
+        });
+      }
+
+      // Validate skill_id exists in database
+      if (mcq.skill_id) {
+        const skillCheckSql = "SELECT skill_id FROM skills WHERE skill_id = ?";
+        const skillExists = await new Promise((resolve, reject) => {
+          db.query(skillCheckSql, [mcq.skill_id], (err, result) => {
+            if (err) reject(err);
+            else resolve(result.length > 0);
+          });
+        });
+        if (!skillExists) {
+          errors.push({
+            row: rowNumber,
+            column: columnMap.skill,
+            message: `Skill ID ${mcq.skill_id} does not exist in the database.`,
+            resolution: "Verify the skill name in column A corresponds to an existing skill in the system.",
           });
         }
       }
-      if (!mcq.option.some((opt) => opt.option === mcq.correct_answer)) {
-        return res.status(400).json({
-          msg: `Correct answer "${mcq.correct_answer}" in MCQ does not match any option.`,
+
+      // Validate difficulty_level_id exists in database
+      if (mcq.difficulty_level_id) {
+        const levelCheckSql = "SELECT level_id FROM difficultylevels WHERE level_id = ?";
+        const levelExists = await new Promise((resolve, reject) => {
+          db.query(levelCheckSql, [mcq.difficulty_level_id], (err, result) => {
+            if (err) reject(err);
+            else resolve(result.length > 0);
+          });
         });
+        if (!levelExists) {
+          errors.push({
+            row: rowNumber,
+            column: columnMap.difficulty_level,
+            message: `Difficulty level ID ${mcq.difficulty_level_id} does not exist in the database.`,
+            resolution: "Verify the difficulty level name in column B corresponds to an existing level in the system.",
+          });
+        }
       }
-      const mcqData = {
-        ...mcq,
-        option: JSON.stringify(mcq.option),
-      };
-      const sql =
-        "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
-      const values = [
-        mcqData.skill_id,
-        mcqData.difficulty_level_id,
-        mcqData.questions,
-        mcqData.option,
-        mcqData.correct_answer,
-        mcqData.question_status,
-      ];
-      const result = await new Promise((resolve, reject) => {
-        db.query(sql, values, (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
+
+      // If no errors for this MCQ, proceed to insert
+      if (errors.every((err) => err.row !== rowNumber)) {
+        const mcqData = {
+          ...mcq,
+          option: JSON.stringify(mcq.option),
+        };
+        const sql =
+          "INSERT INTO questions_mcq (skill_id, difficulty_level_id, questions, `option`, correct_answer, question_status) VALUES (?, ?, ?, ?, ?, ?)";
+        const values = [
+          mcqData.skill_id,
+          mcqData.difficulty_level_id,
+          mcqData.questions,
+          mcqData.option,
+          mcqData.correct_answer,
+          mcqData.question_status,
+        ];
+        const result = await new Promise((resolve, reject) => {
+          db.query(sql, values, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          });
         });
-      });
-      insertedIds.push(result.insertId);
+        insertedIds.push(result.insertId);
+      }
     }
+
+    // If there are errors, return them
+    if (errors.length > 0) {
+      return res.status(400).json({
+        msg: "Validation errors occurred in the Excel file",
+        errors,
+      });
+    }
+
+    // If no errors, return success
     return res.status(201).json({
       msg: `Successfully created ${insertedIds.length} MCQ(s)`,
       ids: insertedIds,

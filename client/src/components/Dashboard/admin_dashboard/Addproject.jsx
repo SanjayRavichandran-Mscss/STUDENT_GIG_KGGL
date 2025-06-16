@@ -12,6 +12,7 @@
 //   const [skill, setSkill] = useState("");
 //   const [date, setDate] = useState("");
 //   const [numberOfStudents, setNumberOfStudents] = useState("");
+//   const [totalAmount, setTotalAmount] = useState(""); // New state for project amount
 //   const [isLoading, setIsLoading] = useState(false);
 //   const [college, setCollege] = useState([]);
 //   const [levels, setLevels] = useState([]);
@@ -63,13 +64,18 @@
 //   }, []);
 
 //   const handleAddProject = () => {
-//     if (!pname || !pdes || !skill || !date || !selectedLevel || !numberOfStudents || !decodedId) {
+//     if (!pname || !pdes || !skill || !date || !selectedLevel || !numberOfStudents || !totalAmount || !decodedId) {
 //       toast.error("Please fill all fields");
 //       return;
 //     }
 
 //     if (!Number.isInteger(Number(numberOfStudents)) || numberOfStudents <= 0) {
 //       toast.error("Number of students must be a positive integer");
+//       return;
+//     }
+
+//     if (isNaN(Number(totalAmount)) || Number(totalAmount) <= 0) {
+//       toast.error("Project amount must be a positive number");
 //       return;
 //     }
 
@@ -82,6 +88,7 @@
 //         date,
 //         level_id: selectedLevel,
 //         number_of_students: numberOfStudents,
+//         total_amount: totalAmount, // Include total_amount
 //         created_by: decodedId,
 //       })
 //       .then((res) => {
@@ -93,8 +100,9 @@
 //           setDate("");
 //           setSelectedLevel("");
 //           setNumberOfStudents("");
+//           setTotalAmount(""); // Reset total_amount
 //         } else {
-//           toast.error("Failed to add project");
+//           toast.error(res.data.msg || "Failed to add project");
 //         }
 //       })
 //       .catch(() => {
@@ -189,14 +197,27 @@
 //             </div>
 
 //             <div>
-//               <label className="block text-xs font-medium text-gray-600 mb-1">Expiry Date</label>
+//               <label className="block text-xs font-medium text-gray-600 mb-1">Project Amount (₹)</label>
 //               <input
-//                 type="datetime-local"
-//                 value={date}
-//                 onChange={(e) => setDate(e.target.value)}
+//                 type="number"
+//                 value={totalAmount}
+//                 onChange={(e) => setTotalAmount(e.target.value)}
 //                 className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+//                 placeholder="Enter amount"
+//                 min="0.01"
+//                 step="0.01"
 //               />
 //             </div>
+//           </div>
+
+//           <div>
+//             <label className="block text-xs font-medium text-gray-600 mb-1">Expiry Date</label>
+//             <input
+//               type="datetime-local"
+//               value={date}
+//               onChange={(e) => setDate(e.target.value)}
+//               className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+//             />
 //           </div>
 
 //           <button
@@ -244,6 +265,17 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -258,7 +290,8 @@ export function Addproject() {
   const [skill, setSkill] = useState("");
   const [date, setDate] = useState("");
   const [numberOfStudents, setNumberOfStudents] = useState("");
-  const [totalAmount, setTotalAmount] = useState(""); // New state for project amount
+  const [totalAmount, setTotalAmount] = useState("");
+  const [clientName, setClientName] = useState(""); // New state for client name
   const [isLoading, setIsLoading] = useState(false);
   const [college, setCollege] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -310,7 +343,7 @@ export function Addproject() {
   }, []);
 
   const handleAddProject = () => {
-    if (!pname || !pdes || !skill || !date || !selectedLevel || !numberOfStudents || !totalAmount || !decodedId) {
+    if (!pname || !pdes || !skill || !date || !selectedLevel || !numberOfStudents || !totalAmount || !decodedId || !clientName) {
       toast.error("Please fill all fields");
       return;
     }
@@ -334,8 +367,9 @@ export function Addproject() {
         date,
         level_id: selectedLevel,
         number_of_students: numberOfStudents,
-        total_amount: totalAmount, // Include total_amount
+        total_amount: totalAmount,
         created_by: decodedId,
+        client_name: clientName, // Include client_name
       })
       .then((res) => {
         if (res.data.msg === "added") {
@@ -346,7 +380,8 @@ export function Addproject() {
           setDate("");
           setSelectedLevel("");
           setNumberOfStudents("");
-          setTotalAmount(""); // Reset total_amount
+          setTotalAmount("");
+          setClientName(""); // Reset client_name
         } else {
           toast.error(res.data.msg || "Failed to add project");
         }
@@ -378,6 +413,20 @@ export function Addproject() {
               onChange={(e) => setPname(e.target.value)}
               className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter project name"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="clientName" className="block text-xs font-medium text-gray-600 mb-1">
+              Client Name
+            </label>
+            <input
+              type="text"
+              id="clientName"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter client name"
             />
           </div>
 

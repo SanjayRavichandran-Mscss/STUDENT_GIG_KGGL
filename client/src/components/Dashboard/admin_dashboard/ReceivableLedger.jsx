@@ -355,7 +355,7 @@ const ReceivableLedger = () => {
               <option value="">Select Project</option>
               {projects.map(project => (
                 <option key={project.project_id} value={project.project_id}>
-                  {project.project_name} (₹{parseFloat(project.total_amount).toFixed(2)})
+                  {project.project_name} - [{project.client_name}]
                 </option>
               ))}
             </select>

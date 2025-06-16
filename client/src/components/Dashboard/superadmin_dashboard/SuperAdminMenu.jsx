@@ -6,12 +6,25 @@ import Swal from "sweetalert2";
 import { Menu, X } from "lucide-react";
 
 export function SuperAdminMenu() {
-  const { id: paramId } = useParams();
+  // const { spad_id: paramId } = useParams(); // Changed from id to spad_id for consistency
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Use paramId if available, otherwise fall back to localStorage
-  const id = paramId || localStorage.getItem("accessToken") || null;
+  const token = localStorage.getItem("accessToken") || null;
+  let spadId = null;
+
+  // Decode token to get spad_id
+  if (token) {
+    try {
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      spadId = decoded.user; // Assuming 'user' field is spad_id
+    } catch (error) {
+      console.error("Token decode error:", error);
+    }
+  }
+
+  const encodedSpadId = spadId ? btoa(spadId) : null;
 
   const handleLogout = () => {
     Swal.fire({
@@ -37,8 +50,8 @@ export function SuperAdminMenu() {
     });
   };
 
-  // If no id is available, redirect to login
-  if (!id) {
+  // If no token is available, redirect to login
+  if (!token) {
     navigate("/login");
     return null;
   }
@@ -73,7 +86,7 @@ export function SuperAdminMenu() {
             <ul className="space-y-1">
               <li>
                 <Link
-                  to={`/superadmin/access-control/${id}`}
+                  to={`/superadmin/access-control/${encodedSpadId}`}
                   className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -91,6 +104,28 @@ export function SuperAdminMenu() {
                     />
                   </svg>
                   Admin Access Control
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to={`/superadmin/manage-projects/${encodedSpadId}`}
+                  className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  Manage Projects
                 </Link>
               </li>
             </ul>

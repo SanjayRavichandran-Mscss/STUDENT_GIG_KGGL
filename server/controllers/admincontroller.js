@@ -137,12 +137,14 @@ const filterStudentSkills = async (req, res) => {
 };
 
 
+
+
 // const addProjects = async (req, res) => {
-//   const { pname, pdes, skill, date, level_id, number_of_students, created_by } = req.body;
+//   const { pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by } = req.body;
 
 //   try {
 //     // Validate required fields
-//     if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !created_by) {
+//     if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !total_amount || !created_by) {
 //       return res.status(400).json({ msg: "All fields are required" });
 //     }
 
@@ -151,15 +153,20 @@ const filterStudentSkills = async (req, res) => {
 //       return res.status(400).json({ msg: "Number of students must be a positive integer" });
 //     }
 
+//     // Validate total_amount is a positive number
+//     if (isNaN(Number(total_amount)) || Number(total_amount) <= 0) {
+//       return res.status(400).json({ msg: "Total amount must be a positive number" });
+//     }
+
 //     // Validate created_by is a positive integer
 //     if (!Number.isInteger(Number(created_by)) || created_by <= 0) {
 //       return res.status(400).json({ msg: "Created by must be a positive integer" });
 //     }
 
 //     const sql =
-//       "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+//       "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, total_amount, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-//     db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, created_by], (err, result) => {
+//     db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by], (err, result) => {
 //       if (err) {
 //         console.error("Database error:", err);
 //         return res.status(500).json({ msg: "db_error" });
@@ -172,12 +179,16 @@ const filterStudentSkills = async (req, res) => {
 //   }
 // };
 
+
+
+
+
 const addProjects = async (req, res) => {
-  const { pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by } = req.body;
+  const { pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by, client_name } = req.body;
 
   try {
     // Validate required fields
-    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !total_amount || !created_by) {
+    if (!pname || !pdes || !skill || !date || !level_id || !number_of_students || !total_amount || !created_by || !client_name) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
@@ -197,9 +208,9 @@ const addProjects = async (req, res) => {
     }
 
     const sql =
-      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, total_amount, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO projects (project_name, description, stack, expiry_date, level_id, number_of_students, total_amount, created_by, client_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by], (err, result) => {
+    db.query(sql, [pname, pdes, skill, date, level_id, number_of_students, total_amount, created_by, client_name], (err, result) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ msg: "db_error" });
@@ -211,7 +222,6 @@ const addProjects = async (req, res) => {
     res.status(500).json({ msg: "server_error" });
   }
 };
-
 
 
 const skillBasedProjects = async (req, res) => {
@@ -258,6 +268,7 @@ const getAllProjects = async (req, res) => {
     const sql = `SELECT 
       p.project_id,
       p.project_name,
+      p.client_name,
       p.description,
       p.stack,
       s.skill_name,
@@ -2079,7 +2090,9 @@ const getPaymentVerification = (req, res) => {
 };
 
 const sendExpiredUnbiddedProjectMail = async (req, res) => {
-  const to = ["2232j31@kgcas.com", "sanpro2004.jay@gmail.com"]; // Hardcoded recipient emails
+  const to = ["2232j31@kgcas.com", "sanpro2004.jay@gmail.com"];
+  const cc = ["2232j32@kgcas.com"]; 
+  const bcc = []; 
 
   try {
     // Query to find expired projects that have no entries in the bit table and email not sent
@@ -2123,6 +2136,8 @@ const sendExpiredUnbiddedProjectMail = async (req, res) => {
       const mailOptions = {
         from: '"KG Genius Labs" <sanjayravichandran006@gmail.com>',
         to: to.join(", "), // Send to all hardcoded recipients
+        cc: cc.join(", "), // Placeholder for future CC recipients
+        bcc: bcc.join(", "), // Placeholder for future BCC recipients
         subject: `Notification: Project "${project.project_name}" Expired Without Bids`,
         html: `
           <!DOCTYPE html>
@@ -2185,6 +2200,7 @@ const sendExpiredUnbiddedProjectMail = async (req, res) => {
     res.status(500).json({ status: false, msg: "Failed to send email", error: err.message });
   }
 };
+
 export {
   studentDetails,
   studentsCount,

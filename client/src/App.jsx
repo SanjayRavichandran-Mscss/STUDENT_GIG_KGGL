@@ -152,6 +152,7 @@ import InterviewSchedule from './components/Dashboard/student_dashboard/Intervie
 
 // new:superadmin
 import { AdminAccessControlComponent } from './components/Dashboard/superadmin_dashboard/SuperAdminDashboard';
+import { ManageProjects } from './components/Dashboard/superadmin_dashboard/ManageProjects';
 
 function App() {
   return (
@@ -202,8 +203,9 @@ function App() {
 
 <Route path="/receivable/:id" element={<ReceivableLedgerComponent />} />
 <Route path="/payable/:id" element={<PayableLedgerComponent />} />
-          {/* SuperAdmin Routes */}
+     {/* SuperAdmin Routes */}
           <Route path="/superadmin/access-control/:spad_id" element={<AdminAccessControlComponent />} />
+          <Route path="/superadmin/manage-projects/:spad_id" element={<ManageProjects />} />
         </Route>
 
         {/* Catch-All Route */}

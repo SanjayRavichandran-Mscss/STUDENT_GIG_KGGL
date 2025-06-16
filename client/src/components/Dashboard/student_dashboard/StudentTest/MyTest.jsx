@@ -18,7 +18,7 @@ export default function MyTest() {
   const [loading, setLoading] = useState(true); // Track loading state
 
   // Duration for button enablement (in minutes)
-  const ENABLE_DURATION_MINUTES = 45;
+  const ENABLE_DURATION_MINUTES =45;
 
   // Fetch tests, schedules, and attended tests on mount
   useEffect(() => {

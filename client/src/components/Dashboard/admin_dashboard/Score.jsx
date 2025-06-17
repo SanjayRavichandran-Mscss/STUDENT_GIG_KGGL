@@ -96,6 +96,69 @@
 //     }
 //   };
 
+//   const calculateAdjustedAttended = (performance) => {
+//     let beginnerAttended = parseInt(performance?.easy_attended || "0");
+//     let intermediateAttended = parseInt(performance?.medium_attended || "0");
+//     const advancedAttended = parseInt(performance?.hard_attended || "0");
+
+//     // If intermediate attended is 0, add 6 to beginner
+//     if (intermediateAttended === 0) {
+//       beginnerAttended += 0;
+//     }
+
+//     // If advanced attended is 0, add 4 to intermediate
+//     if (advancedAttended === 0) {
+//       intermediateAttended += 0;
+//     }
+
+//     return { beginnerAttended, intermediateAttended, advancedAttended };
+//   };
+
+//  const getLevelColor = (level) => {
+//   const normalizedLevel = level?.toLowerCase() || '';
+//   switch (normalizedLevel) {
+//     case 'advanced':
+//       return 'bg-green-100 text-green-800';
+//     case 'intermediate':
+//       return 'bg-yellow-100 text-yellow-800';
+//     case 'beginner':
+//       return 'bg-red-100 text-red-800';
+//     case 'failed':
+//       return 'bg-purple-100 text-purple-800';
+//     default:
+//       return 'bg-purple-100 text-purple-800';
+//   }
+// };
+
+//   const getLevelTextColor = (level) => {
+//     const normalizedLevel = level?.toLowerCase() || '';
+//     switch (normalizedLevel) {
+//       case 'advanced':
+//         return 'text-red-600';
+//       case 'intermediate':
+//         return 'text-yellow-600';
+//       case 'beginner':
+//         return 'text-green-600';
+//       default:
+//         return 'text-gray-600';
+//     }
+//   };
+
+//   const getDifficultyLevel = (easyScore, mediumScore, hardScore) => {
+//     const isAdvanced = (hardScore || 0) >= 2; // Hard score >= 2/4
+//     const isIntermediate = (mediumScore || 0) >= 4; // Medium score >= 4/6
+//     const isBeginner = (easyScore || 0) >= 6; // Easy score >= 6/10
+//         const totalScore = (easyScore || 0) + (mediumScore || 0) + (hardScore || 0);  
+//     const isFailed = totalScore <= 5; // Total score <= 5 out of 20
+
+//     if (isAdvanced) return 'Advanced';
+//     if (isIntermediate) return 'Intermediate';
+//     if (isBeginner) return 'Beginner';
+//         if (isFailed) return "Failed";
+
+//     return 'Beginner'; // Default if no criteria met
+//   };
+
 //   useEffect(() => {
 //     if (!data || data.status !== 'success' || !Array.isArray(data.students)) {
 //       setFilteredRows([]);
@@ -128,12 +191,9 @@
 //           }
 //         });
 
-//         const totalScore = uniqueTestResults.reduce((sum, r) => sum + (r.total_score || 0), 0);
-
 //         uniqueTestResults.forEach((result) => {
 //           tableRows.push({
 //             student: studentData.student,
-//             totalScore,
 //             skillCount: studentData.skillCount || 0,
 //             testResult: result,
 //           });
@@ -147,26 +207,36 @@
 //       const testNameMatch =
 //         !filters.testName ||
 //         (row.testResult?.test_name?.toLowerCase()?.includes(filters.testName.toLowerCase()) || false);
+//       const total_score = (row.testResult?.performance?.easy_score || 0) +
+//                          (row.testResult?.performance?.medium_score || 0) +
+//                          (row.testResult?.performance?.hard_score || 0);
+//       const percentage = ((total_score / 20) * 100);
 //       const percentageMinMatch =
 //         filters.percentageMin === '' ||
-//         (row.testResult?.percentage >= Number(filters.percentageMin) || false);
+//         (percentage >= Number(filters.percentageMin) || false);
 //       const percentageMaxMatch =
 //         filters.percentageMax === '' ||
-//         (row.testResult?.percentage <= Number(filters.percentageMax) || false);
+//         (percentage <= Number(filters.percentageMax) || false);
 
 //       return searchMatch && testNameMatch && percentageMinMatch && percentageMaxMatch;
 //     });
 
 //     filtered.sort((a, b) => {
+//       const a_total_score = (a.testResult?.performance?.easy_score || 0) +
+//                            (a.testResult?.performance?.medium_score || 0) +
+//                            (a.testResult?.performance?.hard_score || 0);
+//       const b_total_score = (b.testResult?.performance?.easy_score || 0) +
+//                            (b.testResult?.performance?.medium_score || 0) +
+//                            (b.testResult?.performance?.hard_score || 0);
 //       switch (filters.sortBy) {
 //         case 'attendedAtDesc':
 //           return new Date(b.testResult?.attend_at || 0) - new Date(a.testResult?.attend_at || 0) || 0;
 //         case 'attendedAtAsc':
 //           return new Date(a.testResult?.attend_at || 0) - new Date(b.testResult?.attend_at || 0) || 0;
 //         case 'totalScoreDesc':
-//           return (b.totalScore || 0) - (a.totalScore || 0);
+//           return b_total_score - a_total_score;
 //         case 'totalScoreAsc':
-//           return (a.totalScore || 0) - (b.totalScore || 0);
+//           return a_total_score - b_total_score;
 //         default:
 //           return 0;
 //       }
@@ -181,8 +251,8 @@
 //   };
 
 //   const testNames = Array.from(
-//     new Set(data?.students?.flatMap((s) => s.testResults?.map((r) => r.test_name) || []).filter(Boolean))
-//   ).sort();
+//     new Set(data?.students?.flatMap((s) => s.testResults?.map((r) => r.test_name) || []).filter(Boolean).sort())
+//   );
 
 //   const resetFilters = () => {
 //     setFilters({
@@ -190,7 +260,7 @@
 //       testName: '',
 //       percentageMin: '',
 //       percentageMax: '',
-//       sortBy: 'attendedAtDesc',
+//       sortBy: 'attendedAtDesc'
 //     });
 //   };
 
@@ -208,42 +278,29 @@
 //   };
 
 //   const toggleRowExpand = (index) => {
-//     setExpandedRow(expandedRow === index ? null : index);
+//     setExpandedRow(index === expandedRow ? null : index);
 //   };
 
-//   const getLevelColor = (level) => {
-//     switch (level?.toLowerCase()) {
-//       case 'advanced':
-//         return 'bg-emerald-100 text-emerald-800';
-//       case 'intermediate':
-//         return 'bg-amber-100 text-amber-800';
-//       case 'beginner':
-//         return 'bg-blue-100 text-blue-800';
-//       default:
-//         return 'bg-gray-100 text-gray-800';
-//     }
+//   const stripHtml = (html) => {
+//     if (!html) return '';
+//     return html.replace(/<[^>]+>/g, '');
 //   };
 
 //   const renderSkeleton = () => (
 //     <div className="space-y-4">
 //       {[...Array(5)].map((_, i) => (
-//         <div key={i} className="animate-pulse flex space space-x-4 p-4 bg-white rounded-lg shadow">
+//         <div key={i} className="animate-pulse flex space-x-4 p-4 bg-white rounded-lg shadow-sm">
 //           <div className="flex-1 space-y-3">
-//             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+//             <div className="h-4 bg-gray-100 rounded w-3/4"></div>
 //             <div className="space-y-2">
-//               <div className="h-3 bg-gray-200 rounded"></div>
-//               <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+//               <div className="h-3 bg-gray-100 rounded"></div>
+//               <div className="h-3 bg-gray-100 rounded w-5/6"></div>
 //             </div>
 //           </div>
 //         </div>
 //       ))}
 //     </div>
 //   );
-
-//   const stripHtml = (html) => {
-//     if (!html) return '';
-//     return html.replace(/<[^>]+>/g, '');
-//   };
 
 //   return (
 //     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -418,7 +475,7 @@
 //                   className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 transition-colors"
 //                   onClick={closeModal}
 //                 >
-//                   {/* <X className="h-6 w-6" /> */}
+//                   <X className="h-6 w-6" />
 //                 </button>
 //                 {selectedPhoto && (
 //                   <div className="flex flex-col items-center">
@@ -445,19 +502,10 @@
 //                             {selectedPerformance.test_details.test_name || 'N/A'}
 //                           </h2>
 //                           <p className="text-indigo-100">
-//                             {/* {selectedPerformance.test_details.test_description || 'No description available'} */}
+//                             {stripHtml(selectedPerformance.test_details.test_description) || 'No description available'}
 //                           </p>
 //                         </div>
 //                         <div className="mt-4 md:mt-0 grid grid-cols-2 gap-4">
-//                           {/* <div className="flex items-center space-x-2 bg-white/20 p-2 rounded-lg">
-//                             <Trophy className="h-5 w-5" />
-//                             <div>
-//                               <p className="text-xs text-indigo-200">Overall Score</p>
-//                               <p className="text-sm font-semibold">
-//                                 {selectedPerformance.total_score || 'N/A'} / {selectedPerformance.test_details.total_no_of_questions || 'N/A'}
-//                               </p>
-//                             </div>
-//                           </div> */}
 //                           <div className="flex items-center space-x-2 bg-white/20 p-2 rounded-lg">
 //                             <Clock4 className="h-5 w-5" />
 //                             <div>
@@ -627,121 +675,145 @@
 //                     </tr>
 //                   </thead>
 //                   <tbody className="bg-white divide-y divide-gray-200">
-//                     {filteredRows.map((row, index) => (
-//                       <motion.tr
-//                         key={`${row.student?.student_id || 'row'}-${row.testResult?.id || index}`}
-//                         initial={{ opacity: 0, y: 10 }}
-//                         animate={{ opacity: 1, y: 0 }}
-//                         transition={{ duration: 0.2 }}
-//                         className="hover:bg-gray-50"
-//                       >
-//                         <td className="px-6 py-4 whitespace-nowrap">
-//                           <div className="flex items-center">
-//                             <div
-//                               className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden cursor-pointer"
-//                               onClick={() =>
-//                                 handlePhotoClick(
-//                                   row.student?.profile_photo
-//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
-//                                     : defaultProfile
-//                                 )
-//                               }
+//                     {filteredRows.map((row, index) => {
+//                       const adjustedAttended = row.testResult.performance ? calculateAdjustedAttended(row.testResult.performance) : {
+//                         beginnerAttended: 0,
+//                         intermediateAttended: 0,
+//                         advancedAttended: 0
+//                       };
+//                       const total_score = (row.testResult.performance?.easy_score || 0) +
+//                                          (row.testResult.performance?.medium_score || 0) +
+//                                          (row.testResult.performance?.hard_score || 0);
+//                       const percentage = ((total_score / 20) * 100).toFixed(2);
+//                       const difficulty_level = getDifficultyLevel(
+//                         row.testResult.performance?.easy_score,
+//                         row.testResult.performance?.medium_score,
+//                         row.testResult.performance?.hard_score
+//                       );
+                      
+//                       return (
+//                         <motion.tr
+//                           key={`${row.student?.student_id || 'row'}-${row.testResult?.id || index}`}
+//                           initial={{ opacity: 0, y: 10 }}
+//                           animate={{ opacity: 1, y: 0 }}
+//                           transition={{ duration: 0.2 }}
+//                           className="hover:bg-gray-50"
+//                         >
+//                           <td className="px-6 py-4 whitespace-nowrap">
+//                             <div className="flex items-center">
+//                               <div
+//                                 className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden cursor-pointer"
+//                                 onClick={() =>
+//                                   handlePhotoClick(
+//                                     row.student?.profile_photo
+//                                       ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
+//                                       : defaultProfile
+//                                   )
+//                                 }
+//                               >
+//                                 <img
+//                                   src={
+//                                     row.student?.profile_photo
+//                                       ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
+//                                       : defaultProfile
+//                                   }
+//                                   alt="Profile"
+//                                   className="h-full w-full object-cover"
+//                                 />
+//                               </div>
+//                               <div className="ml-4">
+//                                 <div className="text-sm font-medium text-gray-900 capitalize">
+//                                   {row.student?.name || 'Unknown'}
+//                                 </div>
+//                                 <div className="text-sm text-gray-500">{row.student?.roll_no || 'N/A'}</div>
+//                               </div>
+//                             </div>
+//                           </td>
+//                           <td className="px-6 py-4">
+//                             <div className="text-sm text-gray-900 font-medium">{row.testResult?.test_name || 'N/A'}</div>
+//                             <div className="text-sm text-gray-500 flex items-center">
+//                               <Clock className="h-3 w-3 mr-1" />
+//                               {formatDate(row.testResult?.attend_at)}
+//                             </div>
+//                           </td>
+//                           <td className="px-6 py-4">
+//                             <div className="grid grid-cols-3 gap-2">
+//                               <div className="text-center">
+//                                 <div className="text-xs text-gray-500">Beginner</div>
+//                                 <div className="text-sm font-medium">
+//                                   <span className="text-green-600">{row.testResult.performance?.easy_score || '0'}</span>
+//                                   <span className="text-gray-400"> / {adjustedAttended.beginnerAttended}</span>
+//                                 </div>
+//                               </div>
+//                               <div className="text-center">
+//                                 <div className="text-xs text-gray-500">Intermediate</div>
+//                                 <div className="text-sm font-medium">
+//                                   <span className="text-yellow-600">{row.testResult.performance?.medium_score || '0'}</span>
+//                                   <span className="text-gray-400"> / {adjustedAttended.intermediateAttended}</span>
+//                                 </div>
+//                               </div>
+//                               <div className="text-center">
+//                                 <div className="text-xs text-gray-500">Advanced</div>
+//                                 <div className="text-sm font-medium">
+//                                   <span className="text-red-600">{row.testResult.performance?.hard_score || '0'}</span>
+//                                   <span className="text-gray-400"> / {adjustedAttended.advancedAttended}</span>
+//                                 </div>
+//                               </div>
+//                             </div>
+//                           </td>
+//                           <td className="px-6 py-4">
+//                             <div className="flex items-center space-x-4">
+//                               <div>
+//                                 <div className="text-xs text-gray-500">Total</div>
+//                                 <div className="text-sm font-medium text-indigo-600">
+//                                   {total_score}
+//                                 </div>
+//                               </div>
+//                               <div>
+//                                 <div className="text-xs text-gray-500">Percentage</div>
+//                                 <div className="text-sm font-medium">
+//                                   {percentage ? `${percentage}%` : '0%'}
+//                                 </div>
+//                               </div>
+//                               <div>
+//                                 <div className="text-xs text-gray-500">Level</div>
+//                                 <div className={`text-sm font-medium px-2 py-1 rounded-full ${getLevelColor(difficulty_level)}`}>
+//                                   {difficulty_level}
+//                                 </div>
+//                               </div>
+//                             </div>
+//                           </td>
+//                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+//                             <button
+//                               onClick={() => {
+//                                 if (expandedRow === index) {
+//                                   setExpandedRow(null);
+//                                   setSelectedPerformance(null);
+//                                 } else {
+//                                   setExpandedRow(index);
+//                                   if (row.testResult?.performance) {
+//                                     setSelectedPerformance(row.testResult.performance);
+//                                   }
+//                                 }
+//                               }}
+//                               className="text-indigo-600 hover:text-indigo-900 flex items-center"
 //                             >
-//                               <img
-//                                 src={
-//                                   row.student?.profile_photo
-//                                     ? `https://gig.kggeniuslabs.com/api/resumes/${row.student.profile_photo}`
-//                                     : defaultProfile
-//                                 }
-//                                 alt="Profile"
-//                                 className="h-full w-full object-cover"
-//                               />
-//                             </div>
-//                             <div className="ml-4">
-//                               <div className="text-sm font-medium text-gray-900 capitalize">
-//                                 {row.student?.name || 'Unknown'}
-//                               </div>
-//                               <div className="text-sm text-gray-500">{row.student?.roll_no || 'N/A'}</div>
-//                             </div>
-//                           </div>
-//                         </td>
-//                         <td className="px-6 py-4">
-//                           <div className="text-sm text-gray-900 font-medium">{row.testResult?.test_name || 'N/A'}</div>
-//                           <div className="text-sm text-gray-500 flex items-center">
-//                             <Clock className="h-3 w-3 mr-1" />
-//                             {formatDate(row.testResult?.attend_at)}
-//                           </div>
-//                         </td>
-//                         <td className="px-6 py-4">
-//                           <div className="grid grid-cols-3 gap-2">
-//                             <div className="text-center">
-//                               <div className="text-xs text-gray-500">Beg.</div>
-//                               <div className="text-sm font-medium">
-//                                 <span className="text-blue-600">{row.testResult?.easy_score ?? '0'}</span>
-//                                 <span className="text-gray-400"> / {row.testResult?.easy_attended || '0'}</span>
-//                               </div>
-//                             </div>
-//                             <div className="text-center">
-//                               <div className="text-xs text-gray-500">Int.</div>
-//                               <div className="text-sm font-medium">
-//                                 <span className="text-amber-600">{row.testResult?.medium_score ?? '0'}</span>
-//                                 <span className="text-gray-400"> / {row.testResult?.medium_attended || '0'}</span>
-//                               </div>
-//                             </div>
-//                             <div className="text-center">
-//                               <div className="text-xs text-gray-500">Adv.</div>
-//                               <div className="text-sm font-medium">
-//                                 <span className="text-emerald-600">{row.testResult?.hard_score ?? '0'}</span>
-//                                 <span className="text-gray-400"> / {row.testResult?.hard_attended || '0'}</span>
-//                               </div>
-//                             </div>
-//                           </div>
-//                         </td>
-//                         <td className="px-6 py-4">
-//                           <div className="flex items-center space-x-4">
-//                             <div>
-//                               <div className="text-xs text-gray-500">Total</div>
-//                               <div className="text-sm font-medium text-indigo-600">
-//                                 {row.testResult?.total_score ?? 'N/A'}
-//                               </div>
-//                             </div>
-//                             <div>
-//                               <div className="text-xs text-gray-500">Percentage</div>
-//                               <div className="text-sm font-medium">
-//                                 {row.testResult?.percentage ? `${row.testResult.percentage}%` : 'N/A'}
-//                               </div>
-//                             </div>
-//                           </div>
-//                         </td>
-//                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-//                           <button
-//                             onClick={() => {
-//                               if (expandedRow === index) {
-//                                 setExpandedRow(null);
-//                               } else {
-//                                 setExpandedRow(index);
-//                                 if (row.testResult?.performance) {
-//                                   setSelectedPerformance(row.testResult.performance);
-//                                 }
-//                               }
-//                             }}
-//                             className="text-indigo-600 hover:text-indigo-900 flex items-center"
-//                           >
-//                             {expandedRow === index ? (
-//                               <>
-//                                 <ChevronUp className="h-4 w-4 mr-1" />
-//                                 Hide
-//                               </>
-//                             ) : (
-//                               <>
-//                                 <Eye className="h-4 w-4 mr-1" />
-//                                 View
-//                               </>
-//                             )}
-//                           </button>
-//                         </td>
-//                       </motion.tr>
-//                     ))}
+//                               {expandedRow === index ? (
+//                                 <>
+//                                   <ChevronUp className="h-4 w-4 mr-1" />
+//                                   Hide
+//                                 </>
+//                               ) : (
+//                                 <>
+//                                   <Eye className="h-4 w-4 mr-1" />
+//                                   View
+//                                 </>
+//                               )}
+//                             </button>
+//                           </td>
+//                         </motion.tr>
+//                       );
+//                     })}
 //                   </tbody>
 //                 </table>
 //               )}
@@ -752,13 +824,6 @@
 //     </div>
 //   );
 // }
-
-
-
-
-
-
-
 
 
 
@@ -1094,9 +1159,60 @@ export default function Score() {
     </div>
   );
 
+  // Calculate counts for statistics
+  const totalStudents = new Set(filteredRows.map(row => row.student?.student_id)).size;
+  const levelCounts = filteredRows.reduce((acc, row) => {
+    const difficulty_level = getDifficultyLevel(
+      row.testResult.performance?.easy_score,
+      row.testResult.performance?.medium_score,
+      row.testResult.performance?.hard_score
+    );
+    acc[difficulty_level] = (acc[difficulty_level] || 0) + 1;
+    return acc;
+  }, { Beginner: 0, Intermediate: 0, Advanced: 0, Failed: 0 });
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Statistics Section */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center">
+            <User className="h-8 w-8 text-indigo-600 mr-3" />
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Students</p>
+              <p className="text-2xl font-bold text-indigo-600">{totalStudents}</p>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center">
+            {/* <Trophy className="h-8 w-8 text-red-600 mr-3" /> */}
+            <div>
+              <p className="text-sm font-medium text-gray-600">Beginner Level</p>
+              <p className="text-2xl font-bold text-red-600">{levelCounts.Beginner}</p>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center">
+            {/* <Trophy className="h-8 w-8 text-yellow-600 mr-3" /> */}
+            <div>
+              <p className="text-sm font-medium text-gray-600">Intermediate Level</p>
+              <p className="text-2xl font-bold text-yellow-600">{levelCounts.Intermediate}</p>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center">
+            {/* <Trophy className="h-8 w-8 text-green-600 mr-3" /> */}
+            <div>
+              <p className="text-sm font-medium text-gray-600">Advanced Level</p>
+              <p className="text-2xl font-bold text-green-600">{levelCounts.Advanced}</p>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center">
+            {/* <Award className="h-8 w-8 text-purple-600 mr-3" /> */}
+            <div>
+              <p className="text-sm font-medium text-gray-600">Failed</p>
+              <p className="text-2xl font-bold text-purple-600">{levelCounts.Failed}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="mt-4 md:mt-0">
             <motion.button
@@ -1449,6 +1565,9 @@ export default function Score() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        S.No
+                      </th> */}
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Student
                       </th>
@@ -1491,6 +1610,9 @@ export default function Score() {
                           transition={{ duration: 0.2 }}
                           className="hover:bg-gray-50"
                         >
+                          {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {index + 1}
+                          </td> */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div

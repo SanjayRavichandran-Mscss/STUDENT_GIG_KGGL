@@ -1808,9 +1808,168 @@ const GetNonTechSingleStudentData = async (req, res) => {
 };
 
 
+const GetAllAdmins = async (req, res) => {
+  try {
+    const query = `
+      SELECT student_id AS admin_id, name AS admin_name, email AS admin_email
+      FROM students
+      WHERE role_id = 1
+    `;
+    const result = await dbQuery(query);
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No admins found",
+      });
+    }
+
+    res.json({
+      status: "success",
+      admins: result,
+    });
+  } catch (error) {
+    console.error("Error in GetAllAdmins:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve admin data",
+    });
+  }
+};
+
+const ApplyStudentLeave = async (req, res) => {
+  const { student_id, instructor_id, start_date, end_date, reason } = req.body;
+
+  try {
+    // Validate required fields
+    if (!student_id || !instructor_id || !start_date || !end_date || !reason) {
+      return res.status(400).json({ status: "error", message: "All fields are required." });
+    }
+
+    // Validate date range
+    if (new Date(start_date) > new Date(end_date)) {
+      return res.status(400).json({ status: "error", message: "End date must be after start date." });
+    }
+
+    // Check if student and instructor exist
+    const checkUsersQuery = "SELECT student_id, email, name,roll_no FROM students WHERE student_id IN (?, ?) AND role_id IN (2, 1)";
+    const usersResult = await dbQuery(checkUsersQuery, [student_id, instructor_id]);
+    
+    if (usersResult.length !== 2) {
+      return res.status(404).json({ status: "error", message: "Student or instructor not found." });
+    }
+
+    const student = usersResult.find(user => user.student_id === parseInt(student_id));
+    const instructor = usersResult.find(user => user.student_id === parseInt(instructor_id));
+
+    // Insert leave data
+    const insertQuery = `
+      INSERT INTO studentsleave (student_id, instructor_id, start_date, end_date, reason)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    await dbQuery(insertQuery, [student_id, instructor_id, start_date, end_date, reason]);
+
+    try {
+      // Send email to instructor
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "sanjayravichandran006@gmail.com",
+          pass: "lpzn amam wlgw kwdl",
+        },
+      });
+
+      const mailOptions = {
+        from: '"KGGL Gig" <sanjayravichandran006@gmail.com>',
+        to: instructor.email,
+        subject: "Leave Request From KGGL-GIG",
+        html: `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Leave Application Notification</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+            <table role="presentation" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <tr>
+                <td style="padding: 40px; text-align: center;">
+                  <h1 style="color: #1a73e8; margin: 0 0 20px; font-size: 24px;">KGGL Gig</h1>
+                  <h2 style="color: #333; margin: 0 0 10px; font-size: 20px;">New Leave Application</h2>
+                  <p style="color: #555; margin: 0 0 20px; font-size: 16px; line-height: 1.5;">
+                    A new leave application has been submitted by <strong>${student.name} - ${student.roll_no} </strong>.
+                  </p>
+                  <div style="background-color: #e8f0fe; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: left;">
+                  
+                    <p><strong>Start Date:</strong> ${start_date}</p>
+                    <p><strong>End Date:</strong> ${end_date}</p>
+                    <p><strong>Reason:</strong> ${reason}</p>
+                  </div>
+                  <p style="color: #555; margin: 0 0 20px; font-size: 14px; line-height: 1.5;">
+                    Please review the application and take appropriate action.
+                  </p>
+                  <p style="color: #999; margin: 20px 0 0; font-size: 12px;">
+                    © ${new Date().getFullYear()} KGGL Gig. All rights reserved.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ status: "success", message: "Leave application submitted and email sent." });
+    } catch (emailError) {
+      console.error("Email error in ApplyStudentLeave:", emailError);
+      res.status(200).json({ status: "email_failed", message: "Leave application submitted, but email failed to send." });
+    }
+  } catch (error) {
+    console.error("Error in ApplyStudentLeave:", error);
+    res.status(500).json({ status: "error", message: "Failed to submit leave application." });
+  }
+};
 
 
 
+
+const GetStudentLeaveHistory = async (req, res) => {
+  const { student_id } = req.params;
+
+  try {
+    // Validate student_id
+    if (!student_id || isNaN(parseInt(student_id))) {
+      return res.status(400).json({ status: "error", message: "Invalid student ID." });
+    }
+
+    const query = `
+      SELECT 
+        sl.id,
+        sl.student_id,
+        sl.instructor_id,
+        s.name AS instructor_name,
+        sl.start_date,
+        sl.end_date,
+        sl.reason,
+        sl.created_at
+      FROM studentsleave sl
+      JOIN students s ON sl.instructor_id = s.student_id
+      WHERE sl.student_id = ?
+      ORDER BY sl.created_at DESC
+    `;
+    const result = await dbQuery(query, [student_id]);
+
+    res.json({
+      status: "success",
+      leaveHistory: result,
+    });
+  } catch (error) {
+    console.error("Error in GetStudentLeaveHistory:", error);
+    res.status(500).json({ status: "error", message: "Failed to retrieve leave history." });
+  }
+};
 
 
 
@@ -1837,5 +1996,8 @@ export {
   getAllStudentsDataAndTest,
   getProjectsByStudentLevel,
   GetTechnicalStatusByEmail,
-  GetNonTechSingleStudentData ,
+  GetNonTechSingleStudentData,
+  GetAllAdmins,
+   ApplyStudentLeave, 
+  GetStudentLeaveHistory, 
 };

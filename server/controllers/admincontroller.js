@@ -2090,8 +2090,8 @@ const getPaymentVerification = (req, res) => {
 };
 
 const sendExpiredUnbiddedProjectMail = async (req, res) => {
-  const to = ["2232j31@kgcas.com", "sanpro2004.jay@gmail.com"];
-  const cc = ["2232j32@kgcas.com"]; 
+  const to = ["chitradevi.m@kggeniuslabs.com"];
+  const cc = ["chitradevi.m@kggeniuslabs.com",]; 
   const bcc = []; 
 
   try {
@@ -2201,6 +2201,159 @@ const sendExpiredUnbiddedProjectMail = async (req, res) => {
   }
 };
 
+
+
+
+const getRelatedStudentSkillAndTestCounts = async (req, res) => {
+  try {
+    // Query 1: Skill enrollment counts by skill and college
+    const skillCountsSql = `
+      SELECT 
+        sk.skill_name,
+        COUNT(DISTINCT ss.student_id) AS total_enrolled,
+        COUNT(DISTINCT CASE WHEN s.college_id = 1 THEN ss.student_id ELSE NULL END) AS kgcas_count,
+        COUNT(DISTINCT CASE WHEN s.college_id = 2 THEN ss.student_id ELSE NULL END) AS kite_count,
+        COUNT(DISTINCT CASE WHEN s.college_id = 3 THEN ss.student_id ELSE NULL END) AS kgisliim_count
+      FROM skills sk
+      LEFT JOIN student_skills ss ON sk.skill_id = ss.skill_id
+      LEFT JOIN students s ON ss.student_id = s.student_id
+      GROUP BY sk.skill_name
+      ORDER BY sk.skill_name
+    `;
+
+    // Query 2: Test attendance counts per skill
+    const testAttendanceSql = `
+      SELECT 
+        sk.skill_name,
+        COUNT(DISTINCT sp.student_id) AS total_attendees,
+        COUNT(DISTINCT CASE WHEN s.college_id = 1 THEN sp.student_id ELSE NULL END) AS kgcas_attendees,
+        COUNT(DISTINCT CASE WHEN s.college_id = 2 THEN sp.student_id ELSE NULL END) AS kite_attendees,
+        COUNT(DISTINCT CASE WHEN s.college_id = 3 THEN sp.student_id ELSE NULL END) AS kgisliim_attendees
+      FROM skills sk
+      LEFT JOIN testcreation t ON sk.skill_id = t.skill_id
+      LEFT JOIN studentperformance sp ON t.test_id = sp.test_id
+      LEFT JOIN students s ON sp.student_id = s.student_id
+      GROUP BY sk.skill_name
+      ORDER BY sk.skill_name
+    `;
+
+    // Query 3: Test level counts per skill and college
+    const testLevelCountsSql = `
+      SELECT 
+        sk.skill_name,
+        c.college_name,
+        COUNT(DISTINCT CASE 
+            WHEN s.college_id = c.college_id 
+                AND sp.easy_score >= 6 
+                AND (sp.medium_score IS NULL OR sp.medium_score < 4) 
+                AND (sp.hard_score IS NULL OR sp.hard_score < 2)
+            THEN sp.student_id 
+            ELSE NULL 
+        END) AS beginner_count,
+        COUNT(DISTINCT CASE 
+            WHEN s.college_id = c.college_id 
+                AND sp.easy_score >= 6 
+                AND sp.medium_score >= 4 
+                AND (sp.hard_score IS NULL OR sp.hard_score < 2) 
+            THEN sp.student_id 
+            ELSE NULL 
+        END) AS intermediate_count,
+        COUNT(DISTINCT CASE 
+            WHEN s.college_id = c.college_id 
+                AND sp.easy_score >= 6 
+                AND sp.medium_score >= 4 
+                AND sp.hard_score >=2 
+            THEN sp.student_id 
+            ELSE NULL 
+        END) AS advanced_count
+      FROM skills sk
+      CROSS JOIN colleges c
+      LEFT JOIN testcreation t ON sk.skill_id = t.skill_id
+      LEFT JOIN studentperformance sp ON t.test_id = sp.test_id
+      LEFT JOIN students s ON sp.student_id = s.student_id
+      GROUP BY sk.skill_name, c.college_name
+      ORDER BY sk.skill_name, c.college_name;
+    `;
+
+    // Execute queries
+    db.query(skillCountsSql, (err, skillCountsResult) => {
+      if (err) {
+        console.error("Skill counts query error:", err);
+        return res.status(500).json({ status: false, msg: "db_error" });
+      }
+
+      db.query(testAttendanceSql, (err, testAttendanceResult) => {
+        if (err) {
+          console.error("Test attendance query error:", err);
+          return res.status(500).json({ status: false, msg: "db_error" });
+        }
+
+        db.query(testLevelCountsSql, (err, testLevelCountsResult) => {
+          if (err) {
+            console.error("Test level counts query error:", err);
+            return res.status(500).json({ status: false, msg: "db_error" });
+          }
+
+          // Prepare test attendance data
+          const testAttendance = {};
+          testAttendanceResult.forEach(row => {
+            testAttendance[row.skill_name] = {
+              total: row.total_attendees,
+              kgcas: row.kgcas_attendees,
+              kite: row.kite_attendees,
+              kgisliim: row.kgisliim_attendees
+            };
+          });
+
+          // Prepare test levels data grouped by skill
+          const testLevelsBySkill = {};
+          testLevelCountsResult.forEach(row => {
+            if (!testLevelsBySkill[row.skill_name]) {
+              testLevelsBySkill[row.skill_name] = [];
+            }
+            testLevelsBySkill[row.skill_name].push({
+              college_name: row.college_name,
+              beginner_count: row.beginner_count,
+              intermediate_count: row.intermediate_count,
+              advanced_count: row.advanced_count
+            });
+          });
+
+          // Combine all results
+          const result = skillCountsResult.map(skill => ({
+            skill_name: skill.skill_name,
+            total_enrolled: skill.total_enrolled,
+            kgcas_count: skill.kgcas_count,
+            kite_count: skill.kite_count,
+            kgisliim_count: skill.kgisliim_count,
+            test_attendance: testAttendance[skill.skill_name] || {
+              total: 0,
+              kgcas: 0,
+              kite: 0,
+              kgisliim: 0
+            },
+            test_levels: testLevelsBySkill[skill.skill_name] || [
+              { college_name: "KGCAS", beginner_count: 0, intermediate_count: 0, advanced_count: 0 },
+              { college_name: "KITE", beginner_count: 0, intermediate_count: 0, advanced_count: 0 },
+              { college_name: "KGISL IIM", beginner_count: 0, intermediate_count: 0, advanced_count: 0 }
+            ]
+          }));
+
+          res.json({
+            status: true,
+            result: {
+              skill_counts: result
+            }
+          });
+        });
+      });
+    });
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).json({ status: false, msg: "server_error" });
+  }
+};
+
 export {
   studentDetails,
   studentsCount,
@@ -2241,6 +2394,9 @@ export {
     savePaymentVerification,
   getPaymentVerification,
 
-  sendExpiredUnbiddedProjectMail
+  sendExpiredUnbiddedProjectMail,
+    getRelatedStudentSkillAndTestCounts,
+
+
 
 };

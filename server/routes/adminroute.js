@@ -204,7 +204,8 @@ import {
   getPaymentVerification,
   savePaymentVerification,
   sendExpiredUnbiddedProjectMail,
-  
+  getRelatedStudentSkillAndTestCounts
+
 } from "../controllers/admincontroller.js";
 import { body, validationResult } from "express-validator";
 import multer from "multer";
@@ -471,5 +472,10 @@ adminRouter.route("/get-payment-verification/:student_id/:project_id").get(getPa
 
 
 adminRouter.route("/send-expired-unbidded-mail").post(sendExpiredUnbiddedProjectMail);
+
+
+adminRouter.route("/related-student-skill-and-test-counts").get(getRelatedStudentSkillAndTestCounts);
+
+
 
 export default adminRouter;

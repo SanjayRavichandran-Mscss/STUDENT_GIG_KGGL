@@ -23,6 +23,9 @@ import {
   getProjectsByStudentLevel,
   GetTechnicalStatusByEmail,
   GetNonTechSingleStudentData,
+  GetAllAdmins,
+  ApplyStudentLeave,
+  GetStudentLeaveHistory,
   
 } from "../controllers/studentcontroller.js";
 import upload from "../middleware/multer.js";
@@ -107,4 +110,8 @@ studentRouter.route("/technical-status/:email").get(GetTechnicalStatusByEmail);
 
 studentRouter.route("/get-non-tech-data/:student_id").get(GetNonTechSingleStudentData);
 
+studentRouter.route("/all-admins").get(GetAllAdmins);
+
+studentRouter.route("/apply-leave").post(ApplyStudentLeave);
+studentRouter.route("/leave-history/:student_id").get(GetStudentLeaveHistory);
 export default studentRouter ;

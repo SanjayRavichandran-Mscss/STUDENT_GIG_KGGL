@@ -366,6 +366,46 @@ adminRouter.route("/expense-types").get(getExpenseTypes);
 
 
 // Save payable ledger with dynamic file uploads for student transaction screenshots
+// adminRouter.post(
+//   "/save-payable-ledger",
+//   transactionUpload.fields(
+//     Array.from({ length: 10 }, (_, i) => ({
+//       name: `student_details[${i}][transaction_screenshot]`,
+//       maxCount: 1,
+//     }))
+//   ), // Supports up to 10 students
+//   [
+//     body("expense_type_id").isInt().withMessage("Expense type ID must be an integer"),
+//     body("project_id").isInt().withMessage("Project ID must be an integer"),
+//     body("client_name").isString().notEmpty().withMessage("Client name is required"),
+//     body("team_size").isInt({ min: 1 }).withMessage("Team size must be a positive integer"),
+//     body("student_details").custom((value) => {
+//       let parsed;
+//       try {
+//         parsed = typeof value === "string" ? JSON.parse(value) : value;
+//         if (!Array.isArray(parsed) || parsed.length === 0) {
+//           throw new Error("Student details must be a non-empty array");
+//         }
+//         return true;
+//       } catch (e) {
+//         throw new Error("Invalid student_details format");
+//       }
+//     }),
+//     body("petty_cash").isFloat({ min: 0 }).withMessage("Petty cash must be a non-negative number"),
+//     body("created_by").isInt().withMessage("Created by must be an integer"),
+//   ],
+//   (req, res, next) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({ status: false, msg: "Validation failed", errors: errors.array() });
+//     }
+//     next();
+//   },
+//   savePayableLedger
+// );
+
+
+
 adminRouter.post(
   "/save-payable-ledger",
   transactionUpload.fields(
@@ -377,7 +417,6 @@ adminRouter.post(
   [
     body("expense_type_id").isInt().withMessage("Expense type ID must be an integer"),
     body("project_id").isInt().withMessage("Project ID must be an integer"),
-    body("client_name").isString().notEmpty().withMessage("Client name is required"),
     body("team_size").isInt({ min: 1 }).withMessage("Team size must be a positive integer"),
     body("student_details").custom((value) => {
       let parsed;
@@ -405,8 +444,36 @@ adminRouter.post(
 );
 
 
-
 adminRouter.route("/payable-ledger-history").get(getPayableLedgerHistory);
+
+
+
+// adminRouter.post(
+//   "/save-receivable-ledger",
+//   transactionUpload.single("transaction_screenshot"),
+//   [
+//     body("project_id").isInt().withMessage("Project ID must be an integer"),
+//     body("client_name").isString().notEmpty().withMessage("Client name is required"),
+//     body("paid_amount").isFloat({ min: 0 }).withMessage("Paid amount must be a non-negative number"),
+//     body("from_upi_id").isString().notEmpty().withMessage("From UPI ID is required"),
+//     body("to_upi_id").isString().notEmpty().withMessage("To UPI ID is required"),
+//     body("transaction_id").isString().notEmpty().withMessage("Transaction ID is required"),
+//     body("date_time").isISO8601().withMessage("Date time must be a valid ISO 8601 date"),
+//     body("created_by").isInt().withMessage("Created by must be an integer"),
+//   ],
+//   (req, res, next) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({ status: false, msg: "Validation failed", errors: errors.array() });
+//     }
+//     if (!req.file) {
+//       return res.status(400).json({ status: false, msg: "Transaction screenshot is required" });
+//     }
+//     next();
+//   },
+//   saveReceivableLedger
+// );
+
 
 
 
@@ -415,7 +482,6 @@ adminRouter.post(
   transactionUpload.single("transaction_screenshot"),
   [
     body("project_id").isInt().withMessage("Project ID must be an integer"),
-    body("client_name").isString().notEmpty().withMessage("Client name is required"),
     body("paid_amount").isFloat({ min: 0 }).withMessage("Paid amount must be a non-negative number"),
     body("from_upi_id").isString().notEmpty().withMessage("From UPI ID is required"),
     body("to_upi_id").isString().notEmpty().withMessage("To UPI ID is required"),
@@ -435,7 +501,6 @@ adminRouter.post(
   },
   saveReceivableLedger
 );
-
 
 adminRouter.route("/receivable-ledger-history").get(getReceivableLedgerHistory);
 

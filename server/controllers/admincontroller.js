@@ -1644,13 +1644,160 @@ const getExpenseTypes = async (req, res) => {
   }
 };
 
-// Save a payable ledger entry
+// // Save a payable ledger entry
+// const savePayableLedger = (req, res) => {
+//   try {
+//     const {
+//       expense_type_id,
+//       project_id,
+//       client_name,
+//       team_size,
+//       student_details,
+//       petty_cash,
+//       pettycash_description,
+//       created_by,
+//     } = req.body;
+
+//     // Parse student_details if it's a string (from FormData)
+//     let parsedStudentDetails;
+//     try {
+//       parsedStudentDetails = typeof student_details === "string" ? JSON.parse(student_details) : student_details;
+//     } catch (e) {
+//       return res.status(400).json({ status: false, msg: "Invalid student_details format" });
+//     }
+
+//     // Validate required fields
+//     if (
+//       !expense_type_id ||
+//       !project_id ||
+//       !client_name ||
+//       !team_size ||
+//       !parsedStudentDetails ||
+//       !petty_cash ||
+//       !created_by
+//     ) {
+//       return res.status(400).json({ status: false, msg: "All fields are required" });
+//     }
+
+//     // Validate expense_type_id exists
+//     db.query(
+//       "SELECT id FROM expense_type WHERE id = ?",
+//       [expense_type_id],
+//       (err, expenseResult) => {
+//         if (err) {
+//           console.error("Database error (expense type check):", err);
+//           return res.status(500).json({ status: false, msg: "Server error" });
+//         }
+//         if (!expenseResult || expenseResult.length === 0) {
+//           return res.status(400).json({ status: false, msg: "Invalid expense_type_id" });
+//         }
+
+//         // Validate project_id exists
+//         db.query(
+//           "SELECT project_id FROM projects WHERE project_id = ?",
+//           [project_id],
+//           (err, projectResult) => {
+//             if (err) {
+//               console.error("Database error (project check):", err);
+//               return res.status(500).json({ status: false, msg: "Server error" });
+//             }
+//             if (!projectResult || projectResult.length === 0) {
+//               return res.status(400).json({ status: false, msg: "Invalid project_id" });
+//             }
+
+//             // Validate created_by exists (assuming created_by is a student_id from students table)
+//             db.query(
+//               "SELECT student_id FROM students WHERE student_id = ?",
+//               [created_by],
+//               (err, userResult) => {
+//                 if (err) {
+//                   console.error("Database error (user check):", err);
+//                   return res.status(500).json({ status: false, msg: "Server error" });
+//                 }
+//                 if (!userResult || userResult.length === 0) {
+//                   return res.status(400).json({ status: false, msg: "Invalid created_by" });
+//                 }
+
+//                 // Process student details to include transaction screenshots
+//                 const updatedStudentDetails = parsedStudentDetails.map((student, index) => {
+//                   const screenshotField = req.files[`student_details[${index}][transaction_screenshot]`];
+//                   return {
+//                     ...student,
+//                     transaction_screenshot: screenshotField
+//                       ? `transaction_screenshots/${screenshotField[0].filename}`
+//                       : null,
+//                   };
+//                 });
+
+//                 // Insert into payableledger
+//                 const query = `
+//                   INSERT INTO payableledger (
+//                     expense_type_id,
+//                     project_id,
+//                     client_name,
+//                     team_size,
+//                     student_details,
+//                     petty_cash,
+//                     pettycash_description,
+//                     created_by
+//                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//                 `;
+//                 const values = [
+//                   expense_type_id,
+//                   project_id,
+//                   client_name,
+//                   team_size,
+//                   JSON.stringify(updatedStudentDetails),
+//                   petty_cash,
+//                   pettycash_description || null,
+//                   created_by,
+//                 ];
+
+//                 db.query(query, values, (err, result) => {
+//                   if (err) {
+//                     console.error("Database error (insert):", err);
+//                     if (
+//                       err.code === "ER_NO_REFERENCED_ROW_2" ||
+//                       err.code === "ER_ROW_IS_REFERENCED_2"
+//                     ) {
+//                       return res.status(400).json({
+//                         status: false,
+//                         msg: "Foreign key constraint failed",
+//                       });
+//                     }
+//                     return res.status(500).json({ status: false, msg: "Server error" });
+//                   }
+
+//                   if (result && result.affectedRows > 0) {
+//                     return res.json({
+//                       status: true,
+//                       msg: "Payable ledger entry saved successfully",
+//                     });
+//                   } else {
+//                     return res.status(500).json({
+//                       status: false,
+//                       msg: "Failed to save payable ledger entry",
+//                     });
+//                   }
+//                 });
+//               }
+//             );
+//           }
+//         );
+//       }
+//     );
+//   } catch (err) {
+//     console.error("Error saving payable ledger:", err);
+//     return res.status(500).json({ status: false, msg: "Server error" });
+//   }
+// };
+
+
 const savePayableLedger = (req, res) => {
   try {
     const {
       expense_type_id,
       project_id,
-      client_name,
       team_size,
       student_details,
       petty_cash,
@@ -1670,7 +1817,6 @@ const savePayableLedger = (req, res) => {
     if (
       !expense_type_id ||
       !project_id ||
-      !client_name ||
       !team_size ||
       !parsedStudentDetails ||
       !petty_cash ||
@@ -1734,18 +1880,16 @@ const savePayableLedger = (req, res) => {
                   INSERT INTO payableledger (
                     expense_type_id,
                     project_id,
-                    client_name,
                     team_size,
                     student_details,
                     petty_cash,
                     pettycash_description,
                     created_by
-                  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                  ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 `;
                 const values = [
                   expense_type_id,
                   project_id,
-                  client_name,
                   team_size,
                   JSON.stringify(updatedStudentDetails),
                   petty_cash,
@@ -1801,7 +1945,7 @@ const getPayableLedgerHistory = async (req, res) => {
         et.type AS expense_type,
         et.subtype AS expense_subtype,
         p.project_name,
-        pl.client_name,
+        p.client_name,
         pl.team_size,
         pl.student_details,
         pl.petty_cash,
@@ -1827,12 +1971,134 @@ const getPayableLedgerHistory = async (req, res) => {
   }
 };
 
-// Save a receivable ledger entry
+// // Save a receivable ledger entry
+// const saveReceivableLedger = (req, res) => {
+//   try {
+//     const {
+//       project_id,
+//       client_name,
+//       paid_amount,
+//       from_upi_id,
+//       to_upi_id,
+//       transaction_id,
+//       date_time,
+//       created_by,
+//     } = req.body;
+//     const transaction_screenshot = req.file
+//       ? `transaction_screenshots/${req.file.filename}`
+//       : null;
+
+//     // Validate required fields
+//     if (
+//       !project_id ||
+//       !client_name ||
+//       !paid_amount ||
+//       !from_upi_id ||
+//       !to_upi_id ||
+//       !transaction_id ||
+//       !date_time ||
+//       !created_by ||
+//       !transaction_screenshot
+//     ) {
+//       return res.status(400).json({ status: false, msg: "All fields are required" });
+//     }
+
+//     // Validate project_id exists
+//     db.query(
+//       "SELECT project_id FROM projects WHERE project_id = ?",
+//       [project_id],
+//       (err, projectResult) => {
+//         if (err) {
+//           console.error("Database error (project check):", err);
+//           return res.status(500).json({ status: false, msg: "Server error" });
+//         }
+//         if (!projectResult || projectResult.length === 0) {
+//           return res.status(400).json({ status: false, msg: "Invalid project_id" });
+//         }
+
+//         // Validate created_by exists
+//         db.query(
+//           "SELECT student_id FROM students WHERE student_id = ?",
+//           [created_by],
+//           (err, userResult) => {
+//             if (err) {
+//               console.error("Database error (user check):", err);
+//               return res.status(500).json({ status: false, msg: "Server error" });
+//             }
+//             if (!userResult || userResult.length === 0) {
+//               return res.status(400).json({ status: false, msg: "Invalid created_by" });
+//             }
+
+//             // Insert into receivableledger
+//             const query = `
+//               INSERT INTO receivableledger (
+//                 project_id,
+//                 client_name,
+//                 paid_amount,
+//                 from_upi_id,
+//                 to_upi_id,
+//                 transaction_id,
+//                 date_time,
+//                 transaction_screenshot,
+//                 created_by
+//               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+//             `;
+//             const values = [
+//               project_id,
+//               client_name,
+//               paid_amount,
+//               from_upi_id,
+//               to_upi_id,
+//               transaction_id,
+//               date_time,
+//               transaction_screenshot,
+//               created_by,
+//             ];
+
+//             db.query(query, values, (err, result) => {
+//               if (err) {
+//                 console.error("Database error (insert):", err);
+//                 if (
+//                   err.code === "ER_NO_REFERENCED_ROW_2" ||
+//                   err.code === "ER_ROW_IS_REFERENCED_2"
+//                 ) {
+//                   return res.status(400).json({
+//                     status: false,
+//                     msg: "Foreign key constraint failed",
+//                   });
+//                 }
+//                 return res.status(500).json({ status: false, msg: "Server error" });
+//               }
+
+//               if (result && result.affectedRows > 0) {
+//                 return res.json({
+//                   status: true,
+//                   msg: "Receivable ledger entry saved successfully",
+//                 });
+//               } else {
+//                 return res.status(500).json({
+//                   status: false,
+//                   msg: "Failed to save receivable ledger entry",
+//                 });
+//               }
+//             });
+//           }
+//         );
+//       }
+//     );
+//   } catch (err) {
+//     console.error("Error saving receivable ledger:", err);
+//     return res.status(500).json({ status: false, msg: "Server error" });
+//   }
+// };
+
+
+
+
 const saveReceivableLedger = (req, res) => {
   try {
     const {
       project_id,
-      client_name,
       paid_amount,
       from_upi_id,
       to_upi_id,
@@ -1847,7 +2113,6 @@ const saveReceivableLedger = (req, res) => {
     // Validate required fields
     if (
       !project_id ||
-      !client_name ||
       !paid_amount ||
       !from_upi_id ||
       !to_upi_id ||
@@ -1889,7 +2154,6 @@ const saveReceivableLedger = (req, res) => {
             const query = `
               INSERT INTO receivableledger (
                 project_id,
-                client_name,
                 paid_amount,
                 from_upi_id,
                 to_upi_id,
@@ -1897,11 +2161,10 @@ const saveReceivableLedger = (req, res) => {
                 date_time,
                 transaction_screenshot,
                 created_by
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `;
             const values = [
               project_id,
-              client_name,
               paid_amount,
               from_upi_id,
               to_upi_id,
@@ -1953,10 +2216,9 @@ const getReceivableLedgerHistory = async (req, res) => {
   try {
     const sql = `
       SELECT 
-        rl.id,
-        
+        rl.id,   
         p.project_name,
-        rl.client_name,
+        p.client_name,
         rl.paid_amount,
         rl.from_upi_id,
         rl.to_upi_id,
